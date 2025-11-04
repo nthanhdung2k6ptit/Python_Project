@@ -1,0 +1,14 @@
+# Các thư viện cần cài đặt (pip install -r requirements.txt)
+requests
+json
+pandas
+numpy
+networkx
+matplotlib
+plotly
+folium
+streamlit
+tkinter
+pandas
+seaborn
+matplotlib
