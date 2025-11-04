@@ -153,5 +153,5 @@ Graph_Network_Project/
 └── docs/                         # Tài liệu mô tả project, diagram, hướng dẫn
     ├── architecture.png          # Sơ đồ pipeline (TV1→TV6)
     ├── api_doc.md                # Ghi chú về API
-    ├── data_flow.md              # Mô tả pipeline dữ liệu
+    ├── data_flow.md              # Mô tả pipeline dữ liệu`
     └── group_roles.md            # Phân chia công việc nhóm
