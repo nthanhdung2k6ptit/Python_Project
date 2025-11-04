@@ -1,0 +1,1 @@
+# Lưu ảnh, định dạng đầu ra

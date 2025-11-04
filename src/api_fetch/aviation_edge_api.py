@@ -1,0 +1,1 @@
+# Class & functions lấy dữ liệu từ API Aviation Edge
