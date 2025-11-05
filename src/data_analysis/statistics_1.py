@@ -5,7 +5,7 @@ import os
 def load_data(file_path):  # Hàm chung để tải dữ liệu CSV và xử lý lỗi FileNotFoundError.
     
     if not os.path.exists(file_path):
-        print(f"LỖI (TV6): Không tìm thấy file '{file_path}'.")
+        print(f"LỖI : Không tìm thấy file '{file_path}'.")
         return None
     
     return pd.read_csv(file_path)
@@ -85,12 +85,12 @@ def get_top_important_airports(centrality_file_path, top_n = 10):
 # --- Bạn có thể chạy file này độc lập để test ---
 if __name__ == '__main__':
     # Giả lập đường dẫn file
-    CLEANED_ROUTES_PATH = 'data/cleaned/routes_clean.csv'
-    CENTRALITY_PATH = 'data/graphs/airport_centrality.csv'
+    CLEANED_ROUTES_PATH = 'src/data_analysis/cleaned/routes_clean.csv'
+    CENTRALITY_PATH = 'src/data_analysis/graph/airport_centrality.csv'
     
     # Tạo dữ liệu giả để test nếu file không tồn tại
-    if not os.path.exists('data/cleaned'):
-        os.makedirs('data/cleaned')
+    if not os.path.exists('src/data_analysis/cleaned'):
+        os.makedirs('src/data_analysis/cleaned')
         print("Tạo dữ liệu giả cho 'routes_clean.csv'...")
         fake_routes_data = {
             'origin': ['SGN', 'SGN', 'HAN', 'DAD', 'CXR', 'SGN'],
@@ -99,8 +99,8 @@ if __name__ == '__main__':
         }
         pd.DataFrame(fake_routes_data).to_csv(CLEANED_ROUTES_PATH, index=False)
         
-    if not os.path.exists('data/graphs'):
-        os.makedirs('data/graphs')
+    if not os.path.exists('src/data_analysis/graph'):
+        os.makedirs('src/data_analysis/graph')
         print("Tạo dữ liệu giả cho 'airport_centrality.csv'...")
         fake_centrality_data = {
             'airport_iata': ['SGN', 'HAN', 'DAD', 'CXR', 'PQC'],

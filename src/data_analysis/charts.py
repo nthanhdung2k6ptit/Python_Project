@@ -1,11 +1,12 @@
 # Biểu đồ (bar, pie, top 10)
+
 import matplotlib.pyplot as plt
 import seaborn as sns
 import pandas as pd
 import os
 
 # Đường dẫn thư mục để lưu ảnh
-REPORT_IMG_DIR = 'data/reports/images'
+REPORT_IMG_DIR = 'src/data_analysis/images'
 
 def setup_charts():
     """Tạo thư mục lưu ảnh nếu chưa có."""
