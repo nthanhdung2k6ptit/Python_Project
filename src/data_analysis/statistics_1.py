@@ -93,18 +93,46 @@ if __name__ == '__main__':
         os.makedirs('src/data_analysis/cleaned')
         print("Tạo dữ liệu giả cho 'routes_clean.csv'...")
         fake_routes_data = {
-            'origin': ['SGN', 'SGN', 'HAN', 'DAD', 'CXR', 'SGN'],
-            'destination': ['HAN', 'DAD', 'DAD', 'SGN', 'SGN', 'CXR'],
-            'airline_iata': ['VN', 'VJ', 'VN', 'VJ', 'BA', 'VN']
+            'origin': [
+                'SGN', 'SGN', 'SGN', 'SGN', 'SGN', 'SGN', 'SGN', 'HAN', 'HAN', 'HAN', 'HAN', 'HAN', 
+                'DAD', 'DAD', 'DAD', 'PQC', 'CXR', 'HPH', 'VCA', 'BKK', 'BKK', 'SIN', 'SIN', 'KUL', 
+                'ICN', 'NRT', 'HKG', 'DAD', 'HAN', 'SGN', 'SIN', 'ICN'
+            ],
+            'destination': [
+                'HAN', 'DAD', 'PQC', 'CXR', 'HPH', 'BKK', 'SIN', 'SGN', 'DAD', 'ICN', 'BKK', 'CXR', 
+                'SGN', 'HAN', 'ICN', 'SGN', 'HAN', 'SGN', 'HAN', 'SGN', 'ICN', 'SGN', 'KUL', 'SIN', 
+                'HAN', 'SGN', 'DAD', 'HKG', 'NRT', 'KUL', 'BKK', 'SGN'
+            ],
+            'airline_iata': [
+                'VN', 'VJ', 'QH', 'VU', 'VN', 'VN', 'SQ', 'VN', 'VJ', 'KE', 'TG', 'VJ', 
+                'VN', 'VJ', 'VJ', 'VJ', 'QH', 'VN', 'VJ', 'TG', 'KE', 'SQ', 'VJ', 'SQ', 
+                'KE', 'JAL', 'VN', 'VN', 'JAL', 'VJ', 'SQ', 'KE'
+            ]
         }
         pd.DataFrame(fake_routes_data).to_csv(CLEANED_ROUTES_PATH, index=False)
         
     if not os.path.exists('src/data_analysis/graph'):
         os.makedirs('src/data_analysis/graph')
         print("Tạo dữ liệu giả cho 'airport_centrality.csv'...")
+        airports = ['SGN', 'HAN', 'DAD', 'PQC', 'CXR', 'HPH', 'VCA', 'BKK', 'SIN', 'KUL', 'ICN', 'NRT', 'HKG']
+        centrality_scores = [
+        0.85,  # SGN
+        0.82,  # HAN
+        0.55,  # DAD
+        0.15,  # PQC
+        0.12,  # CXR
+        0.10,  # HPH
+        0.05,  # VCA
+        0.65,  # BKK
+        0.78,  # SIN
+        0.45,  # KUL
+        0.70,  # ICN
+        0.30,  # NRT
+        0.28   # HKG
+        ]
         fake_centrality_data = {
-            'airport_iata': ['SGN', 'HAN', 'DAD', 'CXR', 'PQC'],
-            'betweenness_centrality': [0.85, 0.72, 0.65, 0.3, 0.1]
+            'airport_iata': airports,
+            'betweenness_centrality': centrality_scores
         }
         pd.DataFrame(fake_centrality_data).to_csv(CENTRALITY_PATH, index=False)
 
