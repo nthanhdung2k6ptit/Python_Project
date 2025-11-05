@@ -1,19 +1,19 @@
 import os
-from build_graph import build_graph, export_graph_pickle
+from build_graph import build_graph, export_graph_json
 from algorithms import shortest_path, shortest_distance, all_paths, graph_metrics, betweenness_centrality
 
 # Path to project root relative to this file
 BASE = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 AIRPORTS = os.path.join(BASE, "data", "clean", "airport_db_raw_clean.csv")
 FLIGHTS = os.path.join(BASE, "data", "clean", "flights_raw_clean.csv")
-EXPORT_FILE = os.path.join(BASE, "data", "graph", "flight_network.pkl")
+EXPORT_FILE = os.path.join(BASE, "data", "graph", "flight_network.json")
 
 graph = build_graph(AIRPORTS, FLIGHTS)
-export_graph_pickle(graph, EXPORT_FILE)
+export_graph_json(graph, EXPORT_FILE)
 # Example: test two known airport codes
 start = "HAN"
 end = "SGN"
-
+'''
 try:
     route = shortest_path(graph, start, end)
     distance = shortest_distance(graph, start, end)
@@ -32,3 +32,4 @@ try:
 
 except Exception as e:
     print("No route found or error:", e)
+'''

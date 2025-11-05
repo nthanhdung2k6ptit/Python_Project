@@ -2,7 +2,8 @@ import pandas as pd
 import numpy as np
 import networkx as nx
 import os
-import pickle
+import json
+from networkx.readwrite import json_graph
 
 def haversine(lat1, lon1, lat2, lon2):
     R = 6371
@@ -45,9 +46,9 @@ def build_graph(airport_csv, flight_csv):
                        flight=row["flight_number"])
     return G
 
-def export_graph_pickle(graph, filename):
-    
+def export_graph_json(graph, filename):
     os.makedirs(os.path.dirname(filename), exist_ok=True)
-    with open(filename, "wb") as f:
-        pickle.dump(graph, f)
-    print(f"Graph exported as Pickle: {filename}")
+    data = json_graph.node_link_data(graph)
+    with open(filename, "w") as f:
+        json.dump(data, f, indent=2)
+    print(f"Graph exported as JSON: {filename}")
