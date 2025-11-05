@@ -1,11 +1,24 @@
 # Các thư viện cần cài đặt (pip install -r requirements.txt)
-requests
+#requests, pandas, numpy, networkx, matplotlib, plotly, folium
+#streamlit, pandas, seaborn
+
+# Core
 pandas
 numpy
+requests
 networkx
 matplotlib
 plotly
+seaborn
+
+# Map + Web UI
 folium
 streamlit
-pandas
-seaborn
+streamlit-folium
+
+# Export & Report
+openpyxl
+reportlab
+
+# Optional (nếu có)
+customtkinter

@@ -429,3 +429,7 @@ codeIataTax - IATA tax code (optional)
 Example:
 http://aviation-edge.com/v2/public/taxDatabase?key=YOUR_KEY
 http://aviation-edge.com/v2/public/taxDatabase?key=YOUR_KEY&codeIataTax=YQ
+<<<<<<< HEAD
+=======
+
+>>>>>>> 75dc2c8c4b76fcf1c24162057ddebfeefbe899d7

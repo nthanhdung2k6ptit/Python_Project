@@ -1,12 +1,21 @@
-dung nug# Group 3
-# Cài git vào máy: https://git-scm.com/install/windows
+# ✈️ Graph Network Project ✈️
 
+### Team PTIT - @2025
+
+##  Mục tiêu
+Mô phỏng và phân tích mạng lưới chuyến bay toàn cầu bằng Python, kết hợp dữ liệu từ **Aviation Edge API**.
+
+##  Cấu trúc Project
+
+dung ngu # Group 3
+# Cài git vào máy: 
+https://git-scm.com/install/windows
 
 
 # Lấy folder về máy lần đầu: (chỉ cần lấy duy nhất 1 lần)
 git clone https://github.com/nthanhdung2k6ptit/Graph_Network_Project.git
 
-# Những lần sau chỉ cần làm các bước sau:
+# Những lần sau chỉ cần làm các bước sau nha mng:
 1. git pull origin main     # Lấy code mới nhất từ GitHub về máy
     Khi code xong nên pull lại 1 lần nữa để đồng bộ code của cả nhóm (làm lại bước 1)
 2. git add .                # Thêm file bạn vừa sửa / cập nhật code vừa mình làm
@@ -36,10 +45,13 @@ Python 3.x | requests | pandas | numpy | networkx | matplotlib | plotly | folium
 ##  Project Flow
 TV1 → TV2 → TV3 → (TV4, TV5, TV6)
 
-## 📦 How to run
+##  How to run
 ```bash
 pip install -r requirements.txt
 python src/main.py
+--
+python src/main.py
+streamlit run src/visualization_map/ui_streamlit.py
 
 -------------------------------------------------------------
 Các ký hiệu Git trong VS Code:
