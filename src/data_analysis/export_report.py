@@ -1,28 +1,53 @@
 # Xuất PDF, Excel
 
-# src/data_analysis/export_report.py
-
 import pandas as pd
 import os
+import sys
 
-REPORT_FILE_PATH = 'src/data_analysis/reports/statistical_report.xlsx'
+# --- Khối Import Logic ---
+try:
+    from statistics_1 import (
+        load_all_data, 
+        get_overview_stats,
+        get_top_airports_by_routes, 
+        get_top_airlines_by_routes,
+        get_top_important_airports
+    )
+    print("INFO (TV6-Export): Import 'statistics_1.py' thành công.")
+except ImportError:
+    try:
+        from statistics_1 import (
+            load_all_data, 
+            get_overview_stats,
+            get_top_airports_by_routes, 
+            get_top_airlines_by_routes,
+            get_top_important_airports
+        )
+        print("INFO (TV6-Export): Import 'statistics_1.py' thành công.")
+    except ImportError:
+        print("LỖI (TV6-Export): Không tìm thấy file 'analysis_stats.py' hoặc 'statistics_1.py'.")
+        print("Hãy đảm bảo file logic chính của bạn nằm cùng thư mục.")
+        sys.exit(1) # Dừng chương trình
+
+# --- Cài đặt đường dẫn ---
+# Lưu file Excel vào chính thư mục này
+CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
+REPORT_FILE_PATH = os.path.join(CURRENT_DIR, 'statistical_report.xlsx')
 
 def export_to_excel(stats_dict, top_airports_df, top_airlines_df, top_hubs_df):
-    """
-    Nhiệm vụ: Xuất báo cáo ra file Excel.
+    """Xuất tất cả kết quả ra file Excel."""
     
-    Mỗi DataFrame sẽ là một sheet riêng.
-    """
-    # Đảm bảo thư mục 'data/reports' tồn tại
-    os.makedirs(os.path.dirname(REPORT_FILE_PATH), exist_ok=True)
+    print(f"INFO (TV6-Export): Đang xuất báo cáo ra file Excel tại: {REPORT_FILE_PATH}")
     
     try:
         with pd.ExcelWriter(REPORT_FILE_PATH, engine='openpyxl') as writer:
+            
             # Sheet 1: Tổng quan
             overview_df = pd.DataFrame.from_dict(stats_dict, orient='index', columns=['Value'])
             overview_df.to_excel(writer, sheet_name='Tong_Quan')
             
             # Sheet 2: Top Sân bay (theo đường bay)
+            # index=False để không lưu cột số thứ tự (1-10)
             if not top_airports_df.empty:
                 top_airports_df.to_excel(writer, sheet_name='Top_Airports_by_Routes', index=False)
             
@@ -34,30 +59,32 @@ def export_to_excel(stats_dict, top_airports_df, top_airlines_df, top_hubs_df):
             if not top_hubs_df.empty:
                 top_hubs_df.to_excel(writer, sheet_name='Top_Airport_Hubs_Centrality', index=False)
             
-        print(f"\nĐã xuất báo cáo Excel thành công tại: {REPORT_FILE_PATH}")
+        print(f"\nĐã xuất báo cáo Excel thành công!")
     
+    except PermissionError:
+        print(f"LỖI (TV6-Export): Không thể ghi file Excel. File '{REPORT_FILE_PATH}' có thể đang được mở. Hãy đóng file lại và thử.")
     except Exception as e:
-        print(f"LỖI (TV6): Không thể ghi file Excel. Lỗi: {e}")
+        print(f"LỖI (TV6-Export): Không thể ghi file Excel. Lỗi: {e}")
         print("Hãy đảm bảo bạn đã cài thư viện 'openpyxl' (pip install openpyxl)")
 
-# --- Bạn có thể chạy file này độc lập để test ---
+# --- Khối chính để chạy file này ---
 if __name__ == '__main__':
-    # Import các hàm từ statistics để lấy dữ liệu test
-    from statistics_1 import load_data, get_overview_stats, get_top_airports_by_routes, get_top_airlines_by_routes, get_top_important_airports
-
-    print("--- Chạy test cho export_report.py ---")
+    print("--- Chạy file export_report.py (TV6) ---")
     
-    # Đường dẫn (đảm bảo file giả từ statistics.py đã được tạo)
-    CLEANED_ROUTES_PATH = 'src/data_analysis/cleaned/routes_clean.csv'
-    CENTRALITY_PATH = 'src/data_analysis/graph/airport_centrality.csv'
-
-    # Tải và tính toán
-    df_routes = load_data(CLEANED_ROUTES_PATH)
-    if df_routes is not None:
-        stats = get_overview_stats(df_routes)
-        top_airports = get_top_airports_by_routes(df_routes)
-        top_airlines = get_top_airlines_by_routes(df_routes)
-        top_hubs = get_top_important_airports(CENTRALITY_PATH)
+    flights, airports, airlines = load_all_data()
+    
+    if flights is not None:
+        print("INFO (TV6-Export): Đang tính toán tất cả số liệu...")
         
-    # Xuất file
-    export_to_excel(stats, top_airports, top_airlines, top_hubs)
+        # --- Chạy TOÀN BỘ phân tích ---
+        stats = get_overview_stats(flights, airports, airlines)
+        top_airports = get_top_airports_by_routes(flights, airports)
+        top_airlines = get_top_airlines_by_routes(flights, airlines)
+        top_hubs = get_top_important_airports(airports)
+        
+        # --- Xuất file ---
+        export_to_excel(stats, top_airports, top_airlines, top_hubs)
+        
+        print("--- Hoàn thành file export_report.py (TV6) ---")
+    else:
+        print("LỖI (TV6-Export): Không thể tải dữ liệu. Dừng lại.")
