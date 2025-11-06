@@ -3,21 +3,29 @@ import requests
 import json
 import pandas as pd
 import os
+from datetime import datetime
+
 class AviationEdgeAPI:
     def __init__ (self, api_key):
         self.api_key = api_key
         self.base_url = "http://aviation-edge.com/v2/public/"
 
-    def get_flights(self, iataCode=None):
+    def get_flight_tracker(self, flight_iata=None, flight_icao=None, airline_iata=None, airline_icao=None, dep_iata=None, dep_icao=None, 
+                           arr_iata=None, arr_icao=None, status=None, limit=100, offset=0):
         endpoint = "flights"
-        params = {}
-        if iataCode:
-            params['iataCode'] = iataCode
-        return self._make_request(endpoint, params=params)
-    
-    def get_airline_routes(self, airline_iata_code):
-        endpoint = "routes"
-        params = {"airlineIataCode": airline_iata_code}
+        params = {
+        "flightIata": flight_iata,
+        "flightIcao": flight_icao,
+        "airlineIata": airline_iata,
+        "airlineIcao": airline_icao,
+        "depIata": dep_iata,
+        "depIcao": dep_icao,
+        "arrIata": arr_iata,
+        "arrIcao": arr_icao,
+        "status": status,
+        "limit": limit,
+        "offset": offset
+    }
         return self._make_request(endpoint, params)
     
     def get_real_time_schedules(self, airport_iata_code, schedule_type="departure"):
@@ -28,48 +36,85 @@ class AviationEdgeAPI:
         }
         return self._make_request(endpoint, params)
     
-    def get_nearby_airports(self, latitude, longitude, distance):
-        endpoint = "nearby"
-        params = {"lat": latitude, "lng": longitude, "distance": distance}
+    def get_historical_schedules(self, airport_iata_code, date_from, date_to, schedule_type="departure", status=None):
+        endpoint = "flightsHistory"
+        params = {
+        "iataCode": airport_iata_code,
+        "type": schedule_type,    
+        "date_from": date_from,    
+        "date_to": date_to,        
+        "status": status           
+        }
+        if (datetime.strptime(date_to, "%Y-%m-%d") - datetime.strptime(date_from, "%Y-%m-%d")).days > 30:
+            print("Khoảng thời gian vượt quá 30 ngày. Vui lòng rút ngắn lại.")
+            return None
         return self._make_request(endpoint, params)
     
-    def get_historical_schedules(self, airport_iata_code, flight_date, schedule_type="departure"):
-        endpoint = "flightsHistory"
-        params = {"iataCode": airport_iata_code, "type": schedule_type, "date": flight_date}
-        return self._make_request(endpoint, params=params)
+    def get_airline_routes(self, airline_iata=None, airline_icao=None, departure_iata=None, departure_icao=None, arrival_iata=None,
+                           arrival_icao=None):
+        endpoint = "routes"
+        params = {
+        "airlineIata": airline_iata,
+        "airlineIcao": airline_icao,
+        "departureIata": departure_iata,
+        "departureIcao": departure_icao,
+        "arrivalIata": arrival_iata,
+        "arrivalIcao": arrival_icao
+        }
+        return self._make_request(endpoint, params)
     
-    def get_future_schedules(self, airport_iata_code, flight_date, schedule_type="departure"):
-        endpoint = "futureTimetable"
-        params = {"iataCode": airport_iata_code, "type": schedule_type, "date": flight_date}
-        return self._make_request(endpoint, params=params)
+    def get_nearby_airports(self, lat, lng, distance=50):
+        endpoint = "nearby"
+        params = {
+        "lat": lat,
+        "lng": lng,
+        "distance": distance
+        }
+        return self._make_request(endpoint, params)
     
-    def get_autocomplete(self, search_term, search_type="airport"):
+    def get_autocomplete(self, name):
+        if not name or len(name.strip()) < 2:
+            print("Từ khóa tìm kiếm phải có ít nhất 2 ký tự.")
+            return None
         endpoint = "autocomplete"
-        params = {"term": search_term, "type": search_type}
-        return self._make_request(endpoint, params=params)
+        params = {
+              "name": name.strip()
+        }
+        return self._make_request(endpoint, params)
     
-    def get_satellite_tracker(self, satellite_name):
-        endpoint = "satellites"
-        params = {"search": satellite_name} 
-        return self._make_request(endpoint, params=params)
-    
-    def get_airline_database(self, airline_iata_code):
-        endpoint = "airlineDatabase"
-        params = {"iataCode": airline_iata_code}
-        return self._make_request(endpoint, params=params)
-    
-    def get_airport_database(self, airport_iata_code):
+    def get_airports_database(self, code_iata_airport=None, code_icao_airport=None, code_iso2_country=None, code_iata_city=None,
+                              name_airport=None):
         endpoint = "airportDatabase"
-        params = {"iataCode": airport_iata_code}
-        return self._make_request(endpoint, params=params)
+        params = {
+        "codeIataAirport": code_iata_airport,
+        "codeIcaoAirport": code_icao_airport,
+        "codeIso2Country": code_iso2_country,
+        "codeIataCity": code_iata_city,
+        "nameAirport": name_airport
+        }
+        return self._make_request(endpoint, params)
+    
+    def get_city_database(self, code_iata_city=None, code_iso2_country=None, name_city=None):
+        endpoint = "cityDatabase"
+        params = {
+        "codeIataCity": code_iata_city,
+        "codeIso2Country": code_iso2_country,
+        "nameCity": name_city
+        }
+        return self._make_request(endpoint, params)
+    
+    def _clean_params(self, params):
+        """Loại bỏ các param có giá trị None."""
+        return {k: v for k, v in params.items() if v is not None}
     
     def _make_request(self, endpoint, params=None):
         if params is None:
             params = {}
-        params["key"] = self.api_key
+        cleaned_params = self._clean_params(params)
+        cleaned_params["key"] = self.api_key
         url = self.base_url + endpoint
         try:
-            response = requests.get(url, params=params, timeout=10)
+            response = requests.get(url, params=cleaned_params, timeout=10)
             response.raise_for_status()
             data = response.json()
             if isinstance(data, dict) and data.get('error'):
@@ -95,7 +140,7 @@ class AviationEdgeAPI:
             print(f"Không có dữ liệu để lưu vào {filename}.")
             return
 
-        folder_path = r"C:\Users\ADMIN\Graph_Network_Project\data"
+        folder_path = r"C:\Users\ADMIN\Graph_Network_Project\data\raw"
         os.makedirs(folder_path, exist_ok=True)
         file_path = os.path.join(folder_path, f"{filename}.csv")
 
@@ -111,16 +156,16 @@ if __name__ == "__main__":
     api_key = "96b7d0-5b0bc0"  
     client = AviationEdgeAPI(api_key)
     tasks = [
-        (client.get_flights, {}, "flights_raw"),
-        (client.get_airline_routes, {"airline_iata_code": "VN"}, "routes_raw"),
-        (client.get_real_time_schedules, {"airport_iata_code": "HAN"}, "realtime_schedules_raw"),
-        (client.get_nearby_airports, {"latitude": 21.03, "longitude": 105.85, "distance": 100}, "nearby_airports_raw"),
-        (client.get_historical_schedules, {"airport_iata_code": "HAN", "flight_date": "2024-10-01"}, "historical_schedules_raw"),
-        (client.get_future_schedules, {"airport_iata_code": "HAN", "flight_date": "2024-12-01"}, "future_schedules_raw"),
-        (client.get_autocomplete, {"search_term": "Noi Bai"}, "autocomplete_raw"),
-        (client.get_satellite_tracker, {"satellite_name": "Starlink"}, "satellite_raw"),
-        (client.get_airline_database, {"airline_iata_code": "VN"}, "airline_db_raw"),
-        (client.get_airport_database, {"airport_iata_code": "HAN"}, "airport_db_raw"),
+        (client.get_flight_tracker, {"flight_iata": None, "airline_iata": "VN", "dep_iata": None, "arr_iata": None, "status": None, 
+                                     "limit": 100, "offset": 0}, "flight_tracker_raw"),
+        (client.get_airline_routes, {"airline_iata": "VN", "departure_iata": None, "arrival_iata": None}, "routes_raw"),
+        (client.get_real_time_schedules, {"airport_iata_code": "HAN", "schedule_type": "departure"}, "realtime_schedules_raw"),
+        (client.get_historical_schedules, {"airport_iata_code": "HAN", "schedule_type": "departure", "date_from": "2024-09-01",
+                                           "date_to": "2024-09-30", "status": None}, "historical_schedules_raw"),
+        (client.get_nearby_airports, {"lat": 21.03, "lng": 105.85, "distance": 100}, "nearby_airports_raw"),
+        (client.get_autocomplete, {"name": "Noi Bai"}, "autocomplete_raw"),
+        (client.get_airports_database, {"code_iso2_country": "VN"}, "airport_db_raw"),
+        (client.get_city_database, {"code_iso2_country": "VN"}, "city_db_raw"),
     ]
 
     for func, params, filename in tasks:
