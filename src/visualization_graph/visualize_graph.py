@@ -1,124 +1,214 @@
 import json
 import pandas as pd
-import matplotlib.pyplot as plt
 import os
+import plotly.graph_objects as go
 
-#  1. Đọc file CSV và tạo từ điển tra cứu tọa độ 
+# KHÔNG CẦN import algorithms.py hay networkx
+import dash
+from dash import dcc, html, Input, Output, State
+from dash.exceptions import PreventUpdate
 
+# --- 1. TẢI DỮ LIỆU (LÀM MỘT LẦN KHI KHỞI ĐỘNG) ---
 
-# Đường dẫn file CSV 
-csv_file_path = os.path.join('data', 'clean', 'airport_db_raw_clean.csv')
-coords_map = {}
+def load_coords_map(csv_path):
+    """Đọc file CSV và tạo từ điển tra cứu tọa độ."""
+    try:
+        df_airports = pd.read_csv(csv_path)
+        coords_map = df_airports.set_index('codeiataairport')[
+            ['latitudeairport', 'longitudeairport']
+        ].to_dict('index')
+        print(f"Đã tạo từ điển tra cứu cho {len(coords_map)} sân bay từ file CSV.")
+        return coords_map
+    except Exception as e:
+        print(f"LỖI khi đọc file CSV: {e}")
+    return None
 
-try:
-    df_airports = pd.read_csv(csv_file_path)
-    
-    # Tạo một từ điển (dictionary) để tra cứu nhanh
-    # key = codeiataairport, value = {lat, lon}
-    coords_map = df_airports.set_index('codeiataairport')[
-        ['latitudeairport', 'longitudeairport']
-    ].to_dict('index')
-    
-    print(f"Đã tạo từ điển tra cứu cho {len(coords_map)} sân bay từ file CSV.")
+def load_graph_data(json_path):
+    """Đọc file JSON (nodes và links) của đồ thị."""
+    try:
+        with open(json_path, 'r', encoding='utf-8') as f:
+            data_object = json.load(f)
+        nodes = data_object.get('nodes')
+        links = data_object.get('links')
+        print(f"Đã đọc thành công {len(nodes)} nodes và {len(links)} links từ file JSON.")
+        return nodes, links
+    except Exception as e:
+        print(f"LỖI khi đọc file JSON: {e}")
+    return None, None
 
-except FileNotFoundError:
-    print(f"LỖI: Không tìm thấy file CSV tại: '{csv_file_path}'")
-    print("Hãy đảm bảo bạn đang chạy script này từ thư mục gốc 'Graph_Network_Project'.")
-except Exception as e:
-    print(f"LỖI khi đọc file CSV: {e}")
+# --- Tải dữ liệu toàn cục (Global Data) ---
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+ROOT_DIR = os.path.dirname(os.path.dirname(BASE_DIR)) 
 
+CSV_PATH = os.path.join(ROOT_DIR, 'data', 'clean', 'airport_db_raw_clean.csv')
+JSON_PATH = os.path.join(ROOT_DIR, 'data', 'graph', 'flight_network.json')
 
-# --- 2. Đọc file JSON và trích xuất dữ liệu ---
+COORDS_MAP = load_coords_map(CSV_PATH)
+NODES_LIST, EDGES_LIST = load_graph_data(JSON_PATH)
 
-# Đường dẫn file JSON
-json_file_path = os.path.join('data', 'graph', 'flight_network.json')
-airport_nodes = []
+# --- Xử lý Node để vẽ ---
+plot_lons, plot_lats, plot_text, plot_sizes, plot_colors, plot_iata_codes = [], [], [], [], [], []
 
-try:
-    with open(json_file_path, 'r', encoding='utf-8') as f:
-        data_object = json.load(f)
-        # Lấy danh sách sân bay từ key "nodes"
-        airport_nodes = data_object.get('nodes')
+if NODES_LIST and COORDS_MAP:
+    for node in NODES_LIST:
+        iata_code = node.get('id')
+        coords = COORDS_MAP.get(iata_code)
         
-    if not isinstance(airport_nodes, list):
-        print("Lỗi: Không tìm thấy key 'nodes' trong file JSON.")
-        airport_nodes = []
-    else:
-        print(f"Đã đọc thành công {len(airport_nodes)} nodes từ file JSON.")
-
-except FileNotFoundError:
-    print(f"LỖI: Không tìm thấy file JSON tại '{json_file_path}'.")
-except Exception as e:
-    print(f"LỖI khi đọc file JSON: {e}")
-
-
-# --- 3. Kết hợp dữ liệu và chuẩn bị vẽ ---
-
-regular_lons = []  # Kinh độ (sân bay thường)
-regular_lats = []  # Vĩ độ (sân bay thường)
-hub_lons = []      # Kinh độ (Hub)
-hub_lats = []      # Vĩ độ (Hub)
-airports_not_found = []
-
-if airport_nodes and coords_map:
-    for airport in airport_nodes:
-        try:
-            # Lấy IATA code từ file JSON (giả định key là 'id')
-            iata_code = airport.get('id')
+        if coords:
+            plot_iata_codes.append(iata_code) 
+            plot_lons.append(coords['longitudeairport'])
+            plot_lats.append(coords['latitudeairport'])
             
-            # Tra cứu tọa độ từ bản đồ CSV
-            coords = coords_map.get(iata_code)
-            
-            if coords:
-                # Lấy lon/lat từ CỘT ĐÚNG trong file CSV
-                lon = coords['longitudeairport']
-                lat = coords['latitudeairport']
-                
-                # Phân loại sân bay Hub
-                if airport.get('hub') == 1.0 or airport.get('hub') is True:
-                    hub_lons.append(lon)
-                    hub_lats.append(lat)
-                else:
-                    regular_lons.append(lon)
-                    regular_lats.append(lat)
+            if node.get('hub') == 1.0 or node.get('hub') is True:
+                plot_text.append(f"<b>{iata_code} (Hub)</b>")
+                plot_sizes.append(9)
+                plot_colors.append('red')
             else:
-                airports_not_found.append(iata_code)
+                plot_text.append(iata_code)
+                plot_sizes.append(4)
+                plot_colors.append('blue')
 
-        except KeyError as e:
-            print(f"LỖI: Dữ liệu JSON hoặc CSV thiếu key cần thiết: {e}")
-        except Exception as e:
-            print(f"LỖI xử lý node {airport.get('id')}: {e}")
+# --- 3. TẠO "LỚP" (TRACE) SÂN BAY CƠ SỞ ---
+node_trace = go.Scattergeo(
+    lon = plot_lons,
+    lat = plot_lats,
+    text = plot_text,
+    customdata = plot_iata_codes,
+    mode = 'markers',
+    hoverinfo = 'text',
+    marker = dict(
+        color = plot_colors,
+        size = plot_sizes,
+        opacity = 0.8,
+        line = dict(width=1, color='rgba(0, 0, 0, 0.5)')
+    ),
+    name = 'Sân bay'
+)
 
-    print(f"\nĐã xử lý xong. Sẵn sàng để vẽ:")
-    print(f"  - {len(regular_lons)} sân bay thường")
-    print(f"  - {len(hub_lons)} sân bay Hub")
-    if airports_not_found:
-        print(f"  - Cảnh báo: Không tìm thấy tọa độ cho {len(airports_not_found)} sân bay (ví dụ: {airports_not_found[:5]})")
+# Layout cơ sở
+base_layout = go.Layout(
+    title_text = 'Mạng lưới Sân bay (Click vào một điểm)',
+    showlegend = True,
+    geo = dict(
+        scope='world', projection_type='natural earth',
+        showland = True, landcolor = 'rgb(243, 243, 243)',
+        subunitcolor = 'rgb(217, 217, 217)', countrycolor = 'rgb(217, 217, 217)',
+        bgcolor = 'rgba(0,0,0,0)',
+    ),
+    margin={"r":0,"t":40,"l":0,"b":0}
+)
+base_fig = go.Figure(data=[node_trace], layout=base_layout)
 
+# --- 4. KHỞI TẠO ỨNG DỤNG DASH ---
+app = dash.Dash(__name__)
+server = app.server
 
-# --- 4. Vẽ đồ thị bằng Matplotlib ---
-if regular_lons or hub_lons:
-    plt.figure(figsize=(15, 10))
+# --- 5. ĐỊNH NGHĨA BỐ CỤC (LAYOUT) CỦA WEB ---
+app.layout = html.Div([
+    html.H1("Trực quan hóa Mạng lưới chuyến bay"),
+    html.P("Click vào một sân bay (điểm) trên bản đồ để xem các đường bay của nó."),
     
-    # Vẽ SÂN BAY THƯỜNG
-    plt.scatter(regular_lons, regular_lats, 
-                s=10, alpha=0.6, color='blue', label='Sân bay (Thường)')
-    
-    # Vẽ SÂN BAY HUB
-    plt.scatter(hub_lons, hub_lats, 
-                s=50, alpha=1.0, color='red', marker='*', label='Sân bay (Hub)')
+    dcc.Graph(
+        id='flight-map',
+        figure=base_fig
+    )
+])
 
-    # Tùy chỉnh đồ thị
-    plt.title('Bản đồ phân tán các điểm sân bay (Đã tô màu Hub)', fontsize=16)
-    plt.xlabel('Kinh độ (Longitude)')
-    plt.ylabel('Vĩ độ (Latitude)')
-    plt.grid(True)
-    plt.legend()
-    plt.tight_layout()
-    
-    #hiển thị đồ thị
-    print("đang hiển thị đồ thị...")
-    plt.show()
 
-else:
-    print("\nKhông có dữ liệu để vẽ. Chương trình kết thúc.")
+# --- 6. ĐỊNH NGHĨA PHẦN TƯƠNG TÁC (CALLBACK) ---
+@app.callback(
+    Output('flight-map', 'figure'),
+    Input('flight-map', 'clickData')
+)
+def update_map_on_click(clickData):
+    
+    if not clickData:
+        raise PreventUpdate
+
+    point_data = clickData['points'][0]
+    
+    if 'customdata' not in point_data:
+        print("Click trúng đường bay. Bỏ qua.")
+        raise PreventUpdate
+    
+    clicked_iata = point_data['customdata']
+    print(f"Người dùng click vào: {clicked_iata}")
+
+    # --- Logic tìm đường bay trực tiếp ngắn nhất ---
+    
+    reg_edge_lons, reg_edge_lats = [], []
+    shortest_edge_coords = None
+    min_weight = float('inf')
+    
+    for edge in EDGES_LIST:
+        source = str(edge.get('source'))
+        target = str(edge.get('target'))
+        
+        if source == clicked_iata or target == clicked_iata:
+            coords_a = COORDS_MAP.get(source)
+            coords_b = COORDS_MAP.get(target)
+            
+            # --- *** ĐÂY LÀ PHẦN ĐÃ SỬA LỖI *** ---
+            weight = edge.get('weight') # Lấy weight, có thể là None
+            if weight is None:          # Nếu weight là None
+                weight = float('inf')   # Coi nó là vô hạn
+            # --- *** KẾT THÚC SỬA LỖI *** ---
+
+            if coords_a and coords_b:
+                current_lons = [coords_a['longitudeairport'], coords_b['longitudeairport'], None]
+                current_lats = [coords_a['latitudeairport'], coords_b['latitudeairport'], None]
+
+                if weight < min_weight:
+                    if shortest_edge_coords:
+                        reg_edge_lons.extend(shortest_edge_coords[0])
+                        reg_edge_lats.extend(shortest_edge_coords[1])
+                    
+                    min_weight = weight
+                    shortest_edge_coords = (current_lons, current_lats)
+                
+                else:
+                    reg_edge_lons.extend(current_lons)
+                    reg_edge_lats.extend(current_lats)
+
+    # --- Tạo Figure MỚI ---
+    new_fig = go.Figure()
+    
+    # 4. Vẽ lớp đường bay thường (màu cam)
+    new_fig.add_trace(
+        go.Scattergeo(
+            lon=reg_edge_lons, lat=reg_edge_lats,
+            mode='lines',
+            line=dict(width=0.7, color='orange'),
+            hoverinfo='none',
+            name=f'Đường bay của {clicked_iata}'
+        )
+    )
+    
+    # 5. Vẽ lớp đường bay ngắn nhất (màu xanh lá, đậm)
+    if shortest_edge_coords:
+        new_fig.add_trace(
+            go.Scattergeo(
+                lon=shortest_edge_coords[0], lat=shortest_edge_coords[1],
+                mode='lines',
+                line=dict(width=3, color='#32CD32'), # Xanh lá
+                hoverinfo='none',
+                name=f'Đường bay trực tiếp ngắn nhất ({min_weight:.0f} km)'
+            )
+        )
+
+    # 6. Vẽ lớp sân bay (luôn ở trên cùng)
+    new_fig.add_trace(node_trace)
+
+    # 7. Cập nhật layout
+    new_fig.update_layout(
+        title_text=f"Hiển thị các đường bay của: {clicked_iata}",
+        geo=base_layout.geo,
+        showlegend=True,
+        margin=base_layout.margin
+    )
+    
+    return new_fig
+
+# --- 7. CHẠY ỨNG DỤNG ---
+if __name__ == '__main__':
+    app.run(debug=True, port=8051)
