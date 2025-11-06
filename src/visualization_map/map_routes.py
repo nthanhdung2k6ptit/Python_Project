@@ -1,8 +1,8 @@
 # Folium vẽ bản đồ, routes
 
 import os
-import folium
-import pandas as pd
+import folium # type: ignore
+import pandas as pd # pyright: ignore[reportMissingModuleSource]
 
 def draw_routes(
     data_path="data/cleaned/routes_clean.csv",
@@ -48,3 +48,5 @@ def draw_routes(
     m.save(save_path)
 
     return m
+
+
