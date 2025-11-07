@@ -140,7 +140,14 @@ class AviationEdgeAPI:
             print(f"Không có dữ liệu để lưu vào {filename}.")
             return
 
-        folder_path = r"C:\Users\ADMIN\Graph_Network_Project\data\raw"
+        #folder_path = r"C:\Users\ADMIN\Graph_Network_Project\data\raw"   ### Dũng Note: Cái này là đường dẫn tĩnh, chỉ ai viết file này mới dùng được thôi nhé. Để cả nhóm đều chạy được trên máy của mình thì nên để đường dẫn động, lấy luôn vị trí của folder dự án
+        
+        # Đi từ vị trí file script (.../src/api_fetch)
+        current_script_dir = os.path.dirname(os.path.abspath(__file__))
+        # Đi lùi 2 cấp ra thư mục gốc (.../Graph_Network_Project)
+        project_root = os.path.dirname(os.path.dirname(current_script_dir))
+        # Đi xuôi vào .../data/raw
+        folder_path = os.path.join(project_root, 'data', 'raw')
         os.makedirs(folder_path, exist_ok=True)
         file_path = os.path.join(folder_path, f"{filename}.csv")
 
