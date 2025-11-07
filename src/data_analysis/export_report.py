@@ -6,8 +6,9 @@ import sys
 
 # --- Khối Import Logic ---
 try:
+    # Import tất cả các hàm cần thiết
     from statistics_1 import (
-        load_all_data, 
+        load_csv_data, 
         get_overview_stats,
         get_top_airports_by_routes, 
         get_top_airlines_by_routes,
@@ -15,19 +16,9 @@ try:
     )
     print("INFO (TV6-Export): Import 'statistics_1.py' thành công.")
 except ImportError:
-    try:
-        from statistics_1 import (
-            load_all_data, 
-            get_overview_stats,
-            get_top_airports_by_routes, 
-            get_top_airlines_by_routes,
-            get_top_important_airports
-        )
-        print("INFO (TV6-Export): Import 'statistics_1.py' thành công.")
-    except ImportError:
-        print("LỖI (TV6-Export): Không tìm thấy file 'analysis_stats.py' hoặc 'statistics_1.py'.")
-        print("Hãy đảm bảo file logic chính của bạn nằm cùng thư mục.")
-        sys.exit(1) # Dừng chương trình
+    print("LỖI (TV6-Export): Không tìm thấy file 'statistics_1.py'.")
+    print("Hãy đảm bảo file 'statistics_1.py' của bạn nằm cùng thư mục.")
+    sys.exit(1) # Dừng chương trình
 
 # --- Cài đặt đường dẫn ---
 # Lưu file Excel vào chính thư mục này
@@ -40,13 +31,14 @@ def export_to_excel(stats_dict, top_airports_df, top_airlines_df, top_hubs_df):
     print(f"INFO (TV6-Export): Đang xuất báo cáo ra file Excel tại: {REPORT_FILE_PATH}")
     
     try:
+        # Sử dụng 'openpyxl' (cần pip install openpyxl)
         with pd.ExcelWriter(REPORT_FILE_PATH, engine='openpyxl') as writer:
             
             # Sheet 1: Tổng quan
             overview_df = pd.DataFrame.from_dict(stats_dict, orient='index', columns=['Value'])
             overview_df.to_excel(writer, sheet_name='Tong_Quan')
             
-            # Sheet 2: Top Sân bay (theo đường bay)
+            # Sheet 2: Top Sân bay (Bận rộn)
             # index=False để không lưu cột số thứ tự (1-10)
             if not top_airports_df.empty:
                 top_airports_df.to_excel(writer, sheet_name='Top_Airports_by_Routes', index=False)
@@ -55,7 +47,7 @@ def export_to_excel(stats_dict, top_airports_df, top_airlines_df, top_hubs_df):
             if not top_airlines_df.empty:
                 top_airlines_df.to_excel(writer, sheet_name='Top_Airlines_by_Routes', index=False)
                 
-            # Sheet 4: Top Sân bay (Hubs quan trọng)
+            # Sheet 4: Top Sân bay (Hubs)
             if not top_hubs_df.empty:
                 top_hubs_df.to_excel(writer, sheet_name='Top_Airport_Hubs_Centrality', index=False)
             
@@ -71,7 +63,8 @@ def export_to_excel(stats_dict, top_airports_df, top_airlines_df, top_hubs_df):
 if __name__ == '__main__':
     print("--- Chạy file export_report.py (TV6) ---")
     
-    flights, airports, airlines = load_all_data()
+    # Tải 3 file CSV
+    flights, airports, airlines = load_csv_data()
     
     if flights is not None:
         print("INFO (TV6-Export): Đang tính toán tất cả số liệu...")

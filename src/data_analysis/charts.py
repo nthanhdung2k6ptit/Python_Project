@@ -7,28 +7,18 @@ import os
 import sys
 
 # --- Khối Import Logic ---
-# Cố gắng import từ file logic của bạn (bất kể tên là gì)
+# Cố gắng import từ file logic của bạn
 try:
-    # Thử tên file chuẩn
     from statistics_1 import (
-        load_all_data, 
+        load_csv_data, # Sửa lại tên hàm load
         get_top_airports_by_routes, 
         get_top_airlines_by_routes
     )
     print("INFO (TV6-Charts): Import 'statistics_1.py' thành công.")
 except ImportError:
-    try:
-        # Thử tên file cũ (statistics_1.py)
-        from statistics_1 import (
-            load_all_data, 
-            get_top_airports_by_routes, 
-            get_top_airlines_by_routes
-        )
-        print("INFO (TV6-Charts): Import 'statistics_1.py' thành công.")
-    except ImportError:
-        print("LỖI (TV6-Charts): Không tìm thấy file 'analysis_stats.py' hoặc 'statistics_1.py'.")
-        print("Hãy đảm bảo file logic chính của bạn nằm cùng thư mục.")
-        sys.exit(1) # Dừng chương trình
+    print("LỖI (TV6-Charts): Không tìm thấy file 'statistics_1.py'.")
+    print("Hãy đảm bảo file 'statistics_1.py' của bạn nằm cùng thư mục.")
+    sys.exit(1) # Dừng chương trình
 
 # --- Cài đặt đường dẫn ---
 # Lưu file ảnh vào chính thư mục này
@@ -40,7 +30,7 @@ def setup_charts():
     print(f"INFO (TV6-Charts): Các ảnh biểu đồ sẽ được lưu tại: {REPORT_IMG_DIR}")
 
 def plot_top_airports(top_airports_df):
-    """Vẽ biểu đồ bar chart top airports (hiển thị tên đầy đủ)."""
+    """Vẽ biểu đồ bar chart top airports."""
     if top_airports_df.empty:
         return
 
@@ -48,7 +38,10 @@ def plot_top_airports(top_airports_df):
     output_path = os.path.join(REPORT_IMG_DIR, 'report_top_10_airports.png')
     
     plt.figure(figsize=(12, 8))
-    ax = sns.barplot(x='total_routes', y=y_column, data=top_airports_df, palette='Blues_d')
+    # Sắp xếp lại dữ liệu để bar chart đẹp hơn
+    data_to_plot = top_airports_df.sort_values('total_routes', ascending=False)
+    
+    ax = sns.barplot(x='total_routes', y=y_column, data=data_to_plot, palette='Blues_d')
     ax.set_title('Top 10 Sân bay có nhiều đường bay nhất', fontsize=16, pad=20)
     ax.set_xlabel('Tổng số đường bay (Đi & Đến)', fontsize=12)
     ax.set_ylabel('Sân bay', fontsize=12)
@@ -59,7 +52,7 @@ def plot_top_airports(top_airports_df):
     plt.close()
 
 def plot_top_airlines(top_airlines_df):
-    """Vẽ biểu đồ bar chart top airlines (hiển thị tên đầy đủ)."""
+    """Vẽ biểu đồ bar chart top airlines."""
     if top_airlines_df.empty:
         return
 
@@ -67,7 +60,10 @@ def plot_top_airlines(top_airlines_df):
     output_path = os.path.join(REPORT_IMG_DIR, 'report_top_10_airlines.png')
     
     plt.figure(figsize=(12, 8))
-    ax = sns.barplot(x='route_count', y=y_column, data=top_airlines_df, palette='Greens_d')
+    # Sắp xếp lại dữ liệu
+    data_to_plot = top_airlines_df.sort_values('route_count', ascending=False)
+    
+    ax = sns.barplot(x='route_count', y=y_column, data=data_to_plot, palette='Greens_d')
     ax.set_title('Top 10 Hãng bay có nhiều đường bay nhất', fontsize=16, pad=20)
     ax.set_xlabel('Số lượng đường bay', fontsize=12)
     ax.set_ylabel('Hãng hàng không', fontsize=12)
@@ -83,7 +79,8 @@ if __name__ == '__main__':
     
     setup_charts()
     
-    flights, airports, airlines = load_all_data()
+    # Tải 3 file CSV
+    flights, airports, airlines = load_csv_data()
     
     if flights is not None:
         print("INFO (TV6-Charts): Bắt đầu vẽ biểu đồ...")
@@ -95,8 +92,6 @@ if __name__ == '__main__':
         # 2. Vẽ Top Hãng Bay
         top_airlines = get_top_airlines_by_routes(flights, airlines)
         plot_top_airlines(top_airlines)
-        
-        # (Bạn có thể thêm hàm plot_airline_market_share nếu muốn)
         
         print("--- Hoàn thành file charts.py (TV6) ---")
     else:
