@@ -1,11 +1,11 @@
 # Folium vẽ bản đồ, routes
 
 import os
-import folium # type: ignore
-import pandas as pd # pyright: ignore[reportMissingModuleSource]
+import folium
+import pandas as pd
 
 def draw_routes(
-    data_path="data/cleaned/routes_clean.csv",
+    data_path="data/cleaned/routes_raw_cleaned.csv",
     save_path="data/reports/map.html",
     city=None,
 ):
@@ -49,4 +49,29 @@ def draw_routes(
 
     return m
 
+if __name__ == "__main__":
+    
+    csv_path = "data/cleaned/routes_raw_cleaned.csv"
+    out_path = "data/reports/map.html"
+    
+    if not os.path.exists(csv_path):
+        print(f"CSV file not found: {csv_path}")
+    else:
+        try:
+            # Doc duoc bao nhieu dong + dong mau
+            df = pd.read_csv(csv_path)
+            print("Rows in CSV:", len(df))
+        except Exception as e:
+            print(f"Error reading CSV: {e}")
+            raise
+        
+        try:
+            m = draw_routes(data_path=csv_path, save_path=out_path, city=None)
+            print("Map đã được tạo và lưu vào:", out_path)
+            try:
+                os.startfile(os.path.abspath(out_path))
+            except Exception:
+                print("Không thể mở tệp tự động; hãy mở thủ công.")
+        except Exception as e:
+            print("Lỗi khi tạo bản đồ:", e)
 
