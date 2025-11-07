@@ -29,12 +29,16 @@ class AviationEdgeAPI:
         return self._make_request(endpoint, params)
     
     def get_real_time_schedules(self, airport_iata_code, schedule_type="departure"):
-        endpoint = "timetable" 
-        params = {
-            "iataCode": airport_iata_code,
-            "type": schedule_type 
-        }
-        return self._make_request(endpoint, params)
+        if isinstance(airport_iata_code, str): airport_iata_code = [airport_iata_code]
+        all_schedules = []
+        for airport in airport_iata_code:
+            params = {
+                 "iataCode": airport,
+                 "type": schedule_type
+            }
+            data = self._make_request("timetable", params)
+            if data: all_schedules.extend(data)
+        return all_schedules
     
     def get_historical_schedules(self, airport_iata_code, date_from, date_to, schedule_type="departure", status=None):
         endpoint = "flightsHistory"
@@ -72,13 +76,13 @@ class AviationEdgeAPI:
         }
         return self._make_request(endpoint, params)
     
-    def get_autocomplete(self, name):
-        if not name or len(name.strip()) < 2:
+    def get_autocomplete(self, city):
+        if not city or len(city.strip()) < 2:
             print("Từ khóa tìm kiếm phải có ít nhất 2 ký tự.")
             return None
         endpoint = "autocomplete"
         params = {
-              "name": name.strip()
+              "city": city.strip()
         }
         return self._make_request(endpoint, params)
     
@@ -151,9 +155,12 @@ class AviationEdgeAPI:
         os.makedirs(folder_path, exist_ok=True)
         file_path = os.path.join(folder_path, f"{filename}.csv")
 
+        if isinstance(data, dict) and "airportsByCities" in data: data_to_save = data["airportsByCities"]
+        else: data_to_save = data
+        
         # Chuyển dữ liệu JSON sang DataFrame
         try:
-            df = pd.json_normalize(data)  
+            df = pd.json_normalize(data_to_save)  
             df.to_csv(file_path, index=False, encoding="utf-8-sig")
             print(f"Đã lưu file: {file_path}")
         except Exception as e:
@@ -162,17 +169,23 @@ class AviationEdgeAPI:
 if __name__ == "__main__":
     api_key = "96b7d0-5b0bc0"  
     client = AviationEdgeAPI(api_key)
+    # Lấy tất cả sân bay ở Việt Nam
+    airports_vn = client.get_airports_database(code_iso2_country="VN")
+    airport_iata_codes_vn = [a["codeIataAirport"] for a in airports_vn if a.get("codeIataAirport")]
+
     tasks = [
         (client.get_flight_tracker, {"flight_iata": None, "airline_iata": "VN", "dep_iata": None, "arr_iata": None, "status": None, 
                                      "limit": 100, "offset": 0}, "flight_tracker_raw"),
-        (client.get_airline_routes, {"airline_iata": "VN", "departure_iata": None, "arrival_iata": None}, "routes_raw"),
-        (client.get_real_time_schedules, {"airport_iata_code": "HAN", "schedule_type": "departure"}, "realtime_schedules_raw"),
-        (client.get_historical_schedules, {"airport_iata_code": "HAN", "schedule_type": "departure", "date_from": "2024-09-01",
-                                           "date_to": "2024-09-30", "status": None}, "historical_schedules_raw"),
-        (client.get_nearby_airports, {"lat": 21.03, "lng": 105.85, "distance": 100}, "nearby_airports_raw"),
-        (client.get_autocomplete, {"name": "Noi Bai"}, "autocomplete_raw"),
-        (client.get_airports_database, {"code_iso2_country": "VN"}, "airport_db_raw"),
-        (client.get_city_database, {"code_iso2_country": "VN"}, "city_db_raw"),
+        (client.get_airline_routes, {"airline_iata": "VN", "airline_icao": None, "departure_iata": None, "departure_icao": None,
+                                     "arrival_iata": None, "arrival_icao": None}, "routes_raw"),
+        (client.get_real_time_schedules, {"airport_iata_code": airport_iata_codes_vn, "schedule_type": None}, "realtime_schedules_raw"),
+        (client.get_historical_schedules, {"airport_iata_code": "HAN", "schedule_type": "departure", "date_from": "2025-09-01",
+                                           "date_to": "2025-09-30", "status": None}, "historical_schedules_raw"),
+        (client.get_nearby_airports, {"lat": 21.03, "lng": 105.85, "distance": 200}, "nearby_airports_raw"),
+        (client.get_autocomplete, {"city": "HAN"}, "autocomplete_raw"),
+        (client.get_airports_database, {"code_iata_airport": None, "code_icao_airport": None, "code_iso2_country": None,
+                                        "code_iata_city": None, "name_airport": None}, "airport_db_raw"),
+        (client.get_city_database, {"code_iata_city": None, "code_iso2_country": None, "name_city": None}, "city_db_raw"),
     ]
 
     for func, params, filename in tasks:

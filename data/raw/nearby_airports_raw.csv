@@ -1,3 +1,7 @@
 ﻿GMT,codeIataAirport,codeIataCity,codeIcaoAirport,codeIso2Country,distance,latitudeAirport,longitudeAirport,nameAirport,nameCountry,phone,timezone
 7,HAN,HAN,VVNB,VN,21.0864798845,21.214184,105.802826,Noibai International,,,Asia/Ho_Chi_Minh
 7,HPH,HPH,VVCI,VN,94.1054806556,20.823315,106.727325,Catbi,,,Asia/Ho_Chi_Minh
+7,VDO,,VVVD,VN,162.8169726086,21.117778,107.414167,Van Don International Airport,Vietnam,,
+7,ODY,ODY,VLOS,LA,182.1397138438,20.583332,104.166664,Oudomxai,Laos,,Asia/Vientiane
+7,SQH,SQH,VVNS,VN,190.7136593213,21.218056,104.025,Na-San,,,Asia/Ho_Chi_Minh
+7,NEU,NEU,VLSN,LA,197.8864846487,20.416668,104.066666,Sam Neua,Laos,,Asia/Vientiane
