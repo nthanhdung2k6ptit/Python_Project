@@ -4,20 +4,26 @@ import os
 import plotly.graph_objects as go
 
 import dash
-from dash import dcc, html, Input, Output, State
+# Chỉ import những gì cần thiết, không cần 'State'
+from dash import dcc, html, Input, Output
 from dash.exceptions import PreventUpdate
 
-# --- 1. TẢI DỮ LIỆU (LÀM MỘT LẦN KHI KHỞI ĐỘNG) ---
+# --- 1. TẢI DỮ LIỆU (Giữ nguyên) ---
 
 def load_coords_map(csv_path):
     """Đọc file CSV và tạo từ điển tra cứu tọa độ."""
     try:
         df_airports = pd.read_csv(csv_path)
-        coords_map = df_airports.set_index('codeiataairport')[
+        # Sửa lại tên cột IATA cho đúng file CSV
+        coords_map = df_airports.set_index('codeiataairport')[ 
             ['latitudeairport', 'longitudeairport']
         ].to_dict('index')
         print(f"Đã tạo từ điển tra cứu cho {len(coords_map)} sân bay từ file CSV.")
         return coords_map
+    except FileNotFoundError:
+        print(f"LỖI: Không tìm thấy file CSV tại: '{csv_path}'")
+    except KeyError:
+        print(f"LỖI: File CSV tại '{csv_path}' không có cột 'codeiataairport'.")
     except Exception as e:
         print(f"LỖI khi đọc file CSV: {e}")
     return None
@@ -39,25 +45,23 @@ def load_graph_data(json_path):
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 ROOT_DIR = os.path.dirname(os.path.dirname(BASE_DIR)) 
 
+# Sử dụng đúng đường dẫn file CSV
 CSV_PATH = os.path.join(ROOT_DIR, 'data', 'cleaned', 'airport_db_raw_cleaned.csv')
 JSON_PATH = os.path.join(ROOT_DIR, 'data', 'graph', 'flight_network.json')
 
 COORDS_MAP = load_coords_map(CSV_PATH)
 NODES_LIST, EDGES_LIST = load_graph_data(JSON_PATH)
 
-# --- Xử lý Node để vẽ ---
+# --- Xử lý Node để vẽ (Giữ nguyên) ---
 plot_lons, plot_lats, plot_text, plot_sizes, plot_colors, plot_iata_codes = [], [], [], [], [], []
-
 if NODES_LIST and COORDS_MAP:
     for node in NODES_LIST:
         iata_code = node.get('id')
         coords = COORDS_MAP.get(iata_code)
-        
         if coords:
             plot_iata_codes.append(iata_code) 
             plot_lons.append(coords['longitudeairport'])
             plot_lats.append(coords['latitudeairport'])
-            
             if node.get('hub') == 1.0 or node.get('hub') is True:
                 plot_text.append(f"<b>{iata_code} (Hub)</b>")
                 plot_sizes.append(9)
@@ -67,7 +71,7 @@ if NODES_LIST and COORDS_MAP:
                 plot_sizes.append(4)
                 plot_colors.append('blue')
 
-# --- 3. TẠO "LỚP" (TRACE) SÂN BAY CƠ SỞ ---
+# --- 3. TẠO "LỚP" (TRACE) SÂN BAY CƠ SỞ (Giữ nguyên) ---
 node_trace = go.Scattergeo(
     lon = plot_lons,
     lat = plot_lats,
@@ -98,22 +102,19 @@ base_layout = go.Layout(
 )
 base_fig = go.Figure(data=[node_trace], layout=base_layout)
 
-# --- 4. KHỞI TẠO ỨNG DỤNG DASH ---
+
+# --- 4. KHỞI TẠO ỨNG DỤNG DASH (Giữ nguyên) ---
 app = dash.Dash(__name__)
 server = app.server
 
-# --- 5. ĐỊNH NGHĨA BỐ CỤC (LAYOUT) CỦA WEB ---
-# *** THAY ĐỔI 1: Thêm Hộp thông tin (Div) ***
+# --- 5. ĐỊNH NGHĨA BỐ CỤC (LAYOUT) CỦA WEB (Giữ nguyên) ---
 app.layout = html.Div([
     html.H1("Trực quan hóa Mạng lưới chuyến bay"),
     html.P("Click vào một sân bay (điểm) trên bản đồ để xem các đường bay của nó."),
-    
     dcc.Graph(
         id='flight-map',
         figure=base_fig
     ),
-    
-    # Hộp thông tin sẽ hiển thị ở đây
     html.Div(
         id='flight-info-box',
         children=[html.P("Hãy click vào một sân bay để xem chi tiết các chuyến bay.")],
@@ -123,15 +124,16 @@ app.layout = html.Div([
             'borderRadius': '5px',
             'marginTop': '20px',
             'height': '300px',
-            'overflowY': 'scroll', # Cho phép cuộn nếu list quá dài
-            'backgroundColor': '#f9f9f9'
+            'overflowY': 'scroll', 
+            'backgroundColor': '#f9f9f9',
+            'fontFamily': 'Arial, sans-serif'
         }
     )
 ])
 
 
 # --- 6. ĐỊNH NGHĨA PHẦN TƯƠNG TÁC (CALLBACK) ---
-# *** THAY ĐỔI 2: Thêm 1 Output cho 'flight-info-box' ***
+# *** Đã loại bỏ 'State' và 'relayoutData' ***
 @app.callback(
     [Output('flight-map', 'figure'),
      Output('flight-info-box', 'children')],
@@ -139,31 +141,26 @@ app.layout = html.Div([
 )
 def update_map_on_click(clickData):
     
-    # Giá trị trả về ban đầu (khi chưa click)
     default_info = [html.P("Hãy click vào một sân bay để xem chi tiết các chuyến bay.")]
     
     if not clickData:
-        # *** THAY ĐỔI 3: Phải trả về 2 giá trị ***
+        # Trả về bản đồ gốc và thông tin mặc định khi mới tải trang
         return base_fig, default_info
 
+    # --- Phần logic xử lý click (Giữ nguyên) ---
     point_data = clickData['points'][0]
-    
     if 'customdata' not in point_data:
         print("Click trúng đường bay. Bỏ qua.")
         raise PreventUpdate
-    
     clicked_iata = point_data['customdata']
     print(f"Người dùng click vào: {clicked_iata}")
 
-    # --- Logic tìm đường bay và THU THẬP THÔNG TIN ---
-    
+    # --- Logic tìm đường bay và THU THẬP THÔNG TIN (Giữ nguyên) ---
     reg_edge_lons, reg_edge_lats = [], []
     shortest_edge_coords = None
     min_weight = float('inf')
+    flight_details = [] 
     
-    # Danh sách để chứa thông tin chuyến bay (dạng text)
-    flight_details = []
-
     for edge in EDGES_LIST:
         source = str(edge.get('source'))
         target = str(edge.get('target'))
@@ -171,47 +168,45 @@ def update_map_on_click(clickData):
         if source == clicked_iata or target == clicked_iata:
             coords_a = COORDS_MAP.get(source)
             coords_b = COORDS_MAP.get(target)
-            weight = edge.get('weight')
             
-            # --- THU THẬP THÔNG TIN CHUYẾN BAY ---
-            airline = edge.get('airline', 'N/A') # N/A nếu bị thiếu
+            # Xử lý 'weight' (có thể là string, None, hoặc số)
+            weight_from_json = edge.get('weight')
+            try:
+                map_weight = float(weight_from_json)
+            except (ValueError, TypeError, OverflowError):
+                map_weight = float('inf')
+            
+            weight_str = f"{map_weight:.0f} km" if map_weight != float('inf') else "N/A km"
+
+            airline = edge.get('airline', 'N/A')
             flight_num = edge.get('flight', 'N/A')
-            
-            # Xác định chiều bay để hiển thị
+
             if source == clicked_iata:
                 direction = f"{source} → {target}"
             else:
                 direction = f"{target} ← {source}"
             
-            # Lưu lại chi tiết chuyến bay
             flight_details.append({
-                'text': f"✈️ {airline} {flight_num} | {direction}",
-                'weight': weight if weight is not None else float('inf')
+                'text': f"✈️ {airline} {flight_num} | {direction} ({weight_str})",
+                'weight_val': map_weight
             })
             
-            # --- Xử lý 'weight' cho MAP (như cũ) ---
-            if weight is None:
-                weight = float('inf')
-
             if coords_a and coords_b:
                 current_lons = [coords_a['longitudeairport'], coords_b['longitudeairport'], None]
                 current_lats = [coords_a['latitudeairport'], coords_b['latitudeairport'], None]
 
-                if weight < min_weight:
+                if map_weight < min_weight: 
                     if shortest_edge_coords:
                         reg_edge_lons.extend(shortest_edge_coords[0])
                         reg_edge_lats.extend(shortest_edge_coords[1])
-                    
-                    min_weight = weight
+                    min_weight = map_weight
                     shortest_edge_coords = (current_lons, current_lats)
-                
                 else:
                     reg_edge_lons.extend(current_lons)
                     reg_edge_lats.extend(current_lats)
 
-    # --- 3. Tạo Figure MỚI (cho bản đồ) ---
+    # --- 3. Tạo Figure MỚI (Giữ nguyên) ---
     new_fig = go.Figure()
-    
     new_fig.add_trace(
         go.Scattergeo(
             lon=reg_edge_lons, lat=reg_edge_lats, mode='lines',
@@ -219,7 +214,6 @@ def update_map_on_click(clickData):
             hoverinfo='none', name=f'Đường bay của {clicked_iata}'
         )
     )
-    
     if shortest_edge_coords:
         new_fig.add_trace(
             go.Scattergeo(
@@ -228,29 +222,37 @@ def update_map_on_click(clickData):
                 hoverinfo='none', name=f'Đường bay trực tiếp ngắn nhất ({min_weight:.0f} km)'
             )
         )
+    new_fig.add_trace(node_trace)
     
-    new_fig.add_trace(node_trace) # Luôn vẽ node ở trên cùng
-    
-    new_fig.update_layout(
-        title_text=f"Hiển thị các đường bay của: {clicked_iata}",
-        geo=base_layout.geo, showlegend=True, margin=base_layout.margin
-    )
-    
-    # --- 4. Tạo Nội dung MỚI (cho hộp thông tin) ---
+    # --- 4. Tạo Nội dung MỚI (Giữ nguyên) ---
     if not flight_details:
         info_content = [html.P(f"Không tìm thấy chi tiết chuyến bay cho {clicked_iata}.")]
     else:
-        # Sắp xếp list chuyến bay theo Tên Hãng, rồi đến Số hiệu
-        flight_details.sort(key=lambda x: (x['text']))
-        
+        flight_details.sort(key=lambda x: x['weight_val']) 
         info_content = [html.H4(f"Chi tiết các chuyến bay từ/đến {clicked_iata}")]
-        # Chuyển list text thành list các component html.P
         for detail in flight_details:
-            info_content.append(html.P(detail['text']))
+            style = {'fontWeight': 'normal', 'margin': '5px 0'}
+            if detail['weight_val'] == min_weight: 
+                style['fontWeight'] = 'bold'
+                style['color'] = '#2a9d8f'
+            info_content.append(html.P(detail['text'], style=style))
 
-    # --- 5. Trả về CẢ HAI giá trị ---
+    # --- 5. Cập nhật Layout (Phiên bản đơn giản) ---
+    # Phiên bản này sẽ reset zoom
+    new_fig.update_layout(
+        title_text=f"Hiển thị các đường bay của: {clicked_iata}",
+        geo=base_layout.geo, # Dùng lại layout geo gốc
+        showlegend=True,
+        margin=base_layout.margin
+    )
+
+    # --- 6. Trả về CẢ HAI giá trị ---
     return new_fig, info_content
 
-# --- 7. CHẠY ỨNG DỤNG ---
+# --- 7. CHẠY ỨNG DỤNG (Giữ nguyên) ---
 if __name__ == '__main__':
-    app.run(debug=True, port=8051)
+    if not COORDS_MAP:
+        print("\n!!! LỖI NGHIÊM TRỌNG: Không thể tải dữ liệu từ file CSV.")
+        print(f"Hãy kiểm tra lại đường dẫn: {CSV_PATH}")
+    else:
+        app.run(debug=True, port=8051)
