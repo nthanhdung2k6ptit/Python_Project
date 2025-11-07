@@ -40,7 +40,7 @@ def load_graph_data(json_path):
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 ROOT_DIR = os.path.dirname(os.path.dirname(BASE_DIR)) 
 
-CSV_PATH = os.path.join(ROOT_DIR, 'data', 'clean', 'airport_db_raw_clean.csv')
+CSV_PATH = os.path.join(ROOT_DIR, 'data', 'cleaned', 'airport_db_raw_cleaned.csv')
 JSON_PATH = os.path.join(ROOT_DIR, 'data', 'graph', 'flight_network.json')
 
 COORDS_MAP = load_coords_map(CSV_PATH)
