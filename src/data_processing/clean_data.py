@@ -2,7 +2,7 @@ import pandas as pd
 import os
 
 # --- Khai báo thư mục và danh sách file ---
-DATA_DIR = "data"
+DATA_DIR = "data/raw"
 
 FILES = {
     "flights_raw": "flights_raw.csv",
@@ -71,9 +71,9 @@ for name, df in datasets.items():
     print("=" * 70)
 
 # --- Lưu dữ liệu sạch ---
-os.makedirs("data/clean", exist_ok=True)
+os.makedirs("data/cleaned", exist_ok=True)
 
 for name, df in datasets.items():
-    output_path = f"data/clean/{name}_clean.csv"
+    output_path = f"data/cleaned/{name}_cleaned.csv"
     df.to_csv(output_path, index=False, encoding="utf-8")
-    print(f"💾 Đã lưu: {output_path} ({df.shape[0]} dòng, {df.shape[1]} cột)")
+    print(f"Đã lưu: {output_path} ({df.shape[0]} dòng, {df.shape[1]} cột)")
