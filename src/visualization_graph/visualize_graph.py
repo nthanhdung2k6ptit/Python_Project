@@ -3,7 +3,6 @@ import pandas as pd
 import os
 import plotly.graph_objects as go
 
-
 import dash
 from dash import dcc, html, Input, Output, State
 from dash.exceptions import PreventUpdate
@@ -104,6 +103,7 @@ app = dash.Dash(__name__)
 server = app.server
 
 # --- 5. ĐỊNH NGHĨA BỐ CỤC (LAYOUT) CỦA WEB ---
+# *** THAY ĐỔI 1: Thêm Hộp thông tin (Div) ***
 app.layout = html.Div([
     html.H1("Trực quan hóa Mạng lưới chuyến bay"),
     html.P("Click vào một sân bay (điểm) trên bản đồ để xem các đường bay của nó."),
@@ -111,19 +111,40 @@ app.layout = html.Div([
     dcc.Graph(
         id='flight-map',
         figure=base_fig
+    ),
+    
+    # Hộp thông tin sẽ hiển thị ở đây
+    html.Div(
+        id='flight-info-box',
+        children=[html.P("Hãy click vào một sân bay để xem chi tiết các chuyến bay.")],
+        style={
+            'padding': '20px',
+            'border': '1px solid #ddd',
+            'borderRadius': '5px',
+            'marginTop': '20px',
+            'height': '300px',
+            'overflowY': 'scroll', # Cho phép cuộn nếu list quá dài
+            'backgroundColor': '#f9f9f9'
+        }
     )
 ])
 
 
 # --- 6. ĐỊNH NGHĨA PHẦN TƯƠNG TÁC (CALLBACK) ---
+# *** THAY ĐỔI 2: Thêm 1 Output cho 'flight-info-box' ***
 @app.callback(
-    Output('flight-map', 'figure'),
-    Input('flight-map', 'clickData')
+    [Output('flight-map', 'figure'),
+     Output('flight-info-box', 'children')],
+    [Input('flight-map', 'clickData')]
 )
 def update_map_on_click(clickData):
     
+    # Giá trị trả về ban đầu (khi chưa click)
+    default_info = [html.P("Hãy click vào một sân bay để xem chi tiết các chuyến bay.")]
+    
     if not clickData:
-        raise PreventUpdate
+        # *** THAY ĐỔI 3: Phải trả về 2 giá trị ***
+        return base_fig, default_info
 
     point_data = clickData['points'][0]
     
@@ -134,12 +155,15 @@ def update_map_on_click(clickData):
     clicked_iata = point_data['customdata']
     print(f"Người dùng click vào: {clicked_iata}")
 
-    # --- Logic tìm đường bay trực tiếp ngắn nhất ---
+    # --- Logic tìm đường bay và THU THẬP THÔNG TIN ---
     
     reg_edge_lons, reg_edge_lats = [], []
     shortest_edge_coords = None
     min_weight = float('inf')
     
+    # Danh sách để chứa thông tin chuyến bay (dạng text)
+    flight_details = []
+
     for edge in EDGES_LIST:
         source = str(edge.get('source'))
         target = str(edge.get('target'))
@@ -147,12 +171,27 @@ def update_map_on_click(clickData):
         if source == clicked_iata or target == clicked_iata:
             coords_a = COORDS_MAP.get(source)
             coords_b = COORDS_MAP.get(target)
+            weight = edge.get('weight')
             
-            # --- *** ĐÂY LÀ PHẦN ĐÃ SỬA LỖI *** ---
-            weight = edge.get('weight') # Lấy weight, có thể là None
-            if weight is None:          # Nếu weight là None
-                weight = float('inf')   # Coi nó là vô hạn
-            # --- *** KẾT THÚC SỬA LỖI *** ---
+            # --- THU THẬP THÔNG TIN CHUYẾN BAY ---
+            airline = edge.get('airline', 'N/A') # N/A nếu bị thiếu
+            flight_num = edge.get('flight', 'N/A')
+            
+            # Xác định chiều bay để hiển thị
+            if source == clicked_iata:
+                direction = f"{source} → {target}"
+            else:
+                direction = f"{target} ← {source}"
+            
+            # Lưu lại chi tiết chuyến bay
+            flight_details.append({
+                'text': f"✈️ {airline} {flight_num} | {direction}",
+                'weight': weight if weight is not None else float('inf')
+            })
+            
+            # --- Xử lý 'weight' cho MAP (như cũ) ---
+            if weight is None:
+                weight = float('inf')
 
             if coords_a and coords_b:
                 current_lons = [coords_a['longitudeairport'], coords_b['longitudeairport'], None]
@@ -170,44 +209,47 @@ def update_map_on_click(clickData):
                     reg_edge_lons.extend(current_lons)
                     reg_edge_lats.extend(current_lats)
 
-    # --- Tạo Figure MỚI ---
+    # --- 3. Tạo Figure MỚI (cho bản đồ) ---
     new_fig = go.Figure()
     
-    # 4. Vẽ lớp đường bay thường (màu cam)
     new_fig.add_trace(
         go.Scattergeo(
-            lon=reg_edge_lons, lat=reg_edge_lats,
-            mode='lines',
+            lon=reg_edge_lons, lat=reg_edge_lats, mode='lines',
             line=dict(width=0.7, color='orange'),
-            hoverinfo='none',
-            name=f'Đường bay của {clicked_iata}'
+            hoverinfo='none', name=f'Đường bay của {clicked_iata}'
         )
     )
     
-    # 5. Vẽ lớp đường bay ngắn nhất (màu xanh lá, đậm)
     if shortest_edge_coords:
         new_fig.add_trace(
             go.Scattergeo(
                 lon=shortest_edge_coords[0], lat=shortest_edge_coords[1],
-                mode='lines',
-                line=dict(width=3, color='#32CD32'), # Xanh lá
-                hoverinfo='none',
-                name=f'Đường bay trực tiếp ngắn nhất ({min_weight:.0f} km)'
+                mode='lines', line=dict(width=3, color='#32CD32'),
+                hoverinfo='none', name=f'Đường bay trực tiếp ngắn nhất ({min_weight:.0f} km)'
             )
         )
-
-    # 6. Vẽ lớp sân bay (luôn ở trên cùng)
-    new_fig.add_trace(node_trace)
-
-    # 7. Cập nhật layout
+    
+    new_fig.add_trace(node_trace) # Luôn vẽ node ở trên cùng
+    
     new_fig.update_layout(
         title_text=f"Hiển thị các đường bay của: {clicked_iata}",
-        geo=base_layout.geo,
-        showlegend=True,
-        margin=base_layout.margin
+        geo=base_layout.geo, showlegend=True, margin=base_layout.margin
     )
     
-    return new_fig
+    # --- 4. Tạo Nội dung MỚI (cho hộp thông tin) ---
+    if not flight_details:
+        info_content = [html.P(f"Không tìm thấy chi tiết chuyến bay cho {clicked_iata}.")]
+    else:
+        # Sắp xếp list chuyến bay theo Tên Hãng, rồi đến Số hiệu
+        flight_details.sort(key=lambda x: (x['text']))
+        
+        info_content = [html.H4(f"Chi tiết các chuyến bay từ/đến {clicked_iata}")]
+        # Chuyển list text thành list các component html.P
+        for detail in flight_details:
+            info_content.append(html.P(detail['text']))
+
+    # --- 5. Trả về CẢ HAI giá trị ---
+    return new_fig, info_content
 
 # --- 7. CHẠY ỨNG DỤNG ---
 if __name__ == '__main__':

@@ -10,7 +10,7 @@ networkx
 matplotlib
 plotly
 seaborn
-
+dash
 # Map + Web UI
 folium
 streamlit
