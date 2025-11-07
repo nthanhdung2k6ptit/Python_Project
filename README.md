@@ -62,3 +62,18 @@ A (xanh lá) = Added - file mới đã add vào staging
 D (đỏ) = Deleted - file đã xóa
 C = Conflict - xung đột khi merge
 R = Renamed - file đổi tên
+
+
+--------------------------------------------------------------
+Ctrl+Shift+P
+## Tạo VENV
+py -m venv .venv
+
+## Kích hoạt
+    ### PowerShell
+    .\.venv\Scripts\Activate.ps1
+    ### CMD
+    .\.venv\Scripts\activate.bat
+
+## Thoát venv
+deactivate
