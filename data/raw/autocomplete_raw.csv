@@ -1,0 +1,45 @@
+﻿GMT,codeIataAirport,codeIataCity,codeIcaoAirport,codeIso2Country,latitudeAirport,longitudeAirport,nameAirport,nameCountry,phone,timezone
+8,BJG,BJG,,ID,-0.95,122.1,Bolaang,Indonesia,,Asia/Makassar
+-6,IRB,IRB,,US,30.7,-101.933334,Municipal,United States,,America/Chicago
+2,KAJ,KAJ,EFKI,FI,64.27778,27.688889,Kajaani,Finland,,Europe/Helsinki
+-9,KXA,KXA,,US,55.537777,-132.39583,Kasaan SPB,United States,,America/Sitka
+2,MPQ,MPQ,,JO,30.166668,35.766666,Maan,Jordan,,Asia/Amman
+-3,NAQ,NAQ,BGQQ,GL,77.48564,-69.37486,Qaanaaq,Greenland,,America/Godthab
+8,ULN,ULN,ZMUB,MN,47.85275,106.76327,Chinggis Khaan International,Mongolia,,Asia/Ulaanbaatar
+7,ULO,ULO,ZMUG,MN,49.983334,92.066666,Ulaangom,Mongolia,,Asia/Hovd
+8,UNR,UNR,,MN,47.316666,110.666664,Underkhaan,Mongolia,,Asia/Ulaanbaatar
+2,KAU,KAU,EFKA,FI,63.1,23.083332,Kauhava,Finland,,Europe/Helsinki
+2,KHJ,KHJ,EFKJ,FI,62.463055,22.394722,Kauhajoki,Finland,,Europe/Helsinki
+-6,YQV,YQV,CYQV,CA,51.216667,-102.46667,Yorkton,Canada,,America/Regina
+10,ABG,ABG,,AU,-17.666668,143.2,Abingdon,Australia,,Australia/Brisbane
+-3,ABN,ABN,,SR,5.5,-54.083332,Albina,Suriname,,America/Paramaribo
+5,AKX,AKX,UATT,KZ,50.249336,57.211403,Aktyubinsk,Kazakhstan,,Asia/Aqtobe
+-5,BGM,BGM,KBGM,US,42.208534,-75.98294,Greater Binghamton,United States,,America/New_York
+8,BTU,BTU,WBGB,MY,3.171772,113.04346,Bintulu,Malaysia,,Asia/Kuching
+1,CAB,CAB,FNCA,AO,-5.583333,12.2,Cabinda,Angola,,Africa/Luanda
+-9,CBZ,CBZ,,US,55.38333,-132.41667,Cabin Creek,United States,,America/Sitka
+5,CEK,CEK,USCC,RU,55.297504,61.51235,Chelyabinsk,Russia,,Asia/Yekaterinburg
+-8,DCP,DCP,,CA,0.0,0.0,Cabin Plant Heliport,Canada,,America/Vancouver
+8,HRB,HRB,ZYHB,CN,45.620853,126.23644,Harbin,China,,Asia/Shanghai
+-3,JCM,JCM,SNJB,BR,-11.183333,-40.516666,Jacobina,Brazil,,America/Bahia
+2,KBN,KBN,FZWT,CD,-6.116667,24.533333,Kabinda,Democratic Republic of the Congo,,Africa/Lubumbashi
+10,KUG,KUG,YKUB,AU,-10.233333,142.3,Kubin Island,Australia,,Australia/Brisbane
+9,NTI,NTI,WASB,ID,-2.333333,133.25,Bintuni,Indonesia,,Asia/Jayapura
+-6,PMB,PMB,KPMB,US,49.0,-98.083336,Intermediate,United States,,America/Chicago
+10,RBC,RBC,YROI,AU,-34.666668,142.75,Robinvale,Australia,,Australia/Melbourne
+1,RBM,RBM,KRBM,DE,48.901943,12.519722,Wallmuhle,Germany,,Europe/Berlin
+10,ROH,ROH,YROB,AU,-18.25,144.0,Robinhood,Australia,,Australia/Brisbane
+9.30,RRV,RRV,,AU,-16.75,136.96666,Robinson River,Australia,,Australia/Darwin
+3,RYB,RYB,UUBK,RU,58.13333,38.86667,Rybinsk,Russia,,Europe/Moscow
+-5,VJI,VJI,,US,36.68611,-82.03333,Virginia Highlands,United States,,America/New_York
+-9,WBB,WBB,,US,63.51936,-162.28873,Stebbins,United States,,America/Anchorage
+0,XAR,XAR,DFOY,BF,14.233333,-0.866667,Aribinda,Burkina Faso,,Africa/Ouagadougou
+10,XBN,XBN,,PG,-9.633333,149.3,Biniguni,Papua New Guinea,,Pacific/Port_Moresby
+8,YBP,YBP,ZUYB,CN,28.797659,104.54395,Yibin,China,,Asia/Shanghai
+1,ZAW,ZAW,,DK,0.0,0.0,Nykobing Mors Bus Station,Denmark,,Europe/Copenhagen
+1,ZIJ,ZIJ,,DK,0.0,0.0,Nykobing Sjaelland Railway Station,Denmark,,Europe/Copenhagen
+8,ZMK,ZMK,,MY,0.0,0.0,Bintulu Port,Malaysia,,Asia/Kuching
+-6,EBS,EBS,KEBS,US,42.466667,-93.816666,Municipal,United States,,America/Chicago
+-5,DZI,DZI,,CO,10.016667,-73.25,Codazzi,Colombia,,America/Bogota
+8,DZU,DZU,,CN,29.7,105.71667,Dazu,China,,Asia/Shanghai
+-4,PZO,PZO,SVPR,VE,8.286533,-62.759136,Puerto Ordaz,Venezuela,,America/Caracas

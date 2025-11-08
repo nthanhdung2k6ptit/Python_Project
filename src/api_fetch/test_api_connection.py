@@ -4,6 +4,8 @@ import json
 import pandas as pd
 import os
 from datetime import datetime
+from collections import Counter
+import random
 
 class AviationEdgeAPI:
     def __init__ (self, api_key):
@@ -17,7 +19,7 @@ class AviationEdgeAPI:
     def get_real_time_schedules(self, airport_iata_code, schedule_type="departure"):
         return self._make_request("timetable", {"iataCode": airport_iata_code, "type": schedule_type})
     
-    def get_historical_schedules(self, airport_iata_code, date_from, date_to, schedule_type="departure"):
+    """def get_historical_schedules(self, airport_iata_code, date_from, date_to, schedule_type="departure"):
         if (datetime.strptime(date_to, "%Y-%m-%d") - datetime.strptime(date_from, "%Y-%m-%d")).days > 30:
             print("Khoảng thời gian vượt quá 30 ngày. Vui lòng rút ngắn lại.")
             return []         
@@ -26,7 +28,7 @@ class AviationEdgeAPI:
             "date_from": date_from,
             "date_to": date_to,
             "type": schedule_type
-        })
+        })"""
     
     def get_airline_routes(self, airline_iata=None):
         if airline_iata is None: return []
@@ -116,68 +118,90 @@ if __name__ == "__main__":
     api_key = "96b7d0-5b0bc0"  
     client = AviationEdgeAPI(api_key)
 
+    # --- 1. LẤY DATABASE QUỐC GIA --- 
     countries = client.get_country_database()
     if not countries:
-        print("Không thể lấy danh sách quốc gia.")
+        print("Không thể lấy danh sách quốc gia. Dừng chương trình.")
         exit()
 
-    all_airlines, all_routes, all_flights, all_realtime = [], [], [], []
-    all_airports, all_cities = [], []
+    # --- 2. LẤY CÁC DATABASE CẦN THIẾT (SÂN BAY, THÀNH PHỐ, HÃNG BAY) ---
+    top_airport_countries = countries[:200]
+    top_city_countries = countries[:200]
+    top_autocomplete_countries = countries[:10]
 
-    # --- 2. Lặp qua từng quốc gia ---
-    for idx, country in enumerate(countries, start=1):
+    all_airlines, all_airports, all_cities = [], [], []
+
+    for country in top_airport_countries:
         code = country.get("codeIso2Country")
-        name = country.get("nameCountry")
-        if not code:
-            continue
+        if code:
+            airports = client.get_airports_database(code)
+            if airports: all_airports.extend(airports)
 
-        print(f"\n [{idx}/{len(countries)}] Đang xử lý quốc gia: {name} ({code})")
+    for country in top_city_countries:
+        code = country.get("codeIso2Country")
+        if code:
+            cities = client.get_city_database(code)
+            if cities: all_cities.extend(cities)
 
-        # Lấy dữ liệu gốc
-        airlines = client.get_airline_database(code_iso2_country=code)
-        airports = client.get_airports_database(code_iso2_country=code)
-        cities = client.get_city_database(code_iso2_country=code)
+    # --- 3. LẤY DỮ LIỆU REALTIME ---
+    valid_airports = [
+        ap for ap in all_airports 
+        if ap.get("codeIataAirport") and len(ap["codeIataAirport"]) == 3
+    ]
 
-        if airlines: all_airlines.extend(airlines)
-        if airports: all_airports.extend(airports)
-        if cities: all_cities.extend(cities)
+    if len(valid_airports) < 200:
+        selected_airports = valid_airports
+        print(f"Chỉ có {len(valid_airports)} sân bay hợp lệ → lấy hết")
+    else:
+        random.shuffle(valid_airports)
+        selected_airports = valid_airports[:200]
+    all_realtime = []
+    # Lấy 200 sân bay ngẫu nhiên từ list 'all_airports'
+    random.shuffle(selected_airports)  # Trộn ngẫu nhiên toàn bộ danh sách
+    for airport in selected_airports[:200]:  
+        airport_code = airport.get("codeIataAirport")
+        if airport_code:
+           realtime = client.get_real_time_schedules(airport_code)
+           if realtime: 
+               all_realtime.extend(realtime)
 
-        # --- Chỉ lấy thêm flight/route/realtime cho các quốc gia có dữ liệu airline ---
-        if not airlines or not airports:
-            print(f"Thiếu airline hoặc airport ở {code}, bỏ qua flights/routes/realtime.")
-            continue
+    # --- 4. LẤY FLIGHTS/ROUTES CHO 1 HÃNG BAY DUY NHẤT ---
+    top_airlines = [
+    "AA","DL","UA","WN","EK","LH","AF","BA","CX","QR",
+    "CZ","MU","CA","SQ","TK","JL","KE","NH","QF","SU",
+    "AC","AS","B6","F9","FR"
+    ]
+    all_flights, all_routes = [], []
 
-        # Lấy tối đa 10 hãng & sân bay đại diện
-        airline_codes = [a["codeIataAirline"] for a in airlines if a.get("codeIataAirline")][:10]
-        airport_codes = [a["codeIataAirport"] for a in airports if a.get("codeIataAirport")][:10]
+    for i, code in enumerate(top_airlines, 1):
+        print(f"[{i}/{len(top_airlines)}] Hãng: {code}")
 
-        for airline in airline_codes:
-            flights = client.get_flight_tracker(airline_iata=airline)
-            if flights: all_flights.extend(flights)
+        # 1. FLIGHT TRACKER (live)
+        flights = client.get_flight_tracker(code, limit=1000)
+        if flights:
+            all_flights.extend(flights)
+            print(f"Flight: {len(flights)} chuyến")
 
-            routes = client.get_airline_routes(airline_iata=airline)
-            if routes: all_routes.extend(routes)
+        # 2. ROUTES
+        routes = client.get_airline_routes(code)
+        if routes:
+            all_routes.extend(routes)
+            print(f"Routes: {len(routes)} tuyến")
+        else:
+            print(f"Không có routes cho {code}")
 
-        for airport in airport_codes:
-            realtime = client.get_real_time_schedules(airport)
-            if realtime: all_realtime.extend(realtime)
-        
-        all_autocomplete = []
-        for idx, city in enumerate(cities, start=1):
-            name_city = city.get("nameCity")
-            if not name_city:
-               continue
+    # --- 5. CÁC API CÒN LẠI ---
+    # Autocomplete 
+    all_autocomplete = []
+    autocomplete_city_codes = [c["codeIataCity"] for c in all_cities if c.get("codeIataCity") and c.get("codeIso2Country") in {co.get("codeIso2Country") for co in top_autocomplete_countries}][:10]
+    
+    for city_code in autocomplete_city_codes:
+        data = client.get_autocomplete(city_code) 
+        if isinstance(data, dict) and "airportsByCities" in data:
+             all_autocomplete.extend(data["airportsByCities"])
 
-            print(f"[{idx}] Đang tìm sân bay cho: {name_city}")
-            data = client.get_autocomplete(name_city)
-
-    # Dữ liệu hợp lệ
-            if isinstance(data, dict) and "airportsByCities" in data:
-               all_autocomplete.extend(data["airportsByCities"])
-
-    # Giới hạn thử nghiệm để tránh tốn quota (ví dụ: chỉ 10 thành phố đầu)
-            if idx >= 10:
-               break
+    # Nearby Airports
+    nearby = client.get_nearby_airports(21.03, 105.85, 200)
 
     # --- 3. Lưu toàn bộ dữ liệu ---
     client.save_to_csv(all_airports, "airport__db_raw")
@@ -186,6 +210,5 @@ if __name__ == "__main__":
     client.save_to_csv(all_flights, "flight_tracker_raw")
     client.save_to_csv(all_realtime, "realtime_schedules_raw")
     client.save_to_csv(all_autocomplete, "autocomplete_raw")
-    client.save_to_csv(client.get_nearby_airports(21.03, 105.85, 200), "nearby_airports_raw")
+    client.save_to_csv(nearby, "nearby_airports_raw")
 
-# tổng 20 000 chuyến bay
