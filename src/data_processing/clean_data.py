@@ -5,7 +5,7 @@ import pandas as pd
 # Đường dẫn dự án
 PROJECT_DIR = r"C:\Users\admin\Documents\Graph_Network_Project"
 RAW_DIR   = os.path.join(PROJECT_DIR, "data", "raw")
-CLEAN_DIR = os.path.join(PROJECT_DIR, "data", "clean")
+CLEAN_DIR = os.path.join(PROJECT_DIR, "data", "cleaned")
 os.makedirs(CLEAN_DIR, exist_ok=True)
 
 FILES = {
@@ -133,10 +133,14 @@ def clean_routes(df: pd.DataFrame) -> pd.DataFrame:
         df = df.dropna(subset=["departure_iata","arrival_iata"])
         df = df[df["departure_iata"] != df["arrival_iata"]]
         df = df.drop_duplicates(subset=["departure_iata","arrival_iata","airline_iata"])
+     # 🔹 Xóa dòng có cả departure & arrival đều Unknown
+    if all(c in df.columns for c in ["departure_iata", "arrival_iata"]):
+        df = df[~((df["departure_iata"] == "Unknown") & (df["arrival_iata"] == "Unknown"))]
+
     return df
 
 def clean_airport_db(df: pd.DataFrame) -> pd.DataFrame:
-    # Đổi tên về alias CHUẨN nhưng KHÔNG bỏ cột gốc
+    # 🔹 Chuẩn hoá tên cột (nếu có) theo quy ước thống nhất
     rename = {
         "code_iata_airport": "iata_code",
         "code_icao_airport": "icao_code",
@@ -154,29 +158,34 @@ def clean_airport_db(df: pd.DataFrame) -> pd.DataFrame:
     }
     df = df.rename(columns={k: v for k, v in rename.items() if k in df.columns})
 
-    # Chuẩn hoá mã
+    # 🔹 Chuẩn hoá các mã định danh
     for c in ["iata_code", "icao_code", "city_iata", "country_iso2"]:
         if c in df.columns:
             df[c] = df[c].astype("string").str.upper().str.strip()
 
-    # country: ưu tiên country_name, fallback country_iso2
+    # 🔹 Tạo 1 cột country duy nhất: ưu tiên country_name, fallback country_iso2
     if "country_name" in df.columns or "country_iso2" in df.columns:
         df["country"] = df.get("country_name")
         if "country_iso2" in df.columns:
             df["country"] = df["country"].fillna(df["country_iso2"])
 
-    # tọa độ & GMT
+    # 🔹 Xoá các cột gốc không còn cần thiết
+    for c in ["country_name", "country_iso2", "phone"]:
+        if c in df.columns:
+            df.drop(columns=c, inplace=True)
+
+    # 🔹 Chuyển kiểu dữ liệu toạ độ & GMT
     for c in ["latitude", "longitude"]:
         if c in df.columns:
             df[c] = pd.to_numeric(df[c], errors="coerce")
     if "gmt" in df.columns:
         df["gmt"] = pd.to_numeric(df["gmt"], errors="coerce")
 
-    # timezone: giữ nguyên chuỗi
+    # 🔹 Làm sạch timezone (chỉ strip)
     if "timezone" in df.columns and df["timezone"].dtype == object:
         df["timezone"] = df["timezone"].astype(str).str.strip()
 
-    # bỏ trùng theo khóa sẵn có
+    # 🔹 Bỏ trùng theo mã IATA hoặc ICAO
     if "iata_code" in df.columns and df["iata_code"].notna().any():
         df = df.drop_duplicates(subset=["iata_code"])
     elif "icao_code" in df.columns and df["icao_code"].notna().any():
@@ -184,9 +193,7 @@ def clean_airport_db(df: pd.DataFrame) -> pd.DataFrame:
     else:
         df = df.drop_duplicates()
 
-    # KHÔNG subset: giữ mọi cột còn lại sau chuẩn hoá
     return df
-
 
 def clean_schedule(df: pd.DataFrame) -> pd.DataFrame:
     rename = {
@@ -212,6 +219,8 @@ def clean_schedule(df: pd.DataFrame) -> pd.DataFrame:
         if c in df.columns:
             df[c] = df[c].astype("string").str.strip()
             df.loc[df[c].isin(["nan","None","NULL","Unknown",""]), c] = pd.NA
+    if all(c in df.columns for c in ["departure_iata", "arrival_iata"]):
+        df = df[~((df["departure_iata"] == "Unknown") & (df["arrival_iata"] == "Unknown"))]
     return df
 
 def clean_flight_tracker(df: pd.DataFrame) -> pd.DataFrame:
@@ -232,6 +241,9 @@ def clean_flight_tracker(df: pd.DataFrame) -> pd.DataFrame:
     if all(c in df.columns for c in ["departure_iata","arrival_iata"]):
         df = df.dropna(subset=["departure_iata","arrival_iata"])
     df = df.drop_duplicates()
+    if all(c in df.columns for c in ["departure_iata", "arrival_iata"]):
+        df = df[~((df["departure_iata"] == "Unknown") & (df["arrival_iata"] == "Unknown"))]
+
     return df
 
 # -------------------- Pipeline --------------------
@@ -256,11 +268,12 @@ def main():
     for key in ["realtime_schedules_raw", "historical_schedules_raw"]:
         if key in datasets:
             datasets[key] = clean_schedule(datasets[key])
-
     for name, df in datasets.items():
-        out = os.path.join(CLEAN_DIR, f"{name}_clean.csv")
+        base_name = name.replace("_raw", "")  # bỏ hậu tố _raw
+        out = os.path.join(CLEAN_DIR, f"{base_name}_cleaned.csv")  # dùng đuôi _cleaned
         df.to_csv(out, index=False, encoding="utf-8-sig")
         print(f"💾 Saved: {out}")
+
 
     print("\n Done cleaning all raw datasets.")
 
