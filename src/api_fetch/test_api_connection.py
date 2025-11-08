@@ -10,155 +10,48 @@ class AviationEdgeAPI:
         self.api_key = api_key
         self.base_url = "http://aviation-edge.com/v2/public/"
 
-    def get_flight_tracker(self, flight_iata=None, flight_icao=None, airline_iata=None, airline_icao=None,
-                           dep_iata=None, dep_icao=None, arr_iata=None, arr_icao=None,
-                           status=None, limit=100, offset=0):
-        endpoint = "flights"
-        all_data = []
-
-    # Nếu có danh sách nhiều hãng → lặp qua từng hãng
-        if isinstance(airline_iata, list):
-            for code in airline_iata:
-                params = {
-                "flightIata": flight_iata,
-                "flightIcao": flight_icao,
-                "airlineIata": code,
-                "airlineIcao": airline_icao,
-                "depIata": dep_iata,
-                "depIcao": dep_icao,
-                "arrIata": arr_iata,
-                "arrIcao": arr_icao,
-                "status": status,
-                "limit": limit,
-                "offset": offset
-                }
-                data = self._make_request(endpoint, params)
-                if data: all_data.extend(data)
-
-    # Nếu chỉ có 1 hãng hoặc None → chạy 1 lần thôi
-        else:
-            params = {
-            "flightIata": flight_iata,
-            "flightIcao": flight_icao,
-            "airlineIata": airline_iata,
-            "airlineIcao": airline_icao,
-            "depIata": dep_iata,
-            "depIcao": dep_icao,
-            "arrIata": arr_iata,
-            "arrIcao": arr_icao,
-            "status": status,
-            "limit": limit,
-            "offset": offset
-            }
-            data = self._make_request(endpoint, params)
-            if data: all_data.extend(data)
-        return all_data
+    def get_flight_tracker(self, airline_iata=None, limit=100, offset=0):
+        if airline_iata is None: return []
+        return self._make_request("flights", {"airlineIata": airline_iata, "limit": limit, "offset": offset})
     
     def get_real_time_schedules(self, airport_iata_code, schedule_type="departure"):
-        if isinstance(airport_iata_code, str): airport_iata_code = [airport_iata_code]
-        all_schedules = []
-        for airport in airport_iata_code:
-            params = {
-                 "iataCode": airport,
-                 "type": schedule_type
-            }
-            data = self._make_request("timetable", params)
-            if data: all_schedules.extend(data)
-        return all_schedules
+        return self._make_request("timetable", {"iataCode": airport_iata_code, "type": schedule_type})
     
-    def get_historical_schedules(self, airport_iata_code, date_from, date_to, schedule_type="departure", status=None):
-        endpoint = "flightsHistory"
-        params = {
-        "iataCode": airport_iata_code,
-        "type": schedule_type,    
-        "date_from": date_from,    
-        "date_to": date_to,        
-        "status": status           
-        }
+    def get_historical_schedules(self, airport_iata_code, date_from, date_to, schedule_type="departure"):
         if (datetime.strptime(date_to, "%Y-%m-%d") - datetime.strptime(date_from, "%Y-%m-%d")).days > 30:
             print("Khoảng thời gian vượt quá 30 ngày. Vui lòng rút ngắn lại.")
-            return None
-        return self._make_request(endpoint, params)
+            return []         
+        return self._make_request("flightsHistory", {
+            "iataCode": airport_iata_code,
+            "date_from": date_from,
+            "date_to": date_to,
+            "type": schedule_type
+        })
     
-    def get_airline_routes(self, airline_iata=None, airline_icao=None, departure_iata=None, departure_icao=None,
-                           arrival_iata=None, arrival_icao=None):
-        endpoint = "routes"
-        all_routes = []
-        if isinstance(airline_iata, list):
-            for code in airline_iata:
-                print(f"Đang lấy route của hãng: {code}")
-                params = {
-                    "airlineIata": code,
-                    "airlineIcao": airline_icao,
-                    "departureIata": departure_iata,
-                    "departureIcao": departure_icao,
-                    "arrivalIata": arrival_iata,
-                    "arrivalIcao": arrival_icao
-                }
-                data = self._make_request(endpoint, params)
-                if data:
-                    all_routes.extend(data)
-        else:
-            params = {
-                "airlineIata": airline_iata,
-                "airlineIcao": airline_icao,
-                "departureIata": departure_iata,
-                "departureIcao": departure_icao,
-                "arrivalIata": arrival_iata,
-                "arrivalIcao": arrival_icao
-            }
-            data = self._make_request(endpoint, params)
-            if data:
-                all_routes.extend(data)
-        return all_routes
+    def get_airline_routes(self, airline_iata=None):
+        if airline_iata is None: return []
+        return self._make_request("routes", {"airlineIata": airline_iata})
     
     def get_nearby_airports(self, lat, lng, distance=50):
-        endpoint = "nearby"
-        params = {
-        "lat": lat,
-        "lng": lng,
-        "distance": distance
-        }
-        return self._make_request(endpoint, params)
+        return self._make_request("nearby", {"lat": lat, "lng": lng, "distance": distance})
     
     def get_autocomplete(self, city):
         if not city or len(city.strip()) < 2:
             print("Từ khóa tìm kiếm phải có ít nhất 2 ký tự.")
-            return None
-        endpoint = "autocomplete"
-        params = {"city": city.strip()}
-        return self._make_request(endpoint, params)
+            return []
+        return self._make_request("autocomplete", {"city": city.strip()})
     
-    def get_airports_database(self, code_iata_airport=None, code_icao_airport=None, code_iso2_country=None, code_iata_city=None,
-                              name_airport=None):
-        endpoint = "airportDatabase"
-        params = {
-        "codeIataAirport": code_iata_airport,
-        "codeIcaoAirport": code_icao_airport,
-        "codeIso2Country": code_iso2_country,
-        "codeIataCity": code_iata_city,
-        "nameAirport": name_airport
-        }
-        return self._make_request(endpoint, params)
+    def get_airports_database(self, code_iso2_country=None): 
+        return self._make_request("airportDatabase", {"codeIso2Country": code_iso2_country})
     
-    def get_city_database(self, code_iata_city=None, code_iso2_country=None, name_city=None):
-        endpoint = "cityDatabase"
-        params = {
-        "codeIataCity": code_iata_city,
-        "codeIso2Country": code_iso2_country,
-        "nameCity": name_city
-        }
-        return self._make_request(endpoint, params)
+    def get_city_database(self, code_iso2_country= None):
+        return self._make_request("cityDatabase", {"codeIso2Country": code_iso2_country})
     
-    def get_airline_database(self, code_iata_airline=None, code_icao_airline=None, code_iso2_country=None, name_airline=None):
-        endpoint = "airlineDatabase"
-        params = {
-        "codeIataAirline": code_iata_airline,
-        "codeIcaoAirline": code_icao_airline,
-        "codeIso2Country": code_iso2_country,
-        "nameAirline": name_airline
-        }
-        return self._make_request(endpoint, params)
+    def get_airline_database(self, code_iso2_country=None):
+        return self._make_request("airlineDatabase", {"codeIso2Country": code_iso2_country})
+    
+    def get_country_database(self):
+        return self._make_request("countryDatabase")
     
     def _clean_params(self, params):
         """Loại bỏ các param có giá trị None."""
@@ -176,7 +69,7 @@ class AviationEdgeAPI:
             data = response.json()
             if isinstance(data, dict) and data.get('error'):
                 print(f"Lỗi từ API Aviation Edge: {data['error']}")
-                return None
+                return []
             print("--- Lấy dữ liệu thành công! ---")
             return data
         except requests.exceptions.HTTPError as e:
@@ -222,64 +115,61 @@ class AviationEdgeAPI:
 if __name__ == "__main__":
     api_key = "96b7d0-5b0bc0"  
     client = AviationEdgeAPI(api_key)
-    # Lấy tất cả sân bay 
-    all_airports = client.get_airports_database()
-    airport_iata_all = [a["codeIataAirport"] for a in all_airports if a.get("codeIataAirport")]
 
-    # Lấy tất cả các hãng bay
-    all_airlines = client.get_airline_database()
-    airline_iata_all = [a["codeIataAirline"] for a in all_airlines if a.get("codeIataAirline")]
-    airline_iata_top50 = airline_iata_all[:50]
+    countries = client.get_country_database()
+    if not countries:
+        print("Không thể lấy danh sách quốc gia.")
+        exit()
 
-    all_flights = []
-    batch_size = 20
-    for i in range(0, len(airline_iata_all), batch_size):
-        batch = airline_iata_all[i:i+batch_size]
-        print(f"Lấy flight tracker cho batch hãng {i}-{i+len(batch)-1}")
-        data = client.get_flight_tracker(airline_iata=batch)
-        if data: all_flights.extend(data)
-    client.save_to_csv(all_flights, "flight_tracker_raw_foreign")
+    all_airlines, all_routes, all_flights, all_realtime = [], [], [], []
+    all_airports, all_cities = [], []
 
-    all_routes = []
-    for i in range(0, len(airline_iata_all), batch_size):
-        batch = airline_iata_all[i:i+batch_size]
-        print(f"Lấy route cho batch hãng {i}-{i+len(batch)-1}")
-        data = client.get_airline_routes(airline_iata=batch)
-        if data: all_routes.extend(data)
+    # --- 2. Lặp qua từng quốc gia ---
+    for idx, country in enumerate(countries, start=1):
+        code = country.get("codeIso2Country")
+        name = country.get("nameCountry")
+        if not code:
+            continue
+
+        print(f"\n [{idx}/{len(countries)}] Đang xử lý quốc gia: {name} ({code})")
+
+        # Lấy dữ liệu gốc
+        airlines = client.get_airline_database(code_iso2_country=code)
+        airports = client.get_airports_database(code_iso2_country=code)
+        cities = client.get_city_database(code_iso2_country=code)
+
+        if airlines: all_airlines.extend(airlines)
+        if airports: all_airports.extend(airports)
+        if cities: all_cities.extend(cities)
+
+        # --- Chỉ lấy thêm flight/route/realtime cho các quốc gia có dữ liệu airline ---
+        if not airlines or not airports:
+            print(f"Thiếu airline hoặc airport ở {code}, bỏ qua flights/routes/realtime.")
+            continue
+
+        # Lấy tối đa 10 hãng & 3 sân bay đại diện
+        airline_codes = [a["codeIataAirline"] for a in airlines if a.get("codeIataAirline")][:10]
+        airport_codes = [a["codeIataAirport"] for a in airports if a.get("codeIataAirport")][:10]
+
+        for airline in airline_codes:
+            flights = client.get_flight_tracker(airline_iata=airline)
+            if flights: all_flights.extend(flights)
+
+            routes = client.get_airline_routes(airline_iata=airline)
+            if routes: all_routes.extend(routes)
+
+        for airport in airport_codes:
+            realtime = client.get_real_time_schedules(airport)
+            if realtime: all_realtime.extend(realtime)
+
+        # Nghỉ 1 giây giữa các quốc gia để tránh quá tải
+        time.sleep(1)
+
+    # --- 3. Lưu toàn bộ dữ liệu ---
+    client.save_to_csv(all_airports, "airport__db_raw_foreign")
+    client.save_to_csv(all_cities, "city_db_raw_foreign")
     client.save_to_csv(all_routes, "routes_raw_foreign")
-
-    all_schedules = []
-    for i in range(0, len(airport_iata_all), batch_size):
-        batch = airport_iata_all[i:i+batch_size]
-        print(f"Lấy realtime schedules cho batch sân bay {i}-{i+len(batch)-1}")
-        data = client.get_real_time_schedules(airport_iata_code=batch)
-        if data: all_schedules.extend(data)
-    client.save_to_csv(all_schedules, "realtime_schedules_raw_foreign")
-
-    client.save_to_csv(
-        client.get_historical_schedules(
-            airport_iata_code="HAN",
-            schedule_type="departure",
-            date_from="2025-09-01",
-            date_to="2025-09-30"
-        ),
-        "historical_schedules_raw_foreign"
-    )
-
-    client.save_to_csv(
-        client.get_nearby_airports(lat=21.03, lng=105.85, distance=200),
-        "nearby_airports_raw_foreign"
-    )
-
-    client.save_to_csv(
-        client.get_autocomplete(city="HAN"),
-        "autocomplete_raw_foreign"
-    )
-
-    client.save_to_csv(all_airports, "airport_db_foreign")
-    client.save_to_csv(client.get_city_database(), "city_db_foreign")
-
-
-
-
+    client.save_to_csv(all_flights, "flight_tracker_raw_foreign")
+    client.save_to_csv(all_realtime, "realtime_schedules_raw_foreign")
+    client.save_to_csv(client.get_nearby_airports(21.03, 105.85, 200), "nearby_airports_raw_foreign")
 
