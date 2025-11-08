@@ -2,21 +2,21 @@ import os
 import re
 import pandas as pd
 
-# Đường dẫn dự án
+# -------------------- Đường dẫn --------------------
 PROJECT_DIR = r"C:\Users\admin\Documents\Graph_Network_Project"
-RAW_DIR   = os.path.join(PROJECT_DIR, "data", "raw")
+RAW_DIR   = os.path.join(PROJECT_DIR, "data", "raw_vn")
 CLEAN_DIR = os.path.join(PROJECT_DIR, "data", "cleaned")
 os.makedirs(CLEAN_DIR, exist_ok=True)
 
 FILES = {
-    "flight_tracker_raw": "flight_tracker_raw.csv",
-    "routes_raw": "routes_raw.csv",
-    "realtime_schedules_raw": "realtime_schedules_raw.csv",
-    "historical_schedules_raw": "historical_schedules_raw.csv",
-    "nearby_airports_raw": "nearby_airports_raw.csv",
-    "autocomplete_raw": "autocomplete_raw.csv",
-    "airport_db_raw": "airport_db_raw.csv",
-    "city_db_raw": "city_db_raw.csv",
+    "flight_tracker_raw_vn": "flight_tracker_raw_vn.csv",
+    "routes_raw_vn": "routes_raw_vn.csv",
+    "realtime_schedules_raw_vn": "realtime_schedules_raw_vn.csv",
+    "historical_schedules_raw_vn": "historical_schedules_raw_vn.csv",
+    "nearby_airports_raw_vn": "nearby_airports_raw_vn.csv",
+    "autocomplete_raw_vn": "autocomplete_raw_vn.csv",
+    "airport_db_raw_vn": "airport_db_raw_vn.csv",
+    "city_db_raw_vn": "city_db_raw_vn.csv",
 }
 
 # -------------------- Utils --------------------
@@ -72,14 +72,13 @@ def normalize_columns(df: pd.DataFrame) -> pd.DataFrame:
     ]
     return df
 
-# -------------------- Clean: common --------------------
+# -------------------- Clean chung --------------------
 def clean_dataframe(df: pd.DataFrame) -> pd.DataFrame:
     df = df.copy()
     df.dropna(axis=1, how="all", inplace=True)
     df.dropna(how="all", inplace=True)
     df.drop_duplicates(inplace=True)
 
-    # chỉ xử lý object an toàn (không đụng iata/icao/terminal/timezone)
     obj_cols = [
         c for c in df.select_dtypes(include="object").columns
         if ("iata" not in c.lower() and "icao" not in c.lower()
@@ -89,58 +88,43 @@ def clean_dataframe(df: pd.DataFrame) -> pd.DataFrame:
         s = df[col].astype(str).str.strip()
         df[col] = s.replace(["nan","NaN","NULL","None","none","","N/A"], pd.NA)
 
-    # iata/icao upper
     for col in df.columns:
         if "iata" in col or "icao" in col:
             df[col] = df[col].astype("string").str.upper().str.strip()
 
-    # terminal giữ dạng string
     for col in df.columns:
         if col.lower().endswith("terminal"):
             df[col] = df[col].astype("string").str.strip()
 
-    # numeric
     for col in df.columns:
         if any(x in col for x in ["latitude","longitude","lat","lon","speed","altitude","delay","distance"]):
             df[col] = pd.to_numeric(df[col], errors="coerce")
 
-    # datetime thông minh
     for col in df.columns:
         if is_datetime_col(col):
             df[col] = smart_to_datetime(df[col])
 
-    # fill Unknown chỉ cho obj_cols an toàn
     if obj_cols:
         df[obj_cols] = df[obj_cols].fillna("Unknown")
 
-    # timezone chỉ strip
     for col in df.columns:
         if is_timezone_col(col) and df[col].dtype == object:
             df[col] = df[col].astype(str).str.strip()
 
     return df
 
-# -------------------- Clean: per table --------------------
+# -------------------- Clean từng bảng --------------------
 def clean_routes(df: pd.DataFrame) -> pd.DataFrame:
-    df = df.rename(columns={
-        "airline_iata": "airline_iata",
-        "departure_iata": "departure_iata",
-        "arrival_iata": "arrival_iata",
-    })
+    df = df.rename(columns={"airline_iata": "airline_iata"})
     keep = [c for c in ["departure_iata","arrival_iata","airline_iata"] if c in df.columns]
     if keep: df = df[keep]
     if all(c in df.columns for c in ["departure_iata","arrival_iata"]):
-        df = df.dropna(subset=["departure_iata","arrival_iata"])
         df = df[df["departure_iata"] != df["arrival_iata"]]
-        df = df.drop_duplicates(subset=["departure_iata","arrival_iata","airline_iata"])
-     # 🔹 Xóa dòng có cả departure & arrival đều Unknown
-    if all(c in df.columns for c in ["departure_iata", "arrival_iata"]):
         df = df[~((df["departure_iata"] == "Unknown") & (df["arrival_iata"] == "Unknown"))]
-
+        df = df.drop_duplicates(subset=["departure_iata","arrival_iata","airline_iata"])
     return df
 
 def clean_airport_db(df: pd.DataFrame) -> pd.DataFrame:
-    # 🔹 Chuẩn hoá tên cột (nếu có) theo quy ước thống nhất
     rename = {
         "code_iata_airport": "iata_code",
         "code_icao_airport": "icao_code",
@@ -158,41 +142,27 @@ def clean_airport_db(df: pd.DataFrame) -> pd.DataFrame:
     }
     df = df.rename(columns={k: v for k, v in rename.items() if k in df.columns})
 
-    # 🔹 Chuẩn hoá các mã định danh
     for c in ["iata_code", "icao_code", "city_iata", "country_iso2"]:
         if c in df.columns:
             df[c] = df[c].astype("string").str.upper().str.strip()
 
-    # 🔹 Tạo 1 cột country duy nhất: ưu tiên country_name, fallback country_iso2
     if "country_name" in df.columns or "country_iso2" in df.columns:
         df["country"] = df.get("country_name")
         if "country_iso2" in df.columns:
             df["country"] = df["country"].fillna(df["country_iso2"])
 
-    # 🔹 Xoá các cột gốc không còn cần thiết
-    for c in ["country_name", "country_iso2", "phone"]:
+    for c in ["country_name", "country_iso2", "phone", "timezone"]:
         if c in df.columns:
             df.drop(columns=c, inplace=True)
 
-    # 🔹 Chuyển kiểu dữ liệu toạ độ & GMT
-    for c in ["latitude", "longitude"]:
+    for c in ["latitude", "longitude", "gmt"]:
         if c in df.columns:
             df[c] = pd.to_numeric(df[c], errors="coerce")
-    if "gmt" in df.columns:
-        df["gmt"] = pd.to_numeric(df["gmt"], errors="coerce")
 
-    # 🔹 Làm sạch timezone (chỉ strip)
-    if "timezone" in df.columns and df["timezone"].dtype == object:
-        df["timezone"] = df["timezone"].astype(str).str.strip()
-
-    # 🔹 Bỏ trùng theo mã IATA hoặc ICAO
     if "iata_code" in df.columns and df["iata_code"].notna().any():
         df = df.drop_duplicates(subset=["iata_code"])
     elif "icao_code" in df.columns and df["icao_code"].notna().any():
         df = df.drop_duplicates(subset=["icao_code"])
-    else:
-        df = df.drop_duplicates()
-
     return df
 
 def clean_schedule(df: pd.DataFrame) -> pd.DataFrame:
@@ -202,48 +172,37 @@ def clean_schedule(df: pd.DataFrame) -> pd.DataFrame:
         "arrival_iata_code": "arrival_iata",
         "departure_icao_code": "departure_icao_code",
         "arrival_icao_code": "arrival_icao_code",
-        "departure_terminal": "departure_terminal",
-        "arrival_terminal": "arrival_terminal",
-        "departure_scheduled_time_utc": "dep_scheduled_utc",
-        "arrival_scheduled_time_utc": "arr_scheduled_utc",
-        "departure_actual_time_utc": "dep_actual_utc",
-        "arrival_actual_time_utc": "arr_actual_utc",
     }
     df = df.rename(columns={k: v for k, v in rename.items() if k in df.columns})
 
-    need = [c for c in ["departure_iata","arrival_iata"] if c in df.columns]
-    if need:
-        df = df.dropna(subset=need).drop_duplicates()
+    if all(c in df.columns for c in ["departure_iata", "arrival_iata"]):
+        df = df[~((df["departure_iata"] == "Unknown") & (df["arrival_iata"] == "Unknown"))]
 
-    for c in ["departure_terminal","arrival_terminal"]:
+    drop_cols = [
+        "arrival_baggage", "arrival_delay", "arrival_gate",
+        "departure_gate", "arrival_terminal", "departure_terminal"
+    ]
+    df = df.drop(columns=[c for c in drop_cols if c in df.columns], errors="ignore")
+    return df
+
+def clean_flight_tracker(df: pd.DataFrame) -> pd.DataFrame:
+    df = df.rename(columns=str.lower)
+    for c in ["system_squawk", "speed_is_ground", "speed_vspeed"]:
         if c in df.columns:
-            df[c] = df[c].astype("string").str.strip()
-            df.loc[df[c].isin(["nan","None","NULL","Unknown",""]), c] = pd.NA
+            df.drop(columns=c, inplace=True)
     if all(c in df.columns for c in ["departure_iata", "arrival_iata"]):
         df = df[~((df["departure_iata"] == "Unknown") & (df["arrival_iata"] == "Unknown"))]
     return df
 
-def clean_flight_tracker(df: pd.DataFrame) -> pd.DataFrame:
-    col_map = {}
-    for c in df.columns:
-        lc = c.lower()
-        if "flight_iata" in lc: col_map[c] = "flight_iata"
-        elif "flight_icao" in lc: col_map[c] = "flight_icao"
-        elif "airline_iata" in lc: col_map[c] = "airline_iata"
-        elif "airline_icao" in lc: col_map[c] = "airline_icao"
-        elif "departure_iata" in lc or "dep_iata" in lc: col_map[c] = "departure_iata"
-        elif "arrival_iata" in lc or "arr_iata" in lc: col_map[c] = "arrival_iata"
-        elif "departure_icao" in lc or "dep_icao" in lc: col_map[c] = "departure_icao"
-        elif "arrival_icao" in lc or "arr_icao" in lc: col_map[c] = "arrival_icao"
-        elif "status" in lc: col_map[c] = "status"
-        elif lc.endswith("updated") or "system.updated" in lc: col_map[c] = "system_updated"
-    df = df.rename(columns=col_map)
-    if all(c in df.columns for c in ["departure_iata","arrival_iata"]):
-        df = df.dropna(subset=["departure_iata","arrival_iata"])
-    df = df.drop_duplicates()
-    if all(c in df.columns for c in ["departure_iata", "arrival_iata"]):
-        df = df[~((df["departure_iata"] == "Unknown") & (df["arrival_iata"] == "Unknown"))]
+def clean_nearby_airports(df: pd.DataFrame) -> pd.DataFrame:
+    if "timezone" in df.columns:
+        df.drop(columns=["timezone"], inplace=True)
+    return df
 
+def clean_city_db(df: pd.DataFrame) -> pd.DataFrame:
+    for c in ["timezone", "phone"]:
+        if c in df.columns:
+            df.drop(columns=c, inplace=True)
     return df
 
 # -------------------- Pipeline --------------------
@@ -259,23 +218,27 @@ def main():
         datasets[name] = df
         print(f" Loaded & cleaned: {name} -> {df.shape}")
 
-    if "routes_raw" in datasets:
-        datasets["routes_raw"] = clean_routes(datasets["routes_raw"])
-    if "airport_db_raw" in datasets:
-        datasets["airport_db_raw"] = clean_airport_db(datasets["airport_db_raw"])
-    if "flight_tracker_raw" in datasets:
-        datasets["flight_tracker_raw"] = clean_flight_tracker(datasets["flight_tracker_raw"])
-    for key in ["realtime_schedules_raw", "historical_schedules_raw"]:
+    if "routes_raw_vn" in datasets:
+        datasets["routes_raw_vn"] = clean_routes(datasets["routes_raw_vn"])
+    if "airport_db_raw_vn" in datasets:
+        datasets["airport_db_raw_vn"] = clean_airport_db(datasets["airport_db_raw_vn"])
+    if "flight_tracker_raw_vn" in datasets:
+        datasets["flight_tracker_raw_vn"] = clean_flight_tracker(datasets["flight_tracker_raw_vn"])
+    if "nearby_airports_raw_vn" in datasets:
+        datasets["nearby_airports_raw_vn"] = clean_nearby_airports(datasets["nearby_airports_raw_vn"])
+    if "city_db_raw_vn" in datasets:
+        datasets["city_db_raw_vn"] = clean_city_db(datasets["city_db_raw_vn"])
+    for key in ["realtime_schedules_raw_vn", "historical_schedules_raw_vn"]:
         if key in datasets:
             datasets[key] = clean_schedule(datasets[key])
+
     for name, df in datasets.items():
-        base_name = name.replace("_raw", "")  # bỏ hậu tố _raw
-        out = os.path.join(CLEAN_DIR, f"{base_name}_cleaned.csv")  # dùng đuôi _cleaned
+        base_name = name.replace("_raw_vn", "")
+        out = os.path.join(CLEAN_DIR, f"{base_name}_cleaned_vn.csv")
         df.to_csv(out, index=False, encoding="utf-8-sig")
         print(f"💾 Saved: {out}")
 
-
-    print("\n Done cleaning all raw datasets.")
+    print("\n✅ Done cleaning all raw datasets.")
 
 if __name__ == "__main__":
     main()
