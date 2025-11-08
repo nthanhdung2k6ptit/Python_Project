@@ -97,7 +97,7 @@ class AviationEdgeAPI:
         # Đi lùi 2 cấp ra thư mục gốc (.../Graph_Network_Project)
         project_root = os.path.dirname(os.path.dirname(current_script_dir))
         # Đi xuôi vào .../data/raw
-        folder_path = os.path.join(project_root, 'data', 'raw_foreign')
+        folder_path = os.path.join(project_root, 'data', 'raw')
         os.makedirs(folder_path, exist_ok=True)
         file_path = os.path.join(folder_path, f"{filename}.csv")
 
@@ -147,7 +147,7 @@ if __name__ == "__main__":
             print(f"Thiếu airline hoặc airport ở {code}, bỏ qua flights/routes/realtime.")
             continue
 
-        # Lấy tối đa 10 hãng & 3 sân bay đại diện
+        # Lấy tối đa 10 hãng & sân bay đại diện
         airline_codes = [a["codeIataAirline"] for a in airlines if a.get("codeIataAirline")][:10]
         airport_codes = [a["codeIataAirport"] for a in airports if a.get("codeIataAirport")][:10]
 
@@ -161,15 +161,31 @@ if __name__ == "__main__":
         for airport in airport_codes:
             realtime = client.get_real_time_schedules(airport)
             if realtime: all_realtime.extend(realtime)
+        
+        all_autocomplete = []
+        for idx, city in enumerate(cities, start=1):
+            name_city = city.get("nameCity")
+            if not name_city:
+               continue
 
-        # Nghỉ 1 giây giữa các quốc gia để tránh quá tải
-        time.sleep(1)
+            print(f"[{idx}] Đang tìm sân bay cho: {name_city}")
+            data = client.get_autocomplete(name_city)
+
+    # Dữ liệu hợp lệ
+            if isinstance(data, dict) and "airportsByCities" in data:
+               all_autocomplete.extend(data["airportsByCities"])
+
+    # Giới hạn thử nghiệm để tránh tốn quota (ví dụ: chỉ 10 thành phố đầu)
+            if idx >= 10:
+               break
 
     # --- 3. Lưu toàn bộ dữ liệu ---
-    client.save_to_csv(all_airports, "airport__db_raw_foreign")
-    client.save_to_csv(all_cities, "city_db_raw_foreign")
-    client.save_to_csv(all_routes, "routes_raw_foreign")
-    client.save_to_csv(all_flights, "flight_tracker_raw_foreign")
-    client.save_to_csv(all_realtime, "realtime_schedules_raw_foreign")
-    client.save_to_csv(client.get_nearby_airports(21.03, 105.85, 200), "nearby_airports_raw_foreign")
+    client.save_to_csv(all_airports, "airport__db_raw")
+    client.save_to_csv(all_cities, "city_db_raw")
+    client.save_to_csv(all_routes, "routes_raw")
+    client.save_to_csv(all_flights, "flight_tracker_raw")
+    client.save_to_csv(all_realtime, "realtime_schedules_raw")
+    client.save_to_csv(all_autocomplete, "autocomplete_raw")
+    client.save_to_csv(client.get_nearby_airports(21.03, 105.85, 200), "nearby_airports_raw")
 
+# tổng 20 000 chuyến bay

@@ -94,7 +94,7 @@ class AviationEdgeAPI:
         # Đi lùi 2 cấp ra thư mục gốc (.../Graph_Network_Project)
         project_root = os.path.dirname(os.path.dirname(current_script_dir))
         # Đi xuôi vào .../data/raw
-        folder_path = os.path.join(project_root, 'data', 'raw')
+        folder_path = os.path.join(project_root, 'data', 'raw_vn')
         os.makedirs(folder_path, exist_ok=True)
         file_path = os.path.join(folder_path, f"{filename}.csv")
 
@@ -117,30 +117,30 @@ if __name__ == "__main__":
     airlines_vn = client.get_airline_database()
     cities_vn = client.get_city_database()
 
-    client.save_to_csv(airports_vn, "airport_db_raw")
-    client.save_to_csv(cities_vn, "city_db_raw")
+    client.save_to_csv(airports_vn, "airport_db_raw_vn")
+    client.save_to_csv(cities_vn, "city_db_raw_vn")
 
     airline_codes = [a["codeIataAirline"] for a in airlines_vn if a.get("codeIataAirline")]
     flights_vn, routes_vn = [], []
     for code in airline_codes:
         flights_vn.extend(client.get_flight_tracker(code))
         routes_vn.extend(client.get_airline_routes(code))
-    client.save_to_csv(flights_vn, "flight_tracker_raw")
-    client.save_to_csv(routes_vn, "routes_raw")
+    client.save_to_csv(flights_vn, "flight_tracker_raw_vn")
+    client.save_to_csv(routes_vn, "routes_raw_vn")
 
     airport_codes = [a["codeIataAirport"] for a in airports_vn if a.get("codeIataAirport")]
     all_realtime = []
     for airport in airport_codes:
         all_realtime.extend(client.get_real_time_schedules(airport))
-    client.save_to_csv(all_realtime, "realtime_schedules_raw")
+    client.save_to_csv(all_realtime, "realtime_schedules_raw_vn")
 
     all_historical = []
     for airport in [a["codeIataAirport"] for a in airports_vn if a.get("codeIataAirport")]:
         data = client.get_historical_schedules(airport, "2025-09-01", "2025-09-05")
         if data: all_historical.extend(data)
-    client.save_to_csv(all_historical, "historical_schedules_raw")
+    client.save_to_csv(all_historical, "historical_schedules_raw_vn")
 
-    client.save_to_csv(client.get_nearby_airports(21.03, 105.85, 200), "nearby_airports_raw")
+    client.save_to_csv(client.get_nearby_airports(21.03, 105.85, 200), "nearby_airports_raw_vn")
 
     city_iata_codes = [c["codeIataCity"] for c in cities_vn if c.get("codeIataCity")]
     all_autocomplete = []
@@ -152,7 +152,7 @@ if __name__ == "__main__":
                 all_autocomplete.extend(list_ben_trong)
         else:
             print(f"Không tìm thấy dữ liệu 'airportsByCities' cho {code_iata_city}")
-    client.save_to_csv(all_autocomplete, "autocomplete_raw")
+    client.save_to_csv(all_autocomplete, "autocomplete_raw_vn")
 
 
 
