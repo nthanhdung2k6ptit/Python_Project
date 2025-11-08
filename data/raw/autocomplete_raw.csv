@@ -1,2 +1,259 @@
-﻿message,success
-city Parameter does not exist!,False
+﻿GMT,codeIataAirport,codeIataCity,codeIcaoAirport,codeIso2Country,latitudeAirport,longitudeAirport,nameAirport,nameCountry,phone,timezone
+-6,PAH,PAH,KPAH,US,37.06111,-88.7725,Barkley Regional,United States,,America/Chicago
+-6,POH,POH,KPOH,US,42.74222,-94.644165,Pocahontas Municipal,United States,,America/Chicago
+1,ZAO,ZAO,LFCC,FR,44.45,1.45,Laberandie,France,,Europe/Paris
+-4,AGT,AGT,SGES,PY,-25.5,-54.833332,Alejo Garcia,Paraguay,,America/Asuncion
+-7,BGT,BGT,,US,34.566666,-113.183334,Bagdad,United States,,America/Phoenix
+3,BGW,BGW,ORBI,IQ,33.255554,44.225,Baghdad International,Iraq,,Asia/Baghdad
+-4,CBL,CBL,SVCB,VE,8.128056,-63.5375,Ciudad Bolivar,Venezuela,,America/Caracas
+-7,CEN,CEN,MMCN,MX,27.391945,-109.839165,Ciudad Obregon,Mexico,,America/Hermosillo
+-4,CGU,CGU,,VE,8.305,-62.734444,Ciudad Guayana,Venezuela,,America/Caracas
+-7,CJS,CJS,MMCS,MX,31.63593,-106.4361,Abraham Gonzalez International,Mexico,,America/Ojinaga
+-6,CME,CME,MMCE,MX,18.65103,-91.802734,Ciudad Del Carmen,Mexico,,America/Merida
+1,XJI,CQM,,ES,38.9860963,-3.9272629,Ciudad Real Railway Station,Spain,,Europe/Madrid
+-7,CUA,CUA,MMDA,MX,25.036943,-111.664444,Ciudad Constitucion,Mexico,,America/Mazatlan
+-6,CVM,CVM,MMCV,MX,23.713888,-98.96528,Ciudad Victoria,Mexico,,America/Monterrey
+5,DDU,DDU,OP17,PK,26.75,67.75,Dadu,Pakistan,,Asia/Karachi
+1,NDO,NDO,,ES,37.38333,-6.583333,La Palma Del Condado,Spain,,Europe/Madrid
+-7,TAD,TAD,KTAD,US,37.305557,-104.325,Las Animas,United States,,America/Denver
+-5,TDA,TDA,,CO,5.423611,-71.72444,Trinidad,Colombia,,America/Bogota
+-4,TDD,TDD,SLTR,BO,-14.822613,-64.91931,Trinidad,Bolivia,,America/La_Paz
+-5,TND,TND,MUTD,CU,21.8,-80.0,Trinidad,Cuba,,America/Havana
+10,BCI,BCI,YBAR,AU,-23.559168,145.30194,Barcaldine,Australia,,Australia/Brisbane
+-7,BDG,BDG,KBDG,US,37.61667,-109.48333,Blanding,United States,,America/Denver
+5,BDN,BDN,OPTH,PK,24.633333,68.9,Talhar,Pakistan,,Asia/Karachi
+10,BNM,BNM,,PG,-9.116667,147.61667,Bodinumu,Papua New Guinea,,Pacific/Port_Moresby
+9,BUI,BUI,WAJB,ID,-2.0,133.58333,Bokondini,Indonesia,,Asia/Jayapura
+3,CII,CII,LTBD,TR,47.90278,-112.312225,Cildir,Turkey,,Europe/Istanbul
+5,DBA,DBA,OPDB,PK,28.883333,64.416664,Dalbandin,Pakistan,,Asia/Karachi
+1,DNR,DNR,LFRD,FR,48.587776,-2.083611,Pleurtuit,France,,Europe/Paris
+10,DNU,DNU,,PG,-6.15,146.66667,Dinangat,Papua New Guinea,,Pacific/Port_Moresby
+3,DNX,DNX,HSGG,SD,14.1,33.066666,Galegu,Sudan,,Africa/Khartoum
+12,DUD,DUD,NZDN,NZ,-45.92387,170.19905,Dunedin International,New Zealand,,Pacific/Auckland
+0,EDI,EDI,EGPH,GB,55.948143,-3.364177,Edinburgh,United Kingdom,,Europe/London
+0,ZXE,EDI,,GB,55.9501755,-3.1875359,Waverley Railway Station,United Kingdom,,Europe/London
+-7,GNG,GNG,,US,42.933334,-114.71667,Gooding,United States,,America/Boise
+10,HIP,HIP,YHDY,AU,-21.316668,138.28334,Headingly,Australia,,Australia/Brisbane
+8,KGT,KGT,ZUKD,CN,30.1575,101.73472,Kangding,China,,Asia/Shanghai
+-5,LDM,LDM,KLDM,US,44.075333,-86.479164,Mason County,United States,,America/Detroit
+-3,LEP,LEP,SNDN,BR,-21.466667,-42.666668,Leopoldina,Brazil,,America/Sao_Paulo
+3,MED,MED,OEMA,SA,24.544369,39.698967,Mohammad Bin Abdulaziz,Saudi Arabia,,Asia/Riyadh
+-5,MND,MND,,CO,4.516667,-73.28333,Medina,Colombia,,America/Bogota
+3,MQM,MQM,LTCR,TR,37.2233,40.6317,Mardin,Turkey,,Europe/Istanbul
+-8,BZF,RDD,,US,40.5865396,-122.3916754,Benton Field,United States,,America/Los_Angeles
+-8,RDD,RDD,KRDD,US,40.505768,-122.29991,Redding,United States,,America/Los_Angeles
+-5,RDG,RDG,KRDG,US,40.378613,-75.96389,Municipalcipal/Spaatz Field,United States,,America/New_York
+-8,SBD,SBT,KSBD,US,34.11667,-117.23333,Norton AFB,United States,,America/Los_Angeles
+1,UDN,UDN,LIPD,IT,46.033333,13.183333,Airfield,Italy,,Europe/Rome
+0,WTN,WTN,EGXW,GB,53.166668,-0.516667,RAF Station,United Kingdom,,Europe/London
+9.30,WUD,WUD,YWUD,AU,-33.016666,135.61945,Wudinna,Australia,,Australia/Adelaide
+0,XRE,XRE,,GB,51.45625,-0.97113,Railway Service,United Kingdom,,Europe/London
+11,XYA,XYA,AGGY,SB,-9.116667,159.21666,Yandina,Solomon Islands,,Pacific/Guadalcanal
+-8,YDB,YDB,CYDB,CA,61.35,-139.01666,Burwash Landings,Canada,,America/Whitehorse
+-5,YKD,YKD,,CA,44.20139,-81.60667,Township Airport,Canada,,America/Toronto
+-8,YMU,YMU,CYMU,CA,50.07145,-124.98369,Mansons Landing SPB,Canada,,America/Vancouver
+-6,YNL,YNL,CYNL,CA,58.275,-104.08111,Points North Landing,Canada,,America/Regina
+-6,ZAC,ZAC,CZAC,CA,56.083332,-96.1,York Landing,Canada,,America/Winnipeg
+1,ZBT,ZBT,,DK,39.122627,117.3399,Kolding Railway Station,Denmark,,Europe/Copenhagen
+3.30,ACP,ACP,OITM,IR,37.347244,46.145115,Sahand,Iran,,Asia/Tehran
+5,AFS,AFS,UTSN,UZ,41.61361,64.233055,Zarafshan,Uzbekistan,,Asia/Samarkand
+8,AOG,AOG,ZYAS,CN,41.166668,123.03333,Anshan,China,,Asia/Shanghai
+3,ARH,ARH,ULAA,RU,64.594795,40.711903,Arkhangelsk,Russia,,Europe/Moscow
+3,ASF,ASF,URWA,RU,46.2877,47.999977,Astrakhan,Russia,,Europe/Volgograd
+5,AZN,AZN,UTKA,UZ,40.733334,72.3,Andizhan,Uzbekistan,,Asia/Tashkent
+3,BHN,BHN,OYBN,YE,14.783333,45.733334,Beihan,Yemen,,Asia/Aden
+5.45,BJH,BJH,VNBG,NP,29.55,81.25,Bajhang,Nepal,,Asia/Kathmandu
+8,BSD,BSD,ZPBS,CN,25.055182,99.16143,Baoshan,China,,Asia/Shanghai
+8,CGD,CGD,ZGCD,CN,28.924467,111.63886,Changde,China,,Asia/Shanghai
+8,CGQ,CGQ,ZYCC,CN,43.902836,125.217545,Changchun,China,,Asia/Shanghai
+2,CHQ,CHQ,LGSA,GR,35.5402,24.140373,Souda,Greece,,Europe/Athens
+-5,CHX,CHX,MPCH,PA,9.45,-82.45,Changuinola,Panama,,America/Panama
+8,CIH,CIH,ZBCZ,CN,36.24588,113.12158,Changzhi,China,,Asia/Shanghai
+-5,CMX,CMX,KCMX,US,47.167778,-88.48639,Houghton County,United States,,America/Detroit
+8,CNI,CNI,KCNI,CN,31.25,121.433334,Changhai,China,,Asia/Shanghai
+-4,CNR,CNR,SCRA,CL,-26.329166,-70.604164,Chanaral,,,America/Santiago
+-6,CNU,CNU,KCNU,US,37.683334,-95.45,Martin Johnson,United States,,America/Chicago
+8,CSX,CSX,ZGHA,CN,28.193336,113.21459,Changsha,China,,Asia/Shanghai
+8,CZX,CZX,ZSCG,CN,31.914116,119.77976,Changzhou,China,,Asia/Shanghai
+5.30,DBD,DBD,VEDB,IN,23.783333,86.45,Dhanbad,India,,Asia/Kolkata
+5,DEA,DEA,OPDG,PK,29.960556,70.485275,Dera Ghazi Khan,Pakistan,,Asia/Karachi
+5.45,DHI,DHI,VNDH,NP,28.683332,80.63333,Dhangarhi,Nepal,,Asia/Kathmandu
+-6,DHN,DHN,KDHN,US,31.32,-85.44833,Dothan Airport,United States,,America/Chicago
+1,DSC,DSC,FKKS,CM,5.833333,10.091667,Dschang,Cameroon,,Africa/Douala
+5,DSK,DSK,OPDI,PK,31.916668,70.9,Dera Ismail Khan,Pakistan,,Asia/Karachi
+5,DYU,DYU,UTDD,TJ,38.54894,68.81728,Dushanbe,Tajikistan,,Asia/Dushanbe
+8,FSA,FUO,,CN,23.021548,113.121416,CZ Bus Station,China,,Asia/Shanghai
+8,FUO,FUO,,CN,23.133333,113.28333,Fuoshan,China,,Asia/Shanghai
+8,ZCP,FUO,,CN,23.021548,113.121416,Foshan Ferry,China,,Asia/Shanghai
+8,GHN,GHN,,CN,30.466667,106.65,Guanghan,China,,Asia/Shanghai
+2,GNZ,GNZ,FBGZ,BW,-21.7,21.666668,Ghanzi,Botswana,,Africa/Gaborone
+1,HAJ,HAJ,EDDV,DE,52.459255,9.694766,Hanover Airport,Germany,,Europe/Berlin
+1,ZVM,HAJ,,DE,52.3720683,9.7356861,Messe-BF Railway Servi,Germany,,Europe/Berlin
+1,ZVR,HAJ,,DE,52.3720683,9.7356861,Hanover Railway,Germany,,Europe/Berlin
+7,HAN,HAN,VVNB,VN,21.214184,105.802826,Noibai International,,,Asia/Ho_Chi_Minh
+5,HAQ,HAQ,VRMH,MV,6.748433,73.16838,Hanimaadhoo,Maldives,,Indian/Maldives
+-9,HBC,HBC,,US,57.5,-135.91667,Hanus Bay,United States,,America/Sitka
+8,HDG,HDG,ZBHD,CN,36.525833,114.425,Handan,China,,Asia/Shanghai
+8,HGH,HGH,ZSHC,CN,30.236935,120.43236,Hangzhou,China,,Asia/Shanghai
+5,HMA,HMA,USHH,RU,61.02613,69.09714,Khanty-Mansiysk,Russia,,Asia/Yekaterinburg
+9,HNA,HNA,RJSI,JP,39.426926,141.13077,Hanamaki,Japan,,Asia/Tokyo
+-10,HNM,HNM,PHHN,US,20.795834,-156.01889,Hana,United States,,Pacific/Honolulu
+-7,HNX,HNX,,US,41.833332,-106.5,Hanna,United States,,America/Denver
+8,HSN,HSN,ZSZS,CN,29.935259,122.35691,Zhoushan,China,,Asia/Shanghai
+-7,HVE,HVE,KHVE,US,38.36667,-110.71667,Intermediate,United States,,America/Denver
+8,HZG,HZG,ZLHZ,CN,32.983334,107.183334,Hanzhong,China,,Asia/Shanghai
+3.30,IFN,IFN,OIFM,IR,32.745686,51.87638,Isfahan International,Iran,,Asia/Tehran
+5.30,IXC,IXC,VICG,IN,30.674921,76.797386,Chandigarh,India,,Asia/Kolkata
+5.30,IXP,IXP,VIPK,IN,32.216667,75.63333,Pathankot,India,,Asia/Kolkata
+8,JIC,JIC,,CN,38.541943,102.34861,Jinchuan,China,,Asia/Shanghai
+2,GCJ,JNB,FAGC,ZA,-26.233334,28.15,Grand Central,South Africa,,Africa/Johannesburg
+2,HLA,JNB,FALA,ZA,-25.937843,27.926432,Lanseria,South Africa,,Africa/Johannesburg
+2,JNB,JNB,FAJS,ZA,-26.132664,28.231314,Oliver Reginald Tambo International (Jan Smuts International),South Africa,+27 (0) 11 92,Africa/Johannesburg
+2,QRA,JNB,FAGM,ZA,-26.140278,28.242779,Rand/Germiston,South Africa,,Africa/Johannesburg
+7,KDT,KDT,,TH,14.1,99.916664,Kamphangsaen,Thailand,,Asia/Bangkok
+3.30,KHA,KHA,,IR,36.733334,45.15,Khaneh,Iran,,Asia/Tehran
+8,KHN,KHN,ZSCN,CN,28.859901,115.907845,Nanchang,China,,Asia/Shanghai
+7,KOP,KOP,VTUW,TH,17.4,104.75,Nakhon Phanom,Thailand,,Asia/Bangkok
+7,KOS,KOS,VDSV,KH,10.633333,103.5,Sihanoukville,Cambodia,,Asia/Phnom_Penh
+9,KPO,KPO,RKTH,KR,35.98371,129.43375,Pohang,South Korea,,Asia/Seoul
+4.30,KWH,KWH,OAHN,AF,33.916668,66.333336,Khwahan,Afghanistan,,Asia/Kabul
+5,LBD,LBD,UTDL,TJ,40.219887,69.6965,Khudzhand,Tajikistan,,Asia/Dushanbe
+8,LHN,LHN,,TW,23.433332,121.3,Lishan,Taiwan,,Asia/Taipei
+1,LUZ,LUZ,,PL,51.231945,22.690277,Lushan,Poland,,Europe/Warsaw
+-6,MIF,MIF,,US,31.6,-102.9,Roy Hurd Memorial,United States,,America/Chicago
+8,NBS,NBS,,CN,42.083332,127.6,Changbaishan,China,,Asia/Shanghai
+-6,NRI,NRI,,US,35.166668,-99.833336,Shangri-la,United States,,America/Chicago
+4.30,OAA,OAA,,AF,0.0,0.0,Shank Air Base,Afghanistan,,Asia/Kabul
+-10,PAK,PAK,PHPA,US,21.933332,-159.61667,Port Allen,United States,,Pacific/Honolulu
+7,PHA,PHA,,VN,11.633333,108.95,Phan Rang,,,Asia/Ho_Chi_Minh
+7,PHH,PHH,,VN,10.9,108.066666,Phan Thiet,,,Asia/Ho_Chi_Minh
+7,PMM,PMM,,TH,13.75,101.35,Phanom Sarakham,Thailand,,Asia/Bangkok
+5,RYK,RYK,OPRK,PK,28.39178,70.28662,Sheikh Zayed International,Pakistan,,Asia/Karachi
+8,PVG,SHA,ZSPD,CN,31.151825,121.799805,Shanghai Pudong International,China,021-96990,Asia/Shanghai
+8,SHA,SHA,ZSSS,CN,31.196815,121.34197,Shanghai Hongqiao International,China,,Asia/Shanghai
+8,SLJ,SLJ,,AU,33.29889,-111.91556,Stellar Air Park,Australia,,Australia/Perth
+0,SNN,SNN,EINN,IE,52.69248,-8.92039,Shannon,Ireland,,Europe/Dublin
+6.30,SNW,SNW,VYTD,MM,18.453876,94.30038,Thandwe,,,Asia/Rangoon
+10,SRN,SRN,YSRN,AU,-42.15,145.31667,Strahan,Australia,,Australia/Hobart
+8,SWA,SWA,ZGOW,CN,23.430237,116.75859,Shantou,China,,Asia/Shanghai
+8,SXJ,SXJ,ZWSS,CN,42.816666,90.23333,Shanshan,China,,Asia/Shanghai
+10,THG,THG,YTNG,AU,-24.5,150.56667,Thangool,Australia,,Australia/Brisbane
+7,THX,THX,UOTT,RU,65.79722,87.93528,Turukhansk,Russia,,Asia/Krasnoyarsk
+5.30,TJV,TJV,VOTJ,IN,10.8,79.2,Thanjavur,India,,Asia/Kolkata
+8,TVS,TVS,,CN,39.724,117.99345,Sannuhe,China,,Asia/Shanghai
+0,UCN,UCN,,LR,5.95,-10.033333,Buchanan,Liberia,,Africa/Monrovia
+7,URT,URT,VTSB,TH,9.133865,99.143196,Surat Thani,Thailand,,Asia/Bangkok
+7,UTH,UTH,VTUD,TH,17.38661,102.774506,Udon Thani,Thailand,,Asia/Bangkok
+3,VVB,VVB,FMMH,MG,-19.833332,48.8,Mahanoro,Madagascar,,Indian/Antananarivo
+-9,WCR,WCR,PALR,US,67.505554,-148.5,Chandalar,United States,,America/Anchorage
+8,WEC,WEC,,CN,49.2,9.925,Wenchang Railway Station,China,,Asia/Shanghai
+8,WNH,WNH,ZPWS,CN,23.374907,104.24256,Puzhehei,China,,Asia/Shanghai
+12,WRE,WRE,NZWR,NZ,-35.76742,174.36403,Whangarei,New Zealand,,Pacific/Auckland
+8,WUH,WUH,ZHHH,CN,30.776598,114.209625,Tianhe International,China,,Asia/Shanghai
+8,WUS,WUS,ZSWY,CN,27.716667,117.96667,Wuyishan,China,,Asia/Shanghai
+-5,XDL,XDL,,CA,48.34935,-64.67926,Chandler Railway Station,Canada,,America/Montreal
+8,XIC,XIC,ZUXC,CN,27.981922,102.187645,Xichang,China,,Asia/Shanghai
+-5,YBJ,YBJ,,CA,50.5,-62.916668,Baie Johan Beetz,Canada,,America/Montreal
+8,YIE,YIE,,CN,47.31,119.910835,Yiershi,China,,Asia/Shanghai
+8,YIH,YIH,ZHYC,CN,30.549934,111.478935,Yichang,China,,Asia/Shanghai
+-2:30,YZM,YZM,,CA,48.833332,-56.86667,Buchans,Canada,,America/St_Johns
+8,YZY,YZY,,CN,38.8075,100.660835,Ganzhou,China,,Asia/Shanghai
+8,THJ,ZCA,,CN,0.0,0.0,Taishan Bus Station,China,,Asia/Shanghai
+8,ZCA,ZCA,,CN,0.0,0.0,Tai Shan,China,,Asia/Shanghai
+8,HHS,ZGN,,CN,13.07,42.638332,CZ Bus Station,China,,Asia/Shanghai
+8,ZGN,ZGN,ZGNN,CN,22.61321,108.1675,Zhongshan Ferry Port,China,,Asia/Shanghai
+8,ZHA,ZHA,ZGZJ,CN,21.214727,110.36272,Zhanjiang,China,,Asia/Shanghai
+8,ZIY,ZIY,,CN,0.0,0.0,Lianhuashan Port,China,,Asia/Shanghai
+8,ZQZ,ZQZ,,CN,40.7392,114.931,Zhangjiakou,China,,Asia/Shanghai
+5,DRV,DRV,,MV,5.156111,73.13028,Dharavandhoo Island,Maldives,,Indian/Maldives
+5,HAQ,HAQ,VRMH,MV,6.748433,73.16838,Hanimaadhoo,Maldives,,Indian/Maldives
+10,HIH,HIH,,AU,-20.166668,148.95,Hook Island,Australia,,Australia/Brisbane
+-9,HNH,HNH,PAOH,US,58.098057,-135.40334,Hoonah,United States,,America/Juneau
+9.30,HOK,HOK,YHOO,AU,-18.335,130.6325,Hooker Creek,Australia,,Australia/Darwin
+-9,HPB,HPB,PAHP,US,61.525078,-166.14586,Hooper Bay,United States,,America/Nome
+5,KDM,KDM,VRMT,MV,0.491527,72.99593,Kaadedhdhoo,Maldives,,Indian/Maldives
+5,KDO,KDO,VRMT,MV,1.883333,73.51667,Kadhdhoo,Maldives,,Indian/Maldives
+2,KMP,KMP,FYKT,NA,-26.533611,18.1,J.G.H. Van Der Wath,Namibia,,Africa/Windhoek
+-10,MKK,MKK,PHMK,US,21.152779,-157.1,Molokai,United States,,Pacific/Honolulu
+2,OUH,OUH,FAOH,ZA,-33.603333,22.188334,Oudtshoorn,South Africa,,Africa/Johannesburg
+10,ROH,ROH,YROB,AU,-18.25,144.0,Robinhood,Australia,,Australia/Brisbane
+8,HUZ,HUZ,,CN,23.083332,114.36667,Huizhou,China,,Asia/Shanghai
+8,LQS,LQS,,CN,43.826687,18.336065,Lingshui Railway Station,China,,Asia/Shanghai
+8,THQ,THQ,ZLTS,CN,34.556236,105.86501,Maijishan,China,,Asia/Shanghai
+8,ZBZ,ZBZ,,CN,0.0,0.0,Xin Hui Ferry,China,,Asia/Shanghai
+-5,AXV,AXV,KAXV,US,40.566666,-84.2,Neil Armstrong,United States,,America/New_York
+9,BUI,BUI,WAJB,ID,-2.0,133.58333,Bokondini,Indonesia,,Asia/Jayapura
+-9,FYU,FYU,PFYU,US,66.56981,-145.2482,Fort Yukon,United States,,America/Anchorage
+-9,GAK,GAK,,US,62.333332,-145.31667,Gakona,United States,,America/Anchorage
+1,GKO,GKO,,GA,-0.083333,11.466667,Kongoboumba,Gabon,,Africa/Libreville
+8,HHP,HKG,,HK,22.318056,114.2,H K Heliport,Hong Kong,,Asia/Hong_Kong
+8,HKG,HKG,VHHH,HK,22.315248,113.93649,Hong Kong International,Hong Kong,+852 2181 888,Asia/Hong_Kong
+8,XJH,HKG,,HK,22.2478599,114.2033843,Hong Kong Harbour,Hong Kong,,Asia/Hong_Kong
+2,JMK,JMK,LGMK,GR,37.43611,25.344444,Mikonos,Greece,,Europe/Athens
+9,KCI,KCI,,ID,-8.35,127.05,Kon,Indonesia,,Asia/Jayapura
+10,KGB,KGB,,PG,-6.133333,147.65,Konge,Papua New Guinea,,Pacific/Port_Moresby
+-4,KKG,KKG,,GY,5.266667,-59.816666,Konawaruk,Guyana,,America/Guyana
+-9,KKH,KKH,PADY,US,59.966667,-162.75,Kongiganak,United States,,America/Nome
+7,KKZ,KKZ,VDKK,KH,11.633333,102.96667,Koh Kong,Cambodia,,Asia/Phnom_Penh
+11,KNQ,KNQ,NWWD,NC,-21.053333,164.83778,Kone,New Caledonia,,Pacific/Noumea
+-10,KOA,KOA,PHKO,US,19.736174,-156.04108,Kona International Airport,United States,,Pacific/Honolulu
+7,KON,KON,,VN,14.354167,108.021385,Kontum,,,Asia/Ho_Chi_Minh
+2,KOO,KOO,FZRQ,CD,-5.383333,27.0,Kongolo,Democratic Republic of the Congo,,Africa/Lubumbashi
+9,KOX,KOX,WABN,ID,-4.716667,136.41667,Kokonao,Indonesia,,Asia/Jayapura
+10,KPF,KPF,,PG,-8.533056,142.51195,Kondubol,Papua New Guinea,,Pacific/Port_Moresby
+3,KYA,KYA,LTAN,TR,37.979168,32.56222,Konya,Turkey,,Europe/Istanbul
+3,LDG,LDG,ULAL,RU,64.9,45.75,Leshukonskoye,Russia,,Europe/Moscow
+7,LSX,LSX,WITL,ID,5.066667,97.316666,Lhok Sukon,Indonesia,,Asia/Jakarta
+1,NKS,NKS,,CM,4.95,9.933333,Nkongsamba,Cameroon,,Africa/Douala
+1,OKN,OKN,FOGQ,GA,-1.0,14.008333,Okondja,Gabon,,Africa/Libreville
+7,SNO,SNO,VTUI,TH,17.283333,104.1,Sakon Nakhon,Thailand,,Asia/Bangkok
+2,SOK,SOK,FXSM,LS,-29.833332,28.5,Semongkong,Lesotho,,Africa/Maseru
+-6,UKN,UKN,,US,43.266666,-91.48333,Waukon Municipal Airport,United States,,America/Chicago
+3,WMP,WMP,,MG,-16.075,47.59722,Mampikony,Madagascar,,Indian/Antananarivo
+1,XKB,XKB,,NO,59.66858,9.65017,Kongsberg Railway Station,Norway,,Europe/Oslo
+1,XZD,XZD,,NO,60.1875,12.001667,Kongsvinger Railway Station,Norway,,Europe/Oslo
+1,ZDX,ZDX,,CH,47.40165,8.40015,Dietikon Railway Station,Switzerland,,Europe/Zurich
+1,ZKW,ZKW,,CH,0.0,0.0,Wetzikon Railway Station,Switzerland,,Europe/Zurich
+-3,BRB,BRB,SBRR,BR,-2.910626,-57.11111,Barreirinhas,Brazil,,America/Fortaleza
+9,CHF,CHF,RKPE,KR,35.1375,128.69778,Jinhae,South Korea,,Asia/Seoul
+1,CPH,CPH,EKCH,DK,55.62905,12.647601,Kastrup,Denmark,+45 3231 3231,Europe/Copenhagen
+1,RKE,CPH,EKRK,DK,55.583332,12.133333,Roskilde Airport,Denmark,,Europe/Copenhagen
+1,ZGH,CPH,,DK,28.193336,113.21459,Copenhagen H Rail Station,Denmark,,Europe/Copenhagen
+8,DNM,DNM,YSHK,AU,-25.916668,113.53333,Denham,Australia,,Australia/Perth
+-9,EHM,EHM,PAEH,US,58.64722,-162.06056,Cape Newenham,United States,,America/Nome
+-2,FEN,FEN,SBFN,BR,-3.85,-32.416668,Fernando De Noronha,Brazil,,America/Noronha
+2,IHC,IHC,FQIA,MZ,-26.0,32.933334,Inhaca,Mozambique,,Africa/Maputo
+2,IMG,IMG,,MZ,-18.433332,35.0,Inhaminga,Mozambique,,Africa/Maputo
+2,INH,INH,FQIN,MZ,-23.874443,35.408333,Inhambane,Mozambique,,Africa/Maputo
+-9,KWN,KWN,PAQH,US,59.761112,-161.83333,Kwinhagak,United States,,America/Anchorage
+-6,MHK,MHK,KMHK,US,39.142223,-96.66889,Municipal,United States,,America/Chicago
+0,MHZ,MHZ,,GB,52.36667,0.483333,Mildenhall Airport,United Kingdom,,Europe/London
+7,CXR,NHA,VVCR,VN,11.993611,109.225,Cam Ranh,,,Asia/Ho_Chi_Minh
+7,NHA,NHA,VVNT,VN,12.227912,109.19666,Nha Trang,,,Asia/Ho_Chi_Minh
+2,SDB,SDB,FASD,ZA,-33.066666,18.0,Langebaanweg,South Africa,,Africa/Johannesburg
+-4,STZ,STZ,SWST,BR,-10.300278,-50.45,Confresa,Brazil,,America/Cuiaba
+0,TTK,TTK,,GB,51.583332,-0.083333,Hale Railway Station,United Kingdom,,Europe/London
+-3,VAG,VAG,SBVG,BR,-21.55,-45.433334,Maj. Brig. Trompowsky,Brazil,,America/Sao_Paulo
+8,NFF,ZEF,,CN,36.28,-80.79,CZ Bus Station,China,,Asia/Shanghai
+8,ZEF,ZEF,,CN,36.40025,-80.81069,Nanhai Ferry,China,,Asia/Shanghai
+10,ABH,ABH,YAPH,AU,-23.65,146.63333,Alpha,Australia,,Australia/Brisbane
+5.30,IMF,IMF,VEIM,IN,24.76457,93.897064,Municipal,India,,Asia/Kolkata
+7,KDT,KDT,,TH,14.1,99.916664,Kamphangsaen,Thailand,,Asia/Bangkok
+7,KOP,KOP,VTUW,TH,17.4,104.75,Nakhon Phanom,Thailand,,Asia/Bangkok
+7,PHA,PHA,,VN,11.633333,108.95,Phan Rang,,,Asia/Ho_Chi_Minh
+7,PHH,PHH,,VN,10.9,108.066666,Phan Thiet,,,Asia/Ho_Chi_Minh
+2,PHW,PHW,FAPH,ZA,-23.93361,31.15611,Phalaborwa,South Africa,,Africa/Johannesburg
+7,PMM,PMM,,TH,13.75,101.35,Phanom Sarakham,Thailand,,Asia/Bangkok
+5.45,PPL,PPL,VNPL,NP,27.516666,86.6,Phaplu,Nepal,,Asia/Kathmandu
+7,DIN,DIN,VVDB,VN,21.383333,103.0,Dien Bien,,,Asia/Ho_Chi_Minh
+7,HBN,HBN,,VN,12.0,106.0,Flamingo,,,Asia/Ho_Chi_Minh
+7,HKT,HKT,VTSP,TH,8.107619,98.306435,Phuket International,Thailand,,Asia/Bangkok
+7,PHU,PHU,,VN,9.95,106.333336,Phu Vinh,,,Asia/Ho_Chi_Minh
+7,PQC,PQC,VVPQ,VN,10.223722,103.96324,Duong Dong,,,Asia/Ho_Chi_Minh
+-6,SLR,SLR,KSLR,US,33.13333,-95.6,Sulphur Springs,United States,,America/Chicago
+7,VSO,VSO,,VN,9.433333,105.46667,Phuoclong,,,Asia/Ho_Chi_Minh
+3,DWB,DWB,,MG,-16.1,45.36667,Soalala,Madagascar,,Indian/Antananarivo
+-3,JPA,JPA,SBJP,BR,-7.145357,-34.94816,Castro Pinto,Brazil,,America/Fortaleza
+-5,SQU,SQU,SPOA,PE,-6.95,-76.75,Saposoa,Peru,,America/Lima
+2,TSR,TSR,LRTR,RO,45.809925,21.32012,Timisoara (traian Vuia) International,Romania,,Europe/Bucharest
+3,WFI,WFI,FMSF,MG,-21.466667,47.083332,Fianarantsoa,Madagascar,,Indian/Antananarivo
