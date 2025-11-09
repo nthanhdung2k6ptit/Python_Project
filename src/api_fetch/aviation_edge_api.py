@@ -19,17 +19,6 @@ class AviationEdgeAPI:
     def get_real_time_schedules(self, airport_iata_code, schedule_type="departure"):
         return self._make_request("timetable", {"iataCode": airport_iata_code, "type": schedule_type})
     
-    def get_historical_schedules(self, airport_iata_code, date_from, date_to, schedule_type="departure"):
-        if (datetime.strptime(date_to, "%Y-%m-%d") - datetime.strptime(date_from, "%Y-%m-%d")).days > 30:
-            print("Khoảng thời gian vượt quá 30 ngày. Vui lòng rút ngắn lại.")
-            return []         
-        return self._make_request("flightsHistory", {
-            "iataCode": airport_iata_code,
-            "date_from": date_from,
-            "date_to": date_to,
-            "type": schedule_type
-        })
-    
     def get_airline_routes(self, airline_iata=None):
         if airline_iata is None: return []
         return self._make_request("routes", {"airlineIata": airline_iata})
@@ -53,7 +42,7 @@ class AviationEdgeAPI:
         return self._make_request("airlineDatabase", {"codeIso2Country": code_iso2_country})
     
     def _clean_params(self, params):
-        """Loại bỏ các param có giá trị None."""
+        #Loại bỏ các param có giá trị None.
         return {k: v for k, v in params.items() if v is not None}
     
     def _make_request(self, endpoint, params=None):
@@ -69,7 +58,7 @@ class AviationEdgeAPI:
             if isinstance(data, dict) and data.get('error'):
                 print(f"Lỗi từ API Aviation Edge: {data['error']}")
                 return []
-            print("--- Lấy dữ liệu thành công! ---")
+            print(f"--- Lấy dữ liệu {endpoint} thành công! ---")
             return data
         except requests.exceptions.HTTPError as e:
             # Lỗi này xảy ra khi key sai (401), hoặc hết hạn (403)
@@ -121,6 +110,7 @@ if __name__ == "__main__":
 
     client.save_to_csv(airports_vn, "airport_db_raw_vn")
     client.save_to_csv(cities_vn, "city_db_raw_vn")
+    client.save_to_csv(airlines_vn, "airline_db_raw_vn")
 
     airline_codes = [a["codeIataAirline"] for a in airlines_vn if a.get("codeIataAirline")]
     flights_vn, routes_vn = [], []
@@ -135,12 +125,6 @@ if __name__ == "__main__":
     for airport in airport_codes:
         all_realtime.extend(client.get_real_time_schedules(airport))
     client.save_to_csv(all_realtime, "realtime_schedules_raw_vn")
-
-    all_historical = []
-    for airport in [a["codeIataAirport"] for a in airports_vn if a.get("codeIataAirport")]:
-        data = client.get_historical_schedules(airport, "2025-09-01", "2025-09-05")
-        if data: all_historical.extend(data)
-    client.save_to_csv(all_historical, "historical_schedules_raw_vn")
 
     client.save_to_csv(client.get_nearby_airports(21.03, 105.85, 200), "nearby_airports_raw_vn")
 

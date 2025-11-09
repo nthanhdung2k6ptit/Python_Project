@@ -1,0 +1,16 @@
+﻿ageFleet,airlineId,callsign,codeHub,codeIataAirline,codeIcaoAirline,codeIso2Country,founding,iataPrefixAccounting,nameAirline,nameCountry,sizeAirline,statusAirline,type
+5.4,61,VIETNAM AIRLINES,SGN,VN,HVN,VN,1951,738,Vietnam Airlines,Vietnam,89,active,scheduled
+4.0,162,VIETJETAIR,HAN,VJ,VJC,VN,2007,978,Vietjet Aviation Joint Stock Company,Vietnam,32,active,scheduled
+9.0,331,PACIFIC EXPRESS,SGN,BL,PIC,VN,2008,550,Jetstar Pacific Airlines,Vietnam,12,active,scheduled
+14.2,627,VASCO AIR,HAN,0V,VFC,VN,0,,VASCO,Vietnam,2,active,scheduled
+0.0,2897,AIR MEKONG,SGN,P8,MKG,VN,0,819,Air Mekong,Vietnam,0,active,scheduled
+0.0,3266,,,ST,,VN,0,,Sociï¿½tï¿½ de Transports Aï¿½riens en Extrï¿½me-Orient,Vietnam,0,historical,
+0.0,3565,,SGN,VN,,VN,0,,Air Vietnam,Vietnam,0,disabled,scheduled
+0.0,3566,AIR VIETNAM,,VN,,VN,0,,Hang Khong Veitnam,Vietnam,0,historical,
+0.0,3570,AIRSPUP,SGN,VP*,AXC,VN,0,,Air Speed Up,Vietnam,0,historical,scheduled
+0.0,3591,,,VX,,VN,0,,Vietnam Air Transport (VIAT),Vietnam,0,historical,
+0.0,7669,,HAN,,HAI,VN,0,,Hai Au Aviation,Vietnam,0,active,scheduled
+0.0,11437,AIR SAIGON,,,SGA,VN,0,,Air Saigon,Vietnam,0,historical,
+0.0,12867,,HAN,,VJC,VN,0,,VietJet AirAsia,Vietnam,0,not_ready,scheduled
+0.0,12966,VIETSTAR,,,VSM,VN,0,,Vietstar Airlines,Vietnam,0,active,
+0.0,13144,BAMBOO,SGN,QH,BAV,VN,2017,,Bamboo Airways,Vietnam,7,active,scheduled
