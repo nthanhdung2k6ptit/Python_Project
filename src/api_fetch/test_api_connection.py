@@ -1,3 +1,5 @@
+
+# CÀO DATA TOÀN CẦU
 # Class & functions lấy dữ liệu từ API Aviation Edge
 import requests
 import json
