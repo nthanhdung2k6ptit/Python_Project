@@ -112,6 +112,9 @@ Tên dịch
 
 Use case: City lookups, travel planning
 
+# 9. AIRLINE DATABASE API
+
+
 ======================================================================================================
  
  1. FLIGHT TRACKER API
@@ -148,7 +151,7 @@ Example:
 http://aviation-edge.com/v2/public/timetable?key=YOUR_KEY&iataCode=HAN&type=departure
 http://aviation-edge.com/v2/public/timetable?key=YOUR_KEY&iataCode=SGN&type=arrival
 
-3. HISTORICAL SCHEDULES API
+3. HISTORICAL SCHEDULES API (nên bỏ)
 Endpoint: http://aviation-edge.com/v2/public/flightsHistory
 Parameters:
 
@@ -249,3 +252,9 @@ Example:
 http://aviation-edge.com/v2/public/cityDatabase?key=YOUR_KEY
 http://aviation-edge.com/v2/public/cityDatabase?key=YOUR_KEY&codeIataCity=HAN
 http://aviation-edge.com/v2/public/cityDatabase?key=YOUR_KEY&codeIso2Country=VN
+
+
+9. AIRLINE DATABASE API
+Endmoint: https://aviation-edge.com/v2/public/airlineDatabase
+
+Example: https://aviation-edge.com/v2/public/airlineDatabase?key=96b7d0-5b0bc0
