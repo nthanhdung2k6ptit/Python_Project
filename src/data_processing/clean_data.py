@@ -2,13 +2,18 @@ import os
 import re
 import pandas as pd
 
-# -------------------- Đường dẫn --------------------
+# ===== Paths =====
 PROJECT_DIR = r"C:\Users\admin\Documents\Graph_Network_Project"
-RAW_DIR   = os.path.join(PROJECT_DIR, "data", "raw_vn")
-CLEAN_DIR = os.path.join(PROJECT_DIR, "data", "cleaned")
+
+RAW_DIR_VN   = os.path.join(PROJECT_DIR, "data", "raw_vn")
+CLEAN_DIR_VN = os.path.join(PROJECT_DIR, "data", "cleaned_vn")
+os.makedirs(CLEAN_DIR_VN, exist_ok=True)
+
+RAW_DIR      = os.path.join(PROJECT_DIR, "data", "raw")
+CLEAN_DIR    = os.path.join(PROJECT_DIR, "data", "cleaned")
 os.makedirs(CLEAN_DIR, exist_ok=True)
 
-FILES = {
+FILES_VN = {
     "flight_tracker_raw_vn": "flight_tracker_raw_vn.csv",
     "routes_raw_vn": "routes_raw_vn.csv",
     "realtime_schedules_raw_vn": "realtime_schedules_raw_vn.csv",
@@ -18,8 +23,9 @@ FILES = {
     "airport_db_raw_vn": "airport_db_raw_vn.csv",
     "city_db_raw_vn": "city_db_raw_vn.csv",
 }
+FILES_GLOBAL = {k.replace("_vn", ""): v.replace("_vn", "") for k, v in FILES_VN.items()}
 
-# -------------------- Utils --------------------
+# ===== Utils =====
 def camel_to_snake(s: str) -> str:
     s = re.sub(r"(?<!^)([A-Z])", r"_\1", s)
     return s.replace("__", "_").lower()
@@ -66,13 +72,10 @@ def read_csv_safe(path: str) -> pd.DataFrame | None:
 
 def normalize_columns(df: pd.DataFrame) -> pd.DataFrame:
     df = df.copy()
-    df.columns = [
-        camel_to_snake(c.strip()).replace(".", "_").replace(" ", "_")
-        for c in df.columns
-    ]
+    df.columns = [camel_to_snake(c.strip()).replace(".", "_").replace(" ", "_") for c in df.columns]
     return df
 
-# -------------------- Clean chung --------------------
+# ===== Common clean =====
 def clean_dataframe(df: pd.DataFrame) -> pd.DataFrame:
     df = df.copy()
     df.dropna(axis=1, how="all", inplace=True)
@@ -113,15 +116,16 @@ def clean_dataframe(df: pd.DataFrame) -> pd.DataFrame:
 
     return df
 
-# -------------------- Clean từng bảng --------------------
+# ===== Table-specific clean =====
 def clean_routes(df: pd.DataFrame) -> pd.DataFrame:
-    df = df.rename(columns={"airline_iata": "airline_iata"})
-    keep = [c for c in ["departure_iata","arrival_iata","airline_iata"] if c in df.columns]
-    if keep: df = df[keep]
+    df = df.copy()
+    for col in df.columns:
+        cl = col.lower()
+        if "iata" in cl or "icao" in cl:
+            df[col] = df[col].astype("string").str.upper().str.strip()
     if all(c in df.columns for c in ["departure_iata","arrival_iata"]):
-        df = df[df["departure_iata"] != df["arrival_iata"]]
-        df = df[~((df["departure_iata"] == "Unknown") & (df["arrival_iata"] == "Unknown"))]
-        df = df.drop_duplicates(subset=["departure_iata","arrival_iata","airline_iata"])
+        df = df.loc[~(df["departure_iata"].astype("string") == df["arrival_iata"].astype("string"))]
+    df = df.drop_duplicates()
     return df
 
 def clean_airport_db(df: pd.DataFrame) -> pd.DataFrame:
@@ -174,13 +178,9 @@ def clean_schedule(df: pd.DataFrame) -> pd.DataFrame:
         "arrival_icao_code": "arrival_icao_code",
     }
     df = df.rename(columns={k: v for k, v in rename.items() if k in df.columns})
-
-    if all(c in df.columns for c in ["departure_iata", "arrival_iata"]):
-        df = df[~((df["departure_iata"] == "Unknown") & (df["arrival_iata"] == "Unknown"))]
-
     drop_cols = [
         "arrival_baggage", "arrival_delay", "arrival_gate",
-        "departure_gate", "arrival_terminal", "departure_terminal"
+        "departure_gate", "arrival_terminal", "departure_terminal",
     ]
     df = df.drop(columns=[c for c in drop_cols if c in df.columns], errors="ignore")
     return df
@@ -190,8 +190,6 @@ def clean_flight_tracker(df: pd.DataFrame) -> pd.DataFrame:
     for c in ["system_squawk", "speed_is_ground", "speed_vspeed"]:
         if c in df.columns:
             df.drop(columns=c, inplace=True)
-    if all(c in df.columns for c in ["departure_iata", "arrival_iata"]):
-        df = df[~((df["departure_iata"] == "Unknown") & (df["arrival_iata"] == "Unknown"))]
     return df
 
 def clean_nearby_airports(df: pd.DataFrame) -> pd.DataFrame:
@@ -205,40 +203,79 @@ def clean_city_db(df: pd.DataFrame) -> pd.DataFrame:
             df.drop(columns=c, inplace=True)
     return df
 
-# -------------------- Pipeline --------------------
-def main():
+def clean_autocomplete(df: pd.DataFrame) -> pd.DataFrame:
+    for c in ["phone", "timezone"]:
+        if c in df.columns:
+            df.drop(columns=c, inplace=True)
+    return df
+
+# ===== Core pipeline for one folder =====
+def process_folder(files_map, raw_dir, out_dir):
     datasets: dict[str, pd.DataFrame] = {}
-    for name, filename in FILES.items():
-        path = os.path.join(RAW_DIR, filename)
+
+    for name, filename in files_map.items():
+        path = os.path.join(raw_dir, filename)
         df = read_csv_safe(path)
         if df is None:
             continue
         df = normalize_columns(df)
         df = clean_dataframe(df)
         datasets[name] = df
-        print(f" Loaded & cleaned: {name} -> {df.shape}")
+        print(f" Loaded & cleaned: {path} -> {df.shape}")
 
-    if "routes_raw_vn" in datasets:
-        datasets["routes_raw_vn"] = clean_routes(datasets["routes_raw_vn"])
-    if "airport_db_raw_vn" in datasets:
-        datasets["airport_db_raw_vn"] = clean_airport_db(datasets["airport_db_raw_vn"])
-    if "flight_tracker_raw_vn" in datasets:
-        datasets["flight_tracker_raw_vn"] = clean_flight_tracker(datasets["flight_tracker_raw_vn"])
-    if "nearby_airports_raw_vn" in datasets:
-        datasets["nearby_airports_raw_vn"] = clean_nearby_airports(datasets["nearby_airports_raw_vn"])
-    if "city_db_raw_vn" in datasets:
-        datasets["city_db_raw_vn"] = clean_city_db(datasets["city_db_raw_vn"])
-    for key in ["realtime_schedules_raw_vn", "historical_schedules_raw_vn"]:
-        if key in datasets:
-            datasets[key] = clean_schedule(datasets[key])
+    # apply table-specific cleaners (suffix-aware)
+    def g(key):  # helper to get existing key
+        return key if key in datasets else None
 
+    for k in [g("routes_raw_vn"), g("routes_raw")]:
+        if k: datasets[k] = clean_routes(datasets[k])
+    for k in [g("airport_db_raw_vn"), g("airport_db_raw")]:
+        if k: datasets[k] = clean_airport_db(datasets[k])
+    for k in [g("flight_tracker_raw_vn"), g("flight_tracker_raw")]:
+        if k: datasets[k] = clean_flight_tracker(datasets[k])
+    for k in [g("nearby_airports_raw_vn"), g("nearby_airports_raw")]:
+        if k: datasets[k] = clean_nearby_airports(datasets[k])
+    for k in [g("city_db_raw_vn"), g("city_db_raw")]:
+        if k: datasets[k] = clean_city_db(datasets[k])
+    for k in [g("autocomplete_raw_vn"), g("autocomplete_raw")]:
+        if k: datasets[k] = clean_autocomplete(datasets[k])
+    for k in [g("realtime_schedules_raw_vn"), g("realtime_schedules_raw"),
+              g("historical_schedules_raw_vn"), g("historical_schedules_raw")]:
+        if k: datasets[k] = clean_schedule(datasets[k])
+
+    # save + split unknown (BOTH folders)
     for name, df in datasets.items():
-        base_name = name.replace("_raw_vn", "")
-        out = os.path.join(CLEAN_DIR, f"{base_name}_cleaned_vn.csv")
-        df.to_csv(out, index=False, encoding="utf-8-sig")
-        print(f"💾 Saved: {out}")
+        # derive suffix and base
+        suffix = "_vn" if name.endswith("_vn") else ""
+        base_name = name.replace(f"_raw{suffix}", "")
+        cleaned_filename = f"{base_name}_cleaned{suffix}.csv"
+        out = os.path.join(out_dir, cleaned_filename)
 
-    print("\n✅ Done cleaning all raw datasets.")
+        # split unknown for flight_tracker & realtime_schedules if 'status' exists
+        stem = os.path.splitext(cleaned_filename)[0]
+        if stem.endswith(suffix) and (
+            stem.startswith("flight_tracker_cleaned") or stem.startswith("realtime_schedules_cleaned")
+        ):
+            if "status" in df.columns:
+                mask_unknown = df["status"].astype(str).str.strip().str.lower().eq("unknown")
+                unk = df.loc[mask_unknown]
+                if not unk.empty:
+                    unknow_name = f"unknow_{cleaned_filename}"
+                    unknow_out = os.path.join(out_dir, unknow_name)
+                    unk.to_csv(unknow_out, index=False, encoding="utf-8-sig")
+                    print(f" Saved Unknown rows -> {unknow_out} ({len(unk)} rows)")
+                    df = df.loc[~mask_unknown].copy()
+
+        df.to_csv(out, index=False, encoding="utf-8-sig")
+        print(f" Saved: {out}")
+
+# ===== Main =====
+def main():
+    # VN
+    process_folder(FILES_VN, RAW_DIR_VN, CLEAN_DIR_VN)
+    # Global
+    process_folder(FILES_GLOBAL, RAW_DIR, CLEAN_DIR)
+    print("\n Done cleaning & splitting unknown for BOTH datasets.")
 
 if __name__ == "__main__":
     main()

@@ -1,0 +1,45 @@
+﻿g_m_t,code_iata_airport,code_iata_city,code_icao_airport,code_iso2_country,latitude_airport,longitude_airport,name_airport,name_country
+8.0,BJG,BJG,,ID,-0.95,122.1,Bolaang,Indonesia
+-6.0,IRB,IRB,,US,30.7,-101.933334,Municipal,United States
+2.0,KAJ,KAJ,EFKI,FI,64.27778,27.688889,Kajaani,Finland
+-9.0,KXA,KXA,,US,55.537777,-132.39583,Kasaan SPB,United States
+2.0,MPQ,MPQ,,JO,30.166668,35.766666,Maan,Jordan
+-3.0,NAQ,NAQ,BGQQ,GL,77.48564,-69.37486,Qaanaaq,Greenland
+8.0,ULN,ULN,ZMUB,MN,47.85275,106.76327,Chinggis Khaan International,Mongolia
+7.0,ULO,ULO,ZMUG,MN,49.983334,92.066666,Ulaangom,Mongolia
+8.0,UNR,UNR,,MN,47.316666,110.666664,Underkhaan,Mongolia
+2.0,KAU,KAU,EFKA,FI,63.1,23.083332,Kauhava,Finland
+2.0,KHJ,KHJ,EFKJ,FI,62.463055,22.394722,Kauhajoki,Finland
+-6.0,YQV,YQV,CYQV,CA,51.216667,-102.46667,Yorkton,Canada
+10.0,ABG,ABG,,AU,-17.666668,143.2,Abingdon,Australia
+-3.0,ABN,ABN,,SR,5.5,-54.083332,Albina,Suriname
+5.0,AKX,AKX,UATT,KZ,50.249336,57.211403,Aktyubinsk,Kazakhstan
+-5.0,BGM,BGM,KBGM,US,42.208534,-75.98294,Greater Binghamton,United States
+8.0,BTU,BTU,WBGB,MY,3.171772,113.04346,Bintulu,Malaysia
+1.0,CAB,CAB,FNCA,AO,-5.583333,12.2,Cabinda,Angola
+-9.0,CBZ,CBZ,,US,55.38333,-132.41667,Cabin Creek,United States
+5.0,CEK,CEK,USCC,RU,55.297504,61.51235,Chelyabinsk,Russia
+-8.0,DCP,DCP,,CA,0.0,0.0,Cabin Plant Heliport,Canada
+8.0,HRB,HRB,ZYHB,CN,45.620853,126.23644,Harbin,China
+-3.0,JCM,JCM,SNJB,BR,-11.183333,-40.516666,Jacobina,Brazil
+2.0,KBN,KBN,FZWT,CD,-6.116667,24.533333,Kabinda,Democratic Republic of the Congo
+10.0,KUG,KUG,YKUB,AU,-10.233333,142.3,Kubin Island,Australia
+9.0,NTI,NTI,WASB,ID,-2.333333,133.25,Bintuni,Indonesia
+-6.0,PMB,PMB,KPMB,US,49.0,-98.083336,Intermediate,United States
+10.0,RBC,RBC,YROI,AU,-34.666668,142.75,Robinvale,Australia
+1.0,RBM,RBM,KRBM,DE,48.901943,12.519722,Wallmuhle,Germany
+10.0,ROH,ROH,YROB,AU,-18.25,144.0,Robinhood,Australia
+9.3,RRV,RRV,,AU,-16.75,136.96666,Robinson River,Australia
+3.0,RYB,RYB,UUBK,RU,58.13333,38.86667,Rybinsk,Russia
+-5.0,VJI,VJI,,US,36.68611,-82.03333,Virginia Highlands,United States
+-9.0,WBB,WBB,,US,63.51936,-162.28873,Stebbins,United States
+0.0,XAR,XAR,DFOY,BF,14.233333,-0.866667,Aribinda,Burkina Faso
+10.0,XBN,XBN,,PG,-9.633333,149.3,Biniguni,Papua New Guinea
+8.0,YBP,YBP,ZUYB,CN,28.797659,104.54395,Yibin,China
+1.0,ZAW,ZAW,,DK,0.0,0.0,Nykobing Mors Bus Station,Denmark
+1.0,ZIJ,ZIJ,,DK,0.0,0.0,Nykobing Sjaelland Railway Station,Denmark
+8.0,ZMK,ZMK,,MY,0.0,0.0,Bintulu Port,Malaysia
+-6.0,EBS,EBS,KEBS,US,42.466667,-93.816666,Municipal,United States
+-5.0,DZI,DZI,,CO,10.016667,-73.25,Codazzi,Colombia
+8.0,DZU,DZU,,CN,29.7,105.71667,Dazu,China
+-4.0,PZO,PZO,SVPR,VE,8.286533,-62.759136,Puerto Ordaz,Venezuela
