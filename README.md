@@ -32,12 +32,12 @@ _____________________________________________________________
 #  Graph Network – Aviation Edge API Project
 
 ##  Team Members
-1. API Connection – TV1
-2. Data Cleaning – TV2
-3. Graph Building – TV3
-4. Graph Visualization – TV4
-5. Map UI – TV5
-6. Data Analysis – TV6
+1. API Connection – TV1 - Nguyễn Thị Phương Anh
+2. Data Cleaning – TV2 - Nguyễn Thị Ngọc Lan
+3. Graph Building – TV3 - Đỗ Minh Đức
+4. Graph Visualization – TV4 - Vũ Công Duy Hưng
+5. Map UI – TV5 - Nguyễn Thành Dũng
+6. Data Analysis – TV6 - Nguyễn Hữu Trung
 
 ##  Tech Stack
 Python 3.x | requests | pandas | numpy | networkx | matplotlib | plotly | folium | seaborn | streamlit
