@@ -17,11 +17,11 @@ FILES_VN = {
     "flight_tracker_raw_vn": "flight_tracker_raw_vn.csv",
     "routes_raw_vn": "routes_raw_vn.csv",
     "realtime_schedules_raw_vn": "realtime_schedules_raw_vn.csv",
-    "historical_schedules_raw_vn": "historical_schedules_raw_vn.csv",
     "nearby_airports_raw_vn": "nearby_airports_raw_vn.csv",
     "autocomplete_raw_vn": "autocomplete_raw_vn.csv",
     "airport_db_raw_vn": "airport_db_raw_vn.csv",
     "city_db_raw_vn": "city_db_raw_vn.csv",
+    "airline_db_raw_vn": "airline_db_raw_vn.csv",
 }
 FILES_GLOBAL = {k.replace("_vn", ""): v.replace("_vn", "") for k, v in FILES_VN.items()}
 
@@ -36,32 +36,22 @@ def is_timezone_col(col: str) -> bool:
 
 def is_datetime_col(col: str) -> bool:
     c = col.lower()
-    if any(k in c for k in ["terminal", "iata", "icao", "airport", "city", "country"]):
-        return False
-    if is_timezone_col(c):
-        return False
-    keys = ["scheduled", "actual", "updated", "created", "timestamp", "utc", "_time", "time_", "date"]
-    return any(k in c for k in keys)
+    if any(k in c for k in ["terminal", "iata", "icao", "airport", "city", "country"]): return False
+    if is_timezone_col(c): return False
+    return any(k in c for k in ["scheduled","actual","updated","created","timestamp","utc","_time","time_","date"])
 
 def smart_to_datetime(series: pd.Series) -> pd.Series:
     s = series.copy()
     as_num = pd.to_numeric(s, errors="coerce")
-    ratio_num = as_num.notna().mean()
-    if ratio_num >= 0.8:
+    if as_num.notna().mean() >= 0.8:
         m = as_num.dropna().abs().median()
-        unit = None
-        if m > 1e13: unit = "ns"
-        elif m > 1e12: unit = "ms"
-        elif m > 1e10: unit = "us"
-        elif m > 1e9:  unit = "s"
-        if unit:
-            return pd.to_datetime(as_num, unit=unit, origin="unix", utc=True)
+        unit = "ns" if m > 1e13 else "ms" if m > 1e12 else "us" if m > 1e10 else "s" if m > 1e9 else None
+        if unit: return pd.to_datetime(as_num, unit=unit, origin="unix", utc=True)
     return pd.to_datetime(s, errors="coerce", utc=True)
 
 def read_csv_safe(path: str) -> pd.DataFrame | None:
     if not os.path.exists(path):
-        print(f"⚠️ Missing: {path}")
-        return None
+        print(f"⚠️ Missing: {path}"); return None
     try:
         df = pd.read_csv(path, encoding="utf-8", on_bad_lines="skip", low_memory=False)
     except UnicodeDecodeError:
@@ -82,11 +72,9 @@ def clean_dataframe(df: pd.DataFrame) -> pd.DataFrame:
     df.dropna(how="all", inplace=True)
     df.drop_duplicates(inplace=True)
 
-    obj_cols = [
-        c for c in df.select_dtypes(include="object").columns
-        if ("iata" not in c.lower() and "icao" not in c.lower()
-            and "terminal" not in c.lower() and not is_timezone_col(c))
-    ]
+    obj_cols = [c for c in df.select_dtypes(include="object").columns
+                if ("iata" not in c.lower() and "icao" not in c.lower()
+                    and "terminal" not in c.lower() and not is_timezone_col(c))]
     for col in obj_cols:
         s = df[col].astype(str).str.strip()
         df[col] = s.replace(["nan","NaN","NULL","None","none","","N/A"], pd.NA)
@@ -107,13 +95,11 @@ def clean_dataframe(df: pd.DataFrame) -> pd.DataFrame:
         if is_datetime_col(col):
             df[col] = smart_to_datetime(df[col])
 
-    if obj_cols:
-        df[obj_cols] = df[obj_cols].fillna("Unknown")
+    if obj_cols: df[obj_cols] = df[obj_cols].fillna("Unknown")
 
     for col in df.columns:
         if is_timezone_col(col) and df[col].dtype == object:
             df[col] = df[col].astype(str).str.strip()
-
     return df
 
 # ===== Table-specific clean =====
@@ -125,89 +111,105 @@ def clean_routes(df: pd.DataFrame) -> pd.DataFrame:
             df[col] = df[col].astype("string").str.upper().str.strip()
     if all(c in df.columns for c in ["departure_iata","arrival_iata"]):
         df = df.loc[~(df["departure_iata"].astype("string") == df["arrival_iata"].astype("string"))]
-    df = df.drop_duplicates()
-    return df
+    return df.drop_duplicates()
 
 def clean_airport_db(df: pd.DataFrame) -> pd.DataFrame:
     rename = {
-        "code_iata_airport": "iata_code",
-        "code_icao_airport": "icao_code",
-        "name_airport": "airport_name",
-        "name_country": "country_name",
-        "code_iso2_country": "country_iso2",
-        "code_iata_city": "city_iata",
-        "latitude_airport": "latitude",
-        "longitude_airport": "longitude",
-        "gmt": "gmt",
-        "geoname_id": "geoname_id",
-        "phone": "phone",
-        "timezone": "timezone",
-        "airport_id": "airport_id",
+        "code_iata_airport":"iata_code","code_icao_airport":"icao_code","name_airport":"airport_name",
+        "name_country":"country_name","code_iso2_country":"country_iso2","code_iata_city":"city_iata",
+        "latitude_airport":"latitude","longitude_airport":"longitude","gmt":"gmt",
+        "geoname_id":"geoname_id","phone":"phone","timezone":"timezone","airport_id":"airport_id",
     }
-    df = df.rename(columns={k: v for k, v in rename.items() if k in df.columns})
-
-    for c in ["iata_code", "icao_code", "city_iata", "country_iso2"]:
-        if c in df.columns:
-            df[c] = df[c].astype("string").str.upper().str.strip()
-
+    df = df.rename(columns={k:v for k,v in rename.items() if k in df.columns})
+    for c in ["iata_code","icao_code","city_iata","country_iso2"]:
+        if c in df.columns: df[c] = df[c].astype("string").str.upper().str.strip()
     if "country_name" in df.columns or "country_iso2" in df.columns:
         df["country"] = df.get("country_name")
-        if "country_iso2" in df.columns:
-            df["country"] = df["country"].fillna(df["country_iso2"])
-
-    for c in ["country_name", "country_iso2", "phone", "timezone"]:
-        if c in df.columns:
-            df.drop(columns=c, inplace=True)
-
-    for c in ["latitude", "longitude", "gmt"]:
-        if c in df.columns:
-            df[c] = pd.to_numeric(df[c], errors="coerce")
-
+        if "country_iso2" in df.columns: df["country"] = df["country"].fillna(df["country_iso2"])
+    for c in ["country_name","country_iso2","phone","timezone"]:
+        if c in df.columns: df.drop(columns=c, inplace=True)
+    for c in ["latitude","longitude","gmt"]:
+        if c in df.columns: df[c] = pd.to_numeric(df[c], errors="coerce")
     if "iata_code" in df.columns and df["iata_code"].notna().any():
-        df = df.drop_duplicates(subset=["iata_code"])
-    elif "icao_code" in df.columns and df["icao_code"].notna().any():
-        df = df.drop_duplicates(subset=["icao_code"])
-    return df
+        return df.drop_duplicates(subset=["iata_code"])
+    if "icao_code" in df.columns and df["icao_code"].notna().any():
+        return df.drop_duplicates(subset=["icao_code"])
+    return df.drop_duplicates()
 
 def clean_schedule(df: pd.DataFrame) -> pd.DataFrame:
     rename = {
-        "iata_code": "airport_iata",
-        "departure_iata_code": "departure_iata",
-        "arrival_iata_code": "arrival_iata",
-        "departure_icao_code": "departure_icao_code",
-        "arrival_icao_code": "arrival_icao_code",
+        "iata_code":"airport_iata","departure_iata_code":"departure_iata","arrival_iata_code":"arrival_iata",
+        "departure_icao_code":"departure_icao_code","arrival_icao_code":"arrival_icao_code",
     }
-    df = df.rename(columns={k: v for k, v in rename.items() if k in df.columns})
-    drop_cols = [
-        "arrival_baggage", "arrival_delay", "arrival_gate",
-        "departure_gate", "arrival_terminal", "departure_terminal",
-    ]
-    df = df.drop(columns=[c for c in drop_cols if c in df.columns], errors="ignore")
-    return df
+    df = df.rename(columns={k:v for k,v in rename.items() if k in df.columns})
+    drop_cols = ["arrival_baggage","arrival_delay","arrival_gate","departure_gate","arrival_terminal","departure_terminal"]
+    return df.drop(columns=[c for c in drop_cols if c in df.columns], errors="ignore")
 
 def clean_flight_tracker(df: pd.DataFrame) -> pd.DataFrame:
     df = df.rename(columns=str.lower)
-    for c in ["system_squawk", "speed_is_ground", "speed_vspeed"]:
-        if c in df.columns:
-            df.drop(columns=c, inplace=True)
+    for c in ["system_squawk","speed_is_ground","speed_vspeed"]:
+        if c in df.columns: df.drop(columns=c, inplace=True)
     return df
 
 def clean_nearby_airports(df: pd.DataFrame) -> pd.DataFrame:
-    if "timezone" in df.columns:
-        df.drop(columns=["timezone"], inplace=True)
+    if "timezone" in df.columns: df.drop(columns=["timezone"], inplace=True)
     return df
 
 def clean_city_db(df: pd.DataFrame) -> pd.DataFrame:
-    for c in ["timezone", "phone"]:
-        if c in df.columns:
-            df.drop(columns=c, inplace=True)
+    for c in ["timezone","phone"]:
+        if c in df.columns: df.drop(columns=c, inplace=True)
     return df
 
 def clean_autocomplete(df: pd.DataFrame) -> pd.DataFrame:
-    for c in ["phone", "timezone"]:
-        if c in df.columns:
-            df.drop(columns=c, inplace=True)
+    for c in ["phone","timezone"]:
+        if c in df.columns: df.drop(columns=c, inplace=True)
     return df
+
+def _normalize_status_values(df: pd.DataFrame, col: str) -> pd.DataFrame:
+    """Chuẩn hoá giá trị status về snake_case: 'Not Ready' -> 'not_ready'."""
+    if col in df.columns:
+        df[col] = (
+            df[col]
+            .astype(str)
+            .str.strip()
+            .str.lower()
+            .str.replace(r"[\s\-]+", "_", regex=True)   # space/hyphen -> underscore
+        )
+    return df
+
+def clean_airline_db(df: pd.DataFrame, keep_status: set[str]) -> pd.DataFrame:
+    """Clean airline_db cho VN / Global tuỳ tập 'keep_status' truyền vào."""
+    df = df.copy()
+    df = df.rename(columns=str.lower)
+
+    # xoá cột founding nếu có
+    if "founding" in df.columns:
+        df.drop(columns=["founding"], inplace=True)
+
+    # chuẩn hoá mã viết hoa
+    for c in ["code_iata_airline", "code_icao_airline", "code_iso2_country", "codehub", "code_hub"]:
+        if c in df.columns:
+            df[c] = df[c].astype("string").str.upper().str.strip()
+
+    # xác định cột status & chuẩn hoá giá trị
+    status_col = None
+    for cand in ["status_airline", "status"]:
+        if cand in df.columns:
+            status_col = cand
+            break
+
+    if status_col:
+        df = _normalize_status_values(df, status_col)
+        # một số dataset ghi 'notready' -> đồng nhất về 'not_ready'
+        df[status_col] = df[status_col].replace({"notready": "not_ready"})
+        df = df[df[status_col].isin(keep_status)]
+    else:
+        print("⚠️ airline_db: không tìm thấy cột trạng thái (status_airline/status).")
+
+    # loại dòng trùng lặp hoàn toàn (nếu có)
+    df = df.drop_duplicates()
+    return df
+
 
 # ===== Core pipeline for one folder =====
 def process_folder(files_map, raw_dir, out_dir):
@@ -216,16 +218,13 @@ def process_folder(files_map, raw_dir, out_dir):
     for name, filename in files_map.items():
         path = os.path.join(raw_dir, filename)
         df = read_csv_safe(path)
-        if df is None:
-            continue
+        if df is None: continue
         df = normalize_columns(df)
         df = clean_dataframe(df)
         datasets[name] = df
         print(f" Loaded & cleaned: {path} -> {df.shape}")
 
-    # apply table-specific cleaners (suffix-aware)
-    def g(key):  # helper to get existing key
-        return key if key in datasets else None
+    def g(key): return key if key in datasets else None
 
     for k in [g("routes_raw_vn"), g("routes_raw")]:
         if k: datasets[k] = clean_routes(datasets[k])
@@ -239,19 +238,20 @@ def process_folder(files_map, raw_dir, out_dir):
         if k: datasets[k] = clean_city_db(datasets[k])
     for k in [g("autocomplete_raw_vn"), g("autocomplete_raw")]:
         if k: datasets[k] = clean_autocomplete(datasets[k])
-    for k in [g("realtime_schedules_raw_vn"), g("realtime_schedules_raw"),
-              g("historical_schedules_raw_vn"), g("historical_schedules_raw")]:
+    for k in [g("realtime_schedules_raw_vn"), g("realtime_schedules_raw")]:
         if k: datasets[k] = clean_schedule(datasets[k])
+    for k in [g("airline_db_raw_vn")]:
+        if k: datasets[k] = clean_airline_db(datasets[k], keep_status={"active", "not_ready"})
+    for k in [g("airline_db_raw")]:
+        if k: datasets[k] = clean_airline_db(datasets[k], keep_status={"active"})
 
-    # save + split unknown (BOTH folders)
+    # save + split unknown
     for name, df in datasets.items():
-        # derive suffix and base
         suffix = "_vn" if name.endswith("_vn") else ""
         base_name = name.replace(f"_raw{suffix}", "")
         cleaned_filename = f"{base_name}_cleaned{suffix}.csv"
         out = os.path.join(out_dir, cleaned_filename)
 
-        # split unknown for flight_tracker & realtime_schedules if 'status' exists
         stem = os.path.splitext(cleaned_filename)[0]
         if stem.endswith(suffix) and (
             stem.startswith("flight_tracker_cleaned") or stem.startswith("realtime_schedules_cleaned")
@@ -260,8 +260,7 @@ def process_folder(files_map, raw_dir, out_dir):
                 mask_unknown = df["status"].astype(str).str.strip().str.lower().eq("unknown")
                 unk = df.loc[mask_unknown]
                 if not unk.empty:
-                    unknow_name = f"unknow_{cleaned_filename}"
-                    unknow_out = os.path.join(out_dir, unknow_name)
+                    unknow_out = os.path.join(out_dir, f"unknow_{cleaned_filename}")
                     unk.to_csv(unknow_out, index=False, encoding="utf-8-sig")
                     print(f" Saved Unknown rows -> {unknow_out} ({len(unk)} rows)")
                     df = df.loc[~mask_unknown].copy()
@@ -271,10 +270,8 @@ def process_folder(files_map, raw_dir, out_dir):
 
 # ===== Main =====
 def main():
-    # VN
-    process_folder(FILES_VN, RAW_DIR_VN, CLEAN_DIR_VN)
-    # Global
-    process_folder(FILES_GLOBAL, RAW_DIR, CLEAN_DIR)
+    process_folder(FILES_VN, RAW_DIR_VN, CLEAN_DIR_VN)   # VN
+    process_folder(FILES_GLOBAL, RAW_DIR, CLEAN_DIR)     # Global
     print("\n Done cleaning & splitting unknown for BOTH datasets.")
 
 if __name__ == "__main__":

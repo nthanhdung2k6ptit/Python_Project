@@ -1,0 +1,10 @@
+﻿age_fleet,airline_id,callsign,code_hub,code_iata_airline,code_icao_airline,code_iso2_country,iata_prefix_accounting,name_airline,name_country,size_airline,status_airline,type
+5.4,61,VIETNAM AIRLINES,SGN,VN,HVN,VN,738.0,Vietnam Airlines,Vietnam,89,active,scheduled
+4.0,162,VIETJETAIR,HAN,VJ,VJC,VN,978.0,Vietjet Aviation Joint Stock Company,Vietnam,32,active,scheduled
+9.0,331,PACIFIC EXPRESS,SGN,BL,PIC,VN,550.0,Jetstar Pacific Airlines,Vietnam,12,active,scheduled
+14.2,627,VASCO AIR,HAN,0V,VFC,VN,,VASCO,Vietnam,2,active,scheduled
+0.0,2897,AIR MEKONG,SGN,P8,MKG,VN,819.0,Air Mekong,Vietnam,0,active,scheduled
+0.0,7669,Unknown,HAN,,HAI,VN,,Hai Au Aviation,Vietnam,0,active,scheduled
+0.0,12867,Unknown,HAN,,VJC,VN,,VietJet AirAsia,Vietnam,0,not_ready,scheduled
+0.0,12966,VIETSTAR,UNKNOWN,,VSM,VN,,Vietstar Airlines,Vietnam,0,active,Unknown
+0.0,13144,BAMBOO,SGN,QH,BAV,VN,,Bamboo Airways,Vietnam,7,active,scheduled
