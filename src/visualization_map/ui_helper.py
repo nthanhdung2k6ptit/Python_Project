@@ -1,21 +1,21 @@
+
+# Gộp 2 file airports cho dropdown chọn thành phố và lọc routes
+
 import pandas as pd
+import os
 
-def load_airports(airports_file="data/cleaned/airport_db_cleaned.csv"):
-    df = pd.read_csv(airports_file)
-    return df
+def load_airports(base_path='data/cleaned'):
+    '''
+    Load và gộp data sân bay toàn cầu và Việt Nam
+    Trả về DataFrame sân bay
+    '''
+    path_global = os.path.join(base_path, "airport_db_cleaned.csv")
+    path_vn = os.path.join(base_path + "_vn", "airport_db_cleaned_vn.csv")
 
-def load_routes(routes_file="data/cleaned/routes_cleaned.csv"):
-    df = pd.read_csv(routes_file)
-    return df
+    df_g = pd.read_csv(path_global)
+    df_v = pd.read_csv(path_vn)
 
-def get_city_options(airports_df):
-    return sorted(airports_df["nameCity"].dropna().unique())
+    df = pd.concat([df_g, df_v]).drop_duplicates(subset=['iata_code'])
+    return df[['iata_code', 'airport_name', 'country']].dropna(subset=['iata_code'])
 
-def filter_routes_by_city(routes_df, airports_df, city_from, city_to):
-    dep_iatas = airports_df[airports_df["nameCity"] == city_from]["codeIataAirport"].tolist()
-    arr_iatas = airports_df[airports_df["nameCity"] == city_to]["codeIataAirport"].tolist()
-    filtered = routes_df[
-        (routes_df["departureIata"].isin(dep_iatas)) &
-        (routes_df["arrivalIata"].isin(arr_iatas))
-    ]
-    return filtered
+
