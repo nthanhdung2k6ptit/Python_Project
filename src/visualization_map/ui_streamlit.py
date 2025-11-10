@@ -1,44 +1,47 @@
 # Tạo menu chọn thành phố
+
 import sys
 from pathlib import Path
-# ensure project root is on sys.path so "src" can be imported
-project_root = Path(__file__).resolve().parents[2]  # -> Graph_Network_Project
+project_root = Path(__file__).resolve().parents[2]  # Graph_Network_Project
 sys.path.insert(0, str(project_root))
 
 import streamlit as st
-import folium
-from streamlit_folium import st_folium
-from src.visualization_map.ui_helper import load_airports, load_routes, get_city_options, filter_routes_by_city
+from streamlit_folium import folium_static
+from src.visualization_map.map_routes import create_flight_map
+from src.visualization_map.ui_helper import load_airports
+import pandas as pd
 
-st.set_page_config(page_title="Flight Network Map", layout="wide")
+st.set_page_config(page_title="🛫 Group 3 | Flight Network", layout="wide")
+st.title("🛫 Flight Network - Real Routes Visualization")
 
-st.title("🌍 Flight Network Visualization")
-
-airports_df = load_airports()
-routes_df = load_routes()
-cities = get_city_options(airports_df)
-
-col1, col2 = st.columns(2)
-city_from = col1.selectbox("✈️ Thành phố đi", cities)
-city_to = col2.selectbox("🏙️ Thành phố đến", cities)
-
-filtered_routes = filter_routes_by_city(routes_df, airports_df, city_from, city_to)
-
-st.write(f"🔹 Số đường bay tìm thấy: {len(filtered_routes)}")
-
-if len(filtered_routes) > 0:
-    # Vẽ map trực tiếp
-    center_lat = airports_df[airports_df["nameCity"] == city_from]["latitudeAirport"].mean()
-    center_lon = airports_df[airports_df["nameCity"] == city_from]["longitudeAirport"].mean()
-    m = folium.Map(location=[center_lat, center_lon], zoom_start=4, tiles="CartoDB positron")
-
-    # Vẽ đường bay
-    for _, r in filtered_routes.iterrows():
-        folium.PolyLine(
-            [[r["dep_lat"], r["dep_lon"]], [r["arr_lat"], r["arr_lon"]]],
-            color="blue", weight=2, opacity=0.7
-        ).add_to(m)
-
-    st_folium(m, width=1200, height=700)
+# safe load (avoid truth-value on DataFrame)
+_df_airports = load_airports()
+if _df_airports is None:
+    df_airports = pd.DataFrame()
 else:
-    st.warning("Không có đường bay nào giữa hai thành phố này.")
+    df_airports = _df_airports
+
+# helper: pick first existing column from candidates, return Series of strings
+def _pick_col_series(df, candidates):
+    for c in candidates:
+        if c in df.columns:
+            return df[c].fillna("").astype(str)
+    # return empty-string series with correct length
+    return pd.Series([""] * len(df), index=df.index)
+
+airport_options = []
+if not df_airports.empty:
+    iata = _pick_col_series(df_airports, ['iata_code', 'IATA', 'departureiata', 'codeiataairport'])
+    name = _pick_col_series(df_airports, ['airport_name', 'name'])
+    country = _pick_col_series(df_airports, ['country', 'iso_country'])
+    airport_options = (iata + " - " + name + " (" + country + ")").tolist()
+
+airport_choices = [""] + airport_options
+selected_airport = st.selectbox("Chọn sân bay khởi hành (hoặc để trống):", airport_choices)
+select_iata = selected_airport.split(" - ")[0] if selected_airport else None
+
+if st.button("Hiển thị đường bay"):
+    st.info(f"Đang hiển thị các đường bay xuất phát từ {select_iata or 'TOÀN CẦU'} ...")
+    m = create_flight_map(departure_filter=select_iata)
+    folium_static(m)
+    st.success("Đã hiển thị bản đồ thành công!")

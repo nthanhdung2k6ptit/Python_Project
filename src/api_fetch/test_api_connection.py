@@ -165,7 +165,7 @@ if __name__ == "__main__":
     top_airlines = [
     "AA","DL","UA","WN","EK","LH","AF","BA","CX","QR",
     "CZ","MU","CA","SQ","TK","JL","KE","NH","QF","SU",
-    "AC","AS","B6","F9","FR"
+    "AC","AS","B6","F9","FR","EY","KL","AI","BR","SK"
     ]
     all_flights, all_routes = [], []
 
