@@ -21,9 +21,13 @@ class AviationEdgeAPI:
     def get_real_time_schedules(self, airport_iata_code, schedule_type="departure"):
         return self._make_request("timetable", {"iataCode": airport_iata_code, "type": schedule_type})
     
-    def get_airline_routes(self, airline_iata=None):
+    def get_airline_routes(self, airline_iata=None, limit = 10000):
         if airline_iata is None: return []
-        return self._make_request("routes", {"airlineIata": airline_iata})
+        params = {
+            "airlineIata": airline_iata,
+            "limit": limit,
+            }
+        return self._make_request("routes", params)
     
     def get_nearby_airports(self, lat, lng, distance=50):
         return self._make_request("nearby", {"lat": lat, "lng": lng, "distance": distance})
@@ -47,7 +51,7 @@ class AviationEdgeAPI:
         return self._make_request("countryDatabase")
     
     def _clean_params(self, params):
-        """Loại bỏ các param có giá trị None."""
+        #Loại bỏ các param có giá trị None.
         return {k: v for k, v in params.items() if v is not None}
     
     def _make_request(self, endpoint, params=None):
@@ -179,7 +183,7 @@ if __name__ == "__main__":
             print(f"Flight: {len(flights)} chuyến")
 
         # 2. ROUTES
-        routes = client.get_airline_routes(code)
+        routes = client.get_airline_routes(code, limit = 10000)
         if routes:
             all_routes.extend(routes)
             print(f"Routes: {len(routes)} tuyến")
@@ -193,7 +197,8 @@ if __name__ == "__main__":
     # Autocomplete 
     top_autocomplete_countries = countries[:10]
     all_autocomplete = []
-    autocomplete_city_codes = [c["codeIataCity"] for c in all_cities if c.get("codeIataCity") and c.get("codeIso2Country") in {co.get("codeIso2Country") for co in top_autocomplete_countries}][:10]
+    autocomplete_city_codes = [c["codeIataCity"] for c in all_cities if c.get("codeIataCity") and c.get("codeIso2Country") in 
+                               {co.get("codeIso2Country") for co in top_autocomplete_countries}][:10]
     
     for city_code in autocomplete_city_codes:
         data = client.get_autocomplete(city_code) 
