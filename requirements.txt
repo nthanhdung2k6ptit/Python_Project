@@ -19,7 +19,6 @@ streamlit-folium
 # Export & Report
 openpyxl
 reportlab
-fpdf 
 
 # Optional (nếu có)
 customtkinter
