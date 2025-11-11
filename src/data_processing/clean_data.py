@@ -126,20 +126,46 @@ def clean_airport_db(df: pd.DataFrame) -> pd.DataFrame:
         "geoname_id":"geoname_id","phone":"phone","timezone":"timezone","airport_id":"airport_id",
     }
     df = df.rename(columns={k:v for k,v in rename.items() if k in df.columns})
+
+    # Chuẩn hoá mã
     for c in ["iata_code","icao_code","city_iata","country_iso2"]:
-        if c in df.columns: df[c] = df[c].astype("string").str.upper().str.strip()
+        if c in df.columns:
+            df[c] = df[c].astype("string").str.upper().str.strip()
+
+    # Tạo cột country (ưu tiên country_name, fallback country_iso2)
     if "country_name" in df.columns or "country_iso2" in df.columns:
         df["country"] = df.get("country_name")
-        if "country_iso2" in df.columns: df["country"] = df["country"].fillna(df["country_iso2"])
+        if "country_iso2" in df.columns:
+            df["country"] = df["country"].fillna(df["country_iso2"])
+
+    # 👇 THÊM PHẦN NÀY: ép country = "Vietnam" nếu country_iso2 = "VN"
+    if "country_iso2" in df.columns and "country" in df.columns:
+        mask_vn = df["country_iso2"].astype(str).str.strip().str.upper().eq("VN")
+        df.loc[mask_vn, "country"] = "Vietnam"
+
+    # (tuỳ chọn) dọn Unknown/NA thành Vietnam nếu mã VN
+    if "country" in df.columns and "country_iso2" in df.columns:
+        mask_unknown = df["country"].astype(str).str.strip().str.lower().isin(["unknown", "nan", "none", ""])
+        mask_vn = df["country_iso2"].astype(str).str.strip().str.upper().eq("VN")
+        df.loc[mask_unknown & mask_vn, "country"] = "Vietnam"
+
+    # Xoá các cột không cần
     for c in ["country_name","country_iso2","phone","timezone"]:
-        if c in df.columns: df.drop(columns=c, inplace=True)
+        if c in df.columns:
+            df.drop(columns=c, inplace=True)
+
+    # Kiểu dữ liệu số
     for c in ["latitude","longitude","gmt"]:
-        if c in df.columns: df[c] = pd.to_numeric(df[c], errors="coerce")
+        if c in df.columns:
+            df[c] = pd.to_numeric(df[c], errors="coerce")
+
+    # Khử trùng lặp
     if "iata_code" in df.columns and df["iata_code"].notna().any():
         return df.drop_duplicates(subset=["iata_code"])
     if "icao_code" in df.columns and df["icao_code"].notna().any():
         return df.drop_duplicates(subset=["icao_code"])
     return df.drop_duplicates()
+
 
 def clean_schedule(df: pd.DataFrame) -> pd.DataFrame:
     rename = {
