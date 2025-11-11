@@ -81,34 +81,8 @@ except Exception as e:
     print(f"LỖI KHI TẢI DỮ LIỆU: {e}")
     sys.exit(1)
 
-# --- 5. TÍNH TOÁN LAYOUT (BƯỚC NẶNG NHẤT) ---
-print("\n--- ĐANG TÍNH TOÁN LAYOUT (NetworkX) ---")
-start_layout_time = time.time()
-
-layout_dir = os.path.join(PROJECT_ROOT, 'data', 'layout')
-layout_file = os.path.join(layout_dir, 'graph_layout.json')
-
-os.makedirs(layout_dir, exist_ok=True) 
-
-if os.path.exists(layout_file):
-    print(f"Đang tải layout đã tính toán sẵn từ: {layout_file}")
-    with open(layout_file, 'r') as f:
-        POS = json.load(f)
-    print(f"Tải layout có sẵn hoàn tất! (mất {time.time() - start_layout_time:.2f}s)")
-else:
-    print("Không tìm thấy file layout, đang tính toán layout mới...")
-    print("BƯỚC NÀY SẼ MẤT 1-2 PHÚT. VUI LÒNG CHỜ...")
-    POS = nx.spring_layout(G, seed=42, k=0.15, iterations=50) 
-    print(f"Tính toán layout hoàn tất! (mất {time.time() - start_layout_time:.2f}s)")
-    
-    print(f"Đang lưu layout vào: {layout_file}...")
-    try:
-        pos_serializable = {key: list(value) for key, value in POS.items()}
-        with open(layout_file, 'w') as f:
-            json.dump(pos_serializable, f)
-        print("Lưu layout thành công. Lần chạy sau sẽ nhanh hơn.")
-    except Exception as e:
-        print(f"LỖI khi lưu layout: {e}")
+# --- 5. TÍNH TOÁN LAYOUT (ĐÃ XÓA) ---
+# Chúng ta không cần tính toán layout NetworkX nữa vì dùng lon/lat
 
 # Chuẩn bị dữ liệu cho Dropdown
 print("Đang chuẩn bị danh sách sân bay cho Dropdown...")
@@ -118,83 +92,90 @@ AIRPORT_OPTIONS = [
         'value': node
     } 
     for node in G.nodes() 
-    if node in POS # Chỉ thêm các nút có trong layout
+    # Lọc các nút có đủ thông tin
+    if (G.nodes[node].get('name') and 
+        G.nodes[node].get('lat') and 
+        G.nodes[node].get('lon'))
 ]
 print("Hoàn tất chuẩn bị.")
 
 
-# --- 6. HÀM VẼ BIỂU ĐỒ (CORE FUNCTION) ---
+# --- 6. HÀM VẼ BIỂU ĐỒ (CORE FUNCTION - SỬA DÙNG LON/LAT) ---
 def get_random_color():
     """Tạo một màu hex ngẫu nhiên"""
     return f"#{random.randint(0, 0xFFFFFF):06x}"
 
-def create_graph_figure(pos_dict, node_colors_dict={}, highlight_edges=[]):
+def create_graph_figure(node_colors_dict={}, highlight_edges=[]):
     """
     Hàm chính để vẽ/cập nhật biểu đồ.
-    - pos_dict: Dict vị trí (x,y) đã được tính toán.
-    - node_colors_dict: Một dict dạng {'IATA': 'màu'} cho các nút cần highlight.
-    - highlight_edges: Danh sách các (n1, n2) cho các cạnh cần vẽ.
+    - SỬ DỤNG LON/LAT THAY VÌ POS_DICT
     """
     
-    base_nodes_x, base_nodes_y, base_nodes_text = [], [], [] 
-    hl_nodes_x, hl_nodes_y, hl_nodes_text, hl_nodes_colors = [], [], [], [] 
+    base_nodes_lon, base_nodes_lat, base_nodes_text = [], [], [] 
+    hl_nodes_lon, hl_nodes_lat, hl_nodes_text, hl_nodes_colors = [], [], [], [] 
 
     # 1. Phân loại các nút (Nodes)
     for node in G.nodes():
-        if node not in pos_dict:
-            continue 
+        node_data = G.nodes[node]
+        # Lấy lon/lat trực tiếp từ node data
+        lon, lat = node_data.get('lon'), node_data.get('lat')
+        if lon is None or lat is None: 
+            continue
             
-        x, y = pos_dict[node]
-        
-        text = f"{G.nodes[node].get('name', 'N/A')} ({node})"
+        text = f"{node_data.get('name', 'N/A')} ({node})"
         
         if node in node_colors_dict:
-            hl_nodes_x.append(x)
-            hl_nodes_y.append(y)
+            hl_nodes_lon.append(lon) # <-- Dùng lon/lat
+            hl_nodes_lat.append(lat)
             hl_nodes_text.append(text)
             hl_nodes_colors.append(node_colors_dict[node])
         else:
-            base_nodes_x.append(x)
-            base_nodes_y.append(y)
+            base_nodes_lon.append(lon) # <-- Dùng lon/lat
+            base_nodes_lat.append(lat)
             base_nodes_text.append(text)
     
     # 2. Xử lý các cạnh (Edges)
-    hl_edges_x, hl_edges_y = [], []
+    hl_edges_lon, hl_edges_lat = [], []
     for n1, n2 in highlight_edges:
         try:
-            x1, y1 = pos_dict[n1]
-            x2, y2 = pos_dict[n2]
+            # Lấy lon/lat trực tiếp từ node data
+            lon1, lat1 = G.nodes[n1]['lon'], G.nodes[n1]['lat']
+            lon2, lat2 = G.nodes[n2]['lon'], G.nodes[n2]['lat']
         except KeyError:
             continue
             
-        hl_edges_x.extend([x1, x2, None])
-        hl_edges_y.extend([y1, y2, None])
+        hl_edges_lon.extend([lon1, lon2, None]) # <-- Dùng lon/lat
+        hl_edges_lat.extend([lat1, lat2, None])
 
     # 3. Tạo các lớp (Traces)
     traces = []
     
     traces.append(go.Scatter(
-        x=hl_edges_x, y=hl_edges_y,
+        x=hl_edges_lon, y=hl_edges_lat, # <-- Dùng lon/lat
         mode='lines', line=dict(width=1, color='red'),
         hoverinfo='none', name="Đường bay được chọn"
     ))
     
     traces.append(go.Scatter(
-        x=base_nodes_x, y=base_nodes_y, text=base_nodes_text,
+        x=base_nodes_lon, y=base_nodes_lat, text=base_nodes_text, # <-- Dùng lon/lat
         mode='markers', marker=dict(size=3, color='rgba(150, 150, 150, 0.8)'),
         hoverinfo='text', name="Sân bay"
     ))
 
     traces.append(go.Scatter(
-        x=hl_nodes_x, y=hl_nodes_y, text=hl_nodes_text,
+        x=hl_nodes_lon, y=hl_nodes_lat, text=hl_nodes_text, # <-- Dùng lon/lat
         mode='markers', 
-        marker=dict(size=8, color=hl_nodes_colors, opacity=1.0),
+        marker=dict(
+            size=8, 
+            color=hl_nodes_colors, 
+            opacity=1.0
+        ),
         hoverinfo='text', name="Sân bay được chọn"
     ))
         
     # 4. Tạo Layout
     layout = go.Layout(
-        title="Biểu đồ Mạng lưới Chuyến bay Toàn cầu (NetworkX Layout)",
+        title="Biểu đồ Mạng lưới Chuyến bay Toàn cầu (Vị trí Kinh độ/Vĩ độ)",
         showlegend=False,
         xaxis=dict(visible=False, showgrid=False, zeroline=False),
         yaxis=dict(visible=False, showgrid=False, zeroline=False),
@@ -209,7 +190,6 @@ def create_graph_figure(pos_dict, node_colors_dict={}, highlight_edges=[]):
 
 
 # --- 7. KHỞI TẠO APP DASH ---
-# (SỬA ĐỔI 1: CẬP NHẬT LAYOUT)
 app = dash.Dash(__name__)
 
 app.layout = html.Div(style={'fontFamily': 'Arial'}, children=[
@@ -238,30 +218,27 @@ app.layout = html.Div(style={'fontFamily': 'Arial'}, children=[
         
         html.Pre(id='path-output-text', style={'border': '1px solid #eee', 'padding': '5px', 'background': '#f9f9f9'}),
         
-        # --- BẮT ĐẦU SỬA ĐỔI 1 ---
         html.H3("Chức năng 2: Xem kết nối (Click hoặc Gõ tìm)"),
         html.P("Click vào một sân bay bất kỳ TRÊN BIỂU ĐỒ, HOẶC gõ tìm sân bay dưới đây:"),
         
-        # Thêm Dropdown và Button mới cho chức năng 'Gõ tìm'
         html.Div(style={'display': 'flex', 'alignItems': 'center'}, children=[
             dcc.Dropdown(
-                id='dropdown-click-search', # <-- ID MỚI
+                id='dropdown-click-search', 
                 options=AIRPORT_OPTIONS,
                 placeholder="Gõ tên hoặc mã sân bay để xem kết nối...",
-                style={'flex': '1'} # Cho dropdown chiếm phần lớn không gian
+                style={'flex': '1'} 
             ),
-            html.Button('Xem kết nối', id='button-click-search', n_clicks=0, style={'marginLeft': '10px', 'padding': '10px'}) # <-- NÚT MỚI
+            html.Button('Xem kết nối', id='button-click-search', n_clicks=0, style={'marginLeft': '10px', 'padding': '10px'})
         ]),
         
         html.Pre(id='click-output-text', style={'border': '1px solid #eee', 'padding': '5px', 'background': '#f9f9f9', 'marginTop': '10px'}),
-        # --- KẾT THÚC SỬA ĐỔI 1 ---
     ]),
     
     # Biểu đồ chính
     html.Div(style={'border': '1px solid black', 'margin': '20px'}, children=[
         dcc.Graph(
             id='map-graph',
-            figure=create_graph_figure(POS, highlight_edges=[]), 
+            figure=create_graph_figure(highlight_edges=[]), # <-- Không cần POS
             style={'height': '80vh'}
         )
     ])
@@ -269,9 +246,6 @@ app.layout = html.Div(style={'fontFamily': 'Arial'}, children=[
 
 
 # --- 8. CALLBACK (PHẦN TƯƠNG TÁC LOGIC) ---
-# (SỬA ĐỔI 2: CẬP NHẬT CALLBACK)
-
-# --- BẮT ĐẦU SỬA ĐỔI 2.1: Thêm Input và State mới ---
 @app.callback(
     [Output('map-graph', 'figure'),
      Output('path-output-text', 'children'),
@@ -279,14 +253,13 @@ app.layout = html.Div(style={'fontFamily': 'Arial'}, children=[
     [Input('button-find-path', 'n_clicks'),
      Input('map-graph', 'clickData'),
      Input('button-reset', 'n_clicks'),
-     Input('button-click-search', 'n_clicks')], # <-- INPUT MỚI
+     Input('button-click-search', 'n_clicks')], 
     [State('dropdown-source', 'value'),
      State('dropdown-target', 'value'),
-     State('dropdown-click-search', 'value')] # <-- STATE MỚI
+     State('dropdown-click-search', 'value')] 
 )
-def update_map(btn_find_path, clickData, btn_reset, btn_click_search, # <-- Biến mới
-               source_node, target_node, click_search_node): # <-- Biến mới
-    # --- KẾT THÚC SỬA ĐỔI 2.1 ---
+def update_map(btn_find_path, clickData, btn_reset, btn_click_search, 
+               source_node, target_node, click_search_node): 
     
     ctx = dash.callback_context
     if not ctx.triggered:
@@ -296,16 +269,16 @@ def update_map(btn_find_path, clickData, btn_reset, btn_click_search, # <-- Bi�
     
     # Xử lý nút RESET
     if triggered_id == 'button-reset':
-        return create_graph_figure(POS, node_colors_dict={}, highlight_edges=[]), " ", " "
+        return create_graph_figure(node_colors_dict={}, highlight_edges=[]), " ", " "
 
     # Xử lý logic TÌM ĐƯỜNG BAY
     if triggered_id == 'button-find-path' and source_node and target_node:
         print(f"Đang tìm đường bay từ {source_node} đến {target_node}")
         
         if source_node not in G:
-            return dash.no_update, f"Lỗi: Không tìm thấy sân bay đi: {source_node}", " ", " "
+            return dash.no_update, f"Lỗi: Không tìm thấy sân bay đi: {source_node}", " "
         if target_node not in G:
-            return dash.no_update, f"Lỗi: Không tìm thấy sân bay đến: {target_node}", " ", " "
+            return dash.no_update, f"Lỗi: Không tìm thấy sân bay đến: {target_node}", " "
             
         try:
             path_nodes = nx.dijkstra_path(G, source=source_node, target=target_node)
@@ -315,20 +288,18 @@ def update_map(btn_find_path, clickData, btn_reset, btn_click_search, # <-- Bi�
             node_colors[source_node] = 'green'
             node_colors[target_node] = 'green'
             
-            figure = create_graph_figure(POS, node_colors_dict=node_colors, highlight_edges=path_edges)
+            figure = create_graph_figure(node_colors_dict=node_colors, highlight_edges=path_edges) # <-- Không cần POS
             
             path_text = f"Đường đi: {' -> '.join(path_nodes)}"
             return figure, path_text, " "
             
         except nx.NetworkXNoPath:
             node_colors = {source_node: 'red', target_node: 'red'}
-            figure = create_graph_figure(POS, node_colors_dict=node_colors, highlight_edges=[])
+            figure = create_graph_figure(node_colors_dict=node_colors, highlight_edges=[]) # <-- Không cần POS
             return figure, f"Không tìm thấy đường bay nào giữa {source_node} và {target_node}.", " "
         except Exception as e:
             return dash.no_update, f"Lỗi thuật toán: {e}", " "
 
-    # --- BẮT ĐẦU SỬA ĐỔI 2.2: Tách logic CLICK và GÕ TÌM ---
-    
     # Logic chung cho cả Click và Gõ tìm
     def handle_click_search(node_iata, node_name):
         if node_iata not in G:
@@ -344,12 +315,12 @@ def update_map(btn_find_path, clickData, btn_reset, btn_click_search, # <-- Bi�
         node_colors = {succ: get_random_color() for succ in successors}
         node_colors[node_iata] = 'green' 
         
-        figure = create_graph_figure(POS, node_colors_dict=node_colors, highlight_edges=edges)
+        figure = create_graph_figure(node_colors_dict=node_colors, highlight_edges=edges) # <-- Không cần POS
         click_text = f"Đang xem các kết nối từ: {node_name} ({node_iata}) ({len(successors)} đường bay)"
         
         return figure, " ", click_text
 
-    # Xử lý logic CLICK (như cũ)
+    # Xử lý logic CLICK
     if triggered_id == 'map-graph' and clickData:
         try:
             clicked_text = clickData['points'][0]['text']
@@ -360,16 +331,15 @@ def update_map(btn_find_path, clickData, btn_reset, btn_click_search, # <-- Bi�
         except Exception as e:
             return dash.no_update, " ", f"Lỗi khi xử lý click: {e}"
 
-    # Xử lý logic GÕ TÌM (mới)
+    # Xử lý logic GÕ TÌM
     if triggered_id == 'button-click-search' and click_search_node:
         try:
-            node_iata = click_search_node # Lấy IATA từ dropdown
-            node_name = G.nodes[node_iata].get('name', node_iata) # Lấy tên từ graph
+            node_iata = click_search_node
+            node_name = G.nodes[node_iata].get('name', node_iata)
             
             return handle_click_search(node_iata, node_name)
         except Exception as e:
             return dash.no_update, " ", f"Lỗi khi xử lý gõ tìm: {e}"
-    # --- KẾT THÚC SỬA ĐỔI 2.2 ---
 
     return dash.no_update, " ", " "
 
