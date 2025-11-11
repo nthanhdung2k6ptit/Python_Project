@@ -1,0 +1,796 @@
+{
+  "directed": true,
+  "multigraph": false,
+  "graph": {},
+  "nodes": [
+    {
+      "name": "Phung-Duc",
+      "country": "Unknown",
+      "lat": 12.666667,
+      "lon": 108.05,
+      "id": "BMV"
+    },
+    {
+      "name": "Ca Mau",
+      "country": "Unknown",
+      "lat": 9.175556,
+      "lon": 105.17944,
+      "id": "CAH"
+    },
+    {
+      "name": "Cape St Jacques",
+      "country": "Unknown",
+      "lat": 10.033333,
+      "lon": 111.0,
+      "id": "CSJ"
+    },
+    {
+      "name": "Cam Ranh",
+      "country": "Unknown",
+      "lat": 11.993611,
+      "lon": 109.225,
+      "id": "CXR"
+    },
+    {
+      "name": "Da Nang",
+      "country": "Unknown",
+      "lat": 16.055399,
+      "lon": 108.20298,
+      "id": "DAD"
+    },
+    {
+      "name": "Dien Bien",
+      "country": "Unknown",
+      "lat": 21.383333,
+      "lon": 103.0,
+      "id": "DIN"
+    },
+    {
+      "name": "Lienkhang",
+      "country": "Unknown",
+      "lat": 11.749689,
+      "lon": 108.37603,
+      "id": "DLI"
+    },
+    {
+      "name": "Noibai International",
+      "country": "Unknown",
+      "lat": 21.214184,
+      "lon": 105.802826,
+      "id": "HAN"
+    },
+    {
+      "name": "Flamingo",
+      "country": "Unknown",
+      "lat": 12.0,
+      "lon": 106.0,
+      "id": "HBN"
+    },
+    {
+      "name": "Nhon Co",
+      "country": "Unknown",
+      "lat": 12.009722,
+      "lon": 107.68806,
+      "id": "HOO"
+    },
+    {
+      "name": "Catbi",
+      "country": "Unknown",
+      "lat": 20.823315,
+      "lon": 106.727325,
+      "id": "HPH"
+    },
+    {
+      "name": "Phu Bai",
+      "country": "Unknown",
+      "lat": 16.398224,
+      "lon": 107.700874,
+      "id": "HUI"
+    },
+    {
+      "name": "Kontum",
+      "country": "Unknown",
+      "lat": 14.354167,
+      "lon": 108.021385,
+      "id": "KON"
+    },
+    {
+      "name": "Nha Trang",
+      "country": "Unknown",
+      "lat": 12.227912,
+      "lon": 109.19666,
+      "id": "NHA"
+    },
+    {
+      "name": "Phan Rang",
+      "country": "Unknown",
+      "lat": 11.633333,
+      "lon": 108.95,
+      "id": "PHA"
+    },
+    {
+      "name": "Phan Thiet",
+      "country": "Unknown",
+      "lat": 10.9,
+      "lon": 108.066666,
+      "id": "PHH"
+    },
+    {
+      "name": "Phu Vinh",
+      "country": "Unknown",
+      "lat": 9.95,
+      "lon": 106.333336,
+      "id": "PHU"
+    },
+    {
+      "name": "Duong Dong",
+      "country": "Unknown",
+      "lat": 10.223722,
+      "lon": 103.96324,
+      "id": "PQC"
+    },
+    {
+      "name": "Pleiku",
+      "country": "Unknown",
+      "lat": 14.006346,
+      "lon": 108.00896,
+      "id": "PXU"
+    },
+    {
+      "name": "Tan Son Nhat International",
+      "country": "Unknown",
+      "lat": 10.813045,
+      "lon": 106.662476,
+      "id": "SGN"
+    },
+    {
+      "name": "Soc Trang",
+      "country": "Unknown",
+      "lat": 9.616667,
+      "lon": 105.833336,
+      "id": "SOA"
+    },
+    {
+      "name": "Na-San",
+      "country": "Unknown",
+      "lat": 21.218056,
+      "lon": 104.025,
+      "id": "SQH"
+    },
+    {
+      "name": "Dong Tac",
+      "country": "Unknown",
+      "lat": 13.044167,
+      "lon": 109.33972,
+      "id": "TBB"
+    },
+    {
+      "name": "Tamky",
+      "country": "Unknown",
+      "lat": 15.566667,
+      "lon": 108.48333,
+      "id": "TMK"
+    },
+    {
+      "name": "Qui Nhon",
+      "country": "Unknown",
+      "lat": 13.766111,
+      "lon": 109.22639,
+      "id": "UIH"
+    },
+    {
+      "name": "Can Tho",
+      "country": "Unknown",
+      "lat": 10.047222,
+      "lon": 105.76639,
+      "id": "VCA"
+    },
+    {
+      "name": "Chulai",
+      "country": "Unknown",
+      "lat": 15.422222,
+      "lon": 108.70389,
+      "id": "VCL"
+    },
+    {
+      "name": "Coong",
+      "country": "Unknown",
+      "lat": 10.371389,
+      "lon": 106.63333,
+      "id": "VCS"
+    },
+    {
+      "name": "Dong Hoi",
+      "country": "Unknown",
+      "lat": 17.515,
+      "lon": 106.59055,
+      "id": "VDH"
+    },
+    {
+      "name": "Vinh City",
+      "country": "Unknown",
+      "lat": 18.7,
+      "lon": 105.63333,
+      "id": "VII"
+    },
+    {
+      "name": "Rach Gia",
+      "country": "Unknown",
+      "lat": 10.083333,
+      "lon": 105.083336,
+      "id": "VKG"
+    },
+    {
+      "name": "Phuoclong",
+      "country": "Unknown",
+      "lat": 9.433333,
+      "lon": 105.46667,
+      "id": "VSO"
+    },
+    {
+      "name": "Vung Tau",
+      "country": "Unknown",
+      "lat": 10.374444,
+      "lon": 107.09111,
+      "id": "VTG"
+    },
+    {
+      "name": "Long Xuyen",
+      "country": "Unknown",
+      "lat": 10.333333,
+      "lon": 105.46667,
+      "id": "XLO"
+    },
+    {
+      "name": "Quang Ngai",
+      "country": "Unknown",
+      "lat": 15.113611,
+      "lon": 108.77583,
+      "id": "XNG"
+    },
+    {
+      "name": "Vinh Long",
+      "country": "Unknown",
+      "lat": 10.25,
+      "lon": 105.95,
+      "id": "XVL"
+    },
+    {
+      "name": "Van Don International Airport",
+      "country": "Vietnam",
+      "lat": 21.117778,
+      "lon": 107.414167,
+      "id": "VDO"
+    }
+  ],
+  "links": [
+    {
+      "airline": "BL",
+      "flight": "573",
+      "source": "BMV",
+      "target": "SGN"
+    },
+    {
+      "airline": "BL",
+      "flight": "204",
+      "source": "BMV",
+      "target": "HAN"
+    },
+    {
+      "airline": "VN",
+      "flight": "1912",
+      "source": "BMV",
+      "target": "DAD"
+    },
+    {
+      "airline": "BL",
+      "flight": "538",
+      "source": "BMV",
+      "target": "HPH"
+    },
+    {
+      "airline": "BL",
+      "flight": "578",
+      "source": "BMV",
+      "target": "VII"
+    },
+    {
+      "airline": "0V",
+      "flight": "8060",
+      "source": "CAH",
+      "target": "SGN"
+    },
+    {
+      "airline": "0V",
+      "flight": "8807",
+      "source": "CXR",
+      "target": "SGN"
+    },
+    {
+      "airline": "BL",
+      "flight": "502",
+      "source": "CXR",
+      "target": "HAN"
+    },
+    {
+      "airline": "VN",
+      "flight": "1580",
+      "source": "CXR",
+      "target": "HPH"
+    },
+    {
+      "airline": "0V",
+      "flight": "8026",
+      "source": "CXR",
+      "target": "DAD"
+    },
+    {
+      "airline": "BL",
+      "flight": "322",
+      "source": "CXR",
+      "target": "VII"
+    },
+    {
+      "airline": "BL",
+      "flight": "611",
+      "source": "DAD",
+      "target": "SGN"
+    },
+    {
+      "airline": "BL",
+      "flight": "568",
+      "source": "DAD",
+      "target": "HAN"
+    },
+    {
+      "airline": "VN",
+      "flight": "1672",
+      "source": "DAD",
+      "target": "HPH"
+    },
+    {
+      "airline": "VN",
+      "flight": "1901",
+      "source": "DAD",
+      "target": "PXU"
+    },
+    {
+      "airline": "VN",
+      "flight": "1913",
+      "source": "DAD",
+      "target": "BMV"
+    },
+    {
+      "airline": "0V",
+      "flight": "8027",
+      "source": "DAD",
+      "target": "CXR"
+    },
+    {
+      "airline": "VN",
+      "flight": "1955",
+      "source": "DAD",
+      "target": "DLI"
+    },
+    {
+      "airline": "0V",
+      "flight": "8020",
+      "source": "DAD",
+      "target": "VII"
+    },
+    {
+      "airline": "0V",
+      "flight": "8205",
+      "source": "DIN",
+      "target": "HAN"
+    },
+    {
+      "airline": "BL",
+      "flight": "359",
+      "source": "DLI",
+      "target": "SGN"
+    },
+    {
+      "airline": "BL",
+      "flight": "214",
+      "source": "DLI",
+      "target": "HAN"
+    },
+    {
+      "airline": "VN",
+      "flight": "1954",
+      "source": "DLI",
+      "target": "DAD"
+    },
+    {
+      "airline": "BL",
+      "flight": "232",
+      "source": "DLI",
+      "target": "HUI"
+    },
+    {
+      "airline": "VJ",
+      "flight": "467",
+      "source": "HAN",
+      "target": "VCA"
+    },
+    {
+      "airline": "BL",
+      "flight": "205",
+      "source": "HAN",
+      "target": "PQC"
+    },
+    {
+      "airline": "VJ",
+      "flight": "569",
+      "source": "HAN",
+      "target": "HUI"
+    },
+    {
+      "airline": "BL",
+      "flight": "569",
+      "source": "HAN",
+      "target": "DAD"
+    },
+    {
+      "airline": "BL",
+      "flight": "501",
+      "source": "HAN",
+      "target": "CXR"
+    },
+    {
+      "airline": "BL",
+      "flight": "213",
+      "source": "HAN",
+      "target": "DLI"
+    },
+    {
+      "airline": "0V",
+      "flight": "8591",
+      "source": "HAN",
+      "target": "VDH"
+    },
+    {
+      "airline": "VJ",
+      "flight": "497",
+      "source": "HAN",
+      "target": "BMV"
+    },
+    {
+      "airline": "VJ",
+      "flight": "429",
+      "source": "HAN",
+      "target": "PXU"
+    },
+    {
+      "airline": "BL",
+      "flight": "215",
+      "source": "HAN",
+      "target": "UIH"
+    },
+    {
+      "airline": "BL",
+      "flight": "237",
+      "source": "HAN",
+      "target": "VCL"
+    },
+    {
+      "airline": "0V",
+      "flight": "8313",
+      "source": "HAN",
+      "target": "VII"
+    },
+    {
+      "airline": "BL",
+      "flight": "817",
+      "source": "HAN",
+      "target": "SGN"
+    },
+    {
+      "airline": "BL",
+      "flight": "217",
+      "source": "HAN",
+      "target": "TBB"
+    },
+    {
+      "airline": "0V",
+      "flight": "8204",
+      "source": "HAN",
+      "target": "DIN"
+    },
+    {
+      "airline": "BL",
+      "flight": "519",
+      "source": "HPH",
+      "target": "SGN"
+    },
+    {
+      "airline": "VN",
+      "flight": "1581",
+      "source": "HPH",
+      "target": "CXR"
+    },
+    {
+      "airline": "VN",
+      "flight": "1673",
+      "source": "HPH",
+      "target": "DAD"
+    },
+    {
+      "airline": "BL",
+      "flight": "539",
+      "source": "HPH",
+      "target": "BMV"
+    },
+    {
+      "airline": "BL",
+      "flight": "587",
+      "source": "HUI",
+      "target": "SGN"
+    },
+    {
+      "airline": "VJ",
+      "flight": "568",
+      "source": "HUI",
+      "target": "HAN"
+    },
+    {
+      "airline": "BL",
+      "flight": "233",
+      "source": "HUI",
+      "target": "DLI"
+    },
+    {
+      "airline": "BL",
+      "flight": "206",
+      "source": "PQC",
+      "target": "HAN"
+    },
+    {
+      "airline": "0V",
+      "flight": "8802",
+      "source": "PQC",
+      "target": "SGN"
+    },
+    {
+      "airline": "0V",
+      "flight": "8015",
+      "source": "PQC",
+      "target": "VCA"
+    },
+    {
+      "airline": "BL",
+      "flight": "257",
+      "source": "PXU",
+      "target": "SGN"
+    },
+    {
+      "airline": "BL",
+      "flight": "202",
+      "source": "PXU",
+      "target": "HAN"
+    },
+    {
+      "airline": "VN",
+      "flight": "1900",
+      "source": "PXU",
+      "target": "DAD"
+    },
+    {
+      "airline": "BL",
+      "flight": "604",
+      "source": "SGN",
+      "target": "DAD"
+    },
+    {
+      "airline": "BL",
+      "flight": "518",
+      "source": "SGN",
+      "target": "HPH"
+    },
+    {
+      "airline": "BL",
+      "flight": "526",
+      "source": "SGN",
+      "target": "VII"
+    },
+    {
+      "airline": "0V",
+      "flight": "8806",
+      "source": "SGN",
+      "target": "CXR"
+    },
+    {
+      "airline": "BL",
+      "flight": "586",
+      "source": "SGN",
+      "target": "HUI"
+    },
+    {
+      "airline": "BL",
+      "flight": "358",
+      "source": "SGN",
+      "target": "DLI"
+    },
+    {
+      "airline": "BL",
+      "flight": "254",
+      "source": "SGN",
+      "target": "UIH"
+    },
+    {
+      "airline": "BL",
+      "flight": "350",
+      "source": "SGN",
+      "target": "VDH"
+    },
+    {
+      "airline": "BL",
+      "flight": "570",
+      "source": "SGN",
+      "target": "BMV"
+    },
+    {
+      "airline": "BL",
+      "flight": "256",
+      "source": "SGN",
+      "target": "PXU"
+    },
+    {
+      "airline": "0V",
+      "flight": "8803",
+      "source": "SGN",
+      "target": "PQC"
+    },
+    {
+      "airline": "BL",
+      "flight": "816",
+      "source": "SGN",
+      "target": "HAN"
+    },
+    {
+      "airline": "BL",
+      "flight": "326",
+      "source": "SGN",
+      "target": "TBB"
+    },
+    {
+      "airline": "0V",
+      "flight": "8430",
+      "source": "SGN",
+      "target": "VCL"
+    },
+    {
+      "airline": "0V",
+      "flight": "8003",
+      "source": "SGN",
+      "target": "VKG"
+    },
+    {
+      "airline": "0V",
+      "flight": "8079",
+      "source": "SGN",
+      "target": "VCS"
+    },
+    {
+      "airline": "0V",
+      "flight": "8061",
+      "source": "SGN",
+      "target": "CAH"
+    },
+    {
+      "airline": "BL",
+      "flight": "327",
+      "source": "TBB",
+      "target": "SGN"
+    },
+    {
+      "airline": "BL",
+      "flight": "218",
+      "source": "TBB",
+      "target": "HAN"
+    },
+    {
+      "airline": "BL",
+      "flight": "255",
+      "source": "UIH",
+      "target": "SGN"
+    },
+    {
+      "airline": "BL",
+      "flight": "216",
+      "source": "UIH",
+      "target": "HAN"
+    },
+    {
+      "airline": "VJ",
+      "flight": "468",
+      "source": "VCA",
+      "target": "HAN"
+    },
+    {
+      "airline": "0V",
+      "flight": "8014",
+      "source": "VCA",
+      "target": "PQC"
+    },
+    {
+      "airline": "0V",
+      "flight": "8070",
+      "source": "VCA",
+      "target": "VCS"
+    },
+    {
+      "airline": "BL",
+      "flight": "238",
+      "source": "VCL",
+      "target": "HAN"
+    },
+    {
+      "airline": "0V",
+      "flight": "8431",
+      "source": "VCL",
+      "target": "SGN"
+    },
+    {
+      "airline": "0V",
+      "flight": "8078",
+      "source": "VCS",
+      "target": "SGN"
+    },
+    {
+      "airline": "0V",
+      "flight": "8071",
+      "source": "VCS",
+      "target": "VCA"
+    },
+    {
+      "airline": "BL",
+      "flight": "351",
+      "source": "VDH",
+      "target": "SGN"
+    },
+    {
+      "airline": "0V",
+      "flight": "8590",
+      "source": "VDH",
+      "target": "HAN"
+    },
+    {
+      "airline": "BL",
+      "flight": "529",
+      "source": "VII",
+      "target": "SGN"
+    },
+    {
+      "airline": "0V",
+      "flight": "8312",
+      "source": "VII",
+      "target": "HAN"
+    },
+    {
+      "airline": "BL",
+      "flight": "321",
+      "source": "VII",
+      "target": "CXR"
+    },
+    {
+      "airline": "BL",
+      "flight": "579",
+      "source": "VII",
+      "target": "BMV"
+    },
+    {
+      "airline": "0V",
+      "flight": "8021",
+      "source": "VII",
+      "target": "DAD"
+    },
+    {
+      "airline": "0V",
+      "flight": "8002",
+      "source": "VKG",
+      "target": "SGN"
+    }
+  ]
+}
