@@ -1,17 +1,18 @@
 # Xuất PDF, Excel
+# src/analysis/export_report.py
 
 import pandas as pd
 import os
 import sys
+# (Không cần import fpdf)
 
-# --- Khối Import Logic ---
+# --- Khối Import Logic (Import từ statistics_1.py) ---
 try:
-    # Import từ file 'statistics_1.py' của bạn
     from statistics_1 import (
         load_csv_data, 
         get_overview_stats,
         get_top_airports_by_routes, 
-        get_top_airlines_by_routes,
+        get_top_airlines_by_country_coverage,
         get_top_important_airports
     )
     print("INFO (TV6-Export): Import 'statistics_1.py' thành công.")
@@ -19,8 +20,7 @@ except ImportError:
     print("LỖI (TV6-Export): Không tìm thấy file 'statistics_1.py'.")
     sys.exit(1)
 
-
-# --- Cài đặt đường dẫn Output (Theo cấu trúc file mới) ---
+# --- Cài đặt đường dẫn Output ---
 try:
     CURRENT_FILE_DIR = os.path.dirname(os.path.abspath(__file__))
     SRC_DIR = os.path.dirname(CURRENT_FILE_DIR)
@@ -30,76 +30,77 @@ except NameError:
 
 REPORT_DIR = os.path.join(PROJECT_ROOT, 'data', 'report')
 os.makedirs(REPORT_DIR, exist_ok=True)
-REPORT_FILE_PATH = os.path.join(REPORT_DIR, 'statistical_report.xlsx')
+REPORT_FILE_PATH_XLSX = os.path.join(REPORT_DIR, 'statistical_report.xlsx')
 # ----------------------------------------------
 
-
-# --- (!!! HÀM MỚI ĐỂ TỰ ĐỘNG CĂN CHỈNH !!!) ---
+# --- Hàm tự động căn chỉnh (Giữ nguyên) ---
 def auto_adjust_columns(worksheet):
-    """
-    Tự động căn chỉnh độ rộng của tất cả các cột trong một worksheet.
-    """
+    """Tự động căn chỉnh độ rộng của tất cả các cột trong một worksheet."""
     print(f"INFO (TV6-Export): Đang tự căn chỉnh cột cho sheet '{worksheet.title}'...")
-    # Lặp qua tất cả các cột trong worksheet
     for col in worksheet.columns:
         max_length = 0
-        column_letter = col[0].column_letter # Lấy tên cột (ví dụ: 'A', 'B')
-        
-        # Lặp qua tất cả các cell trong cột
+        column_letter = col[0].column_letter 
         for cell in col:
-            # Bỏ qua cell trống
             if cell.value:
-                # Tìm độ dài lớn nhất (cả header và dữ liệu)
                 current_length = len(str(cell.value))
                 if current_length > max_length:
                     max_length = current_length
-        
-        # Đặt độ rộng mới cho cột (thêm 2 đơn vị để đệm)
         adjusted_width = max_length + 2
         worksheet.column_dimensions[column_letter].width = adjusted_width
-# ----------------------------------------------
-
 
 def export_to_excel(stats_dict, top_airports_df, top_airlines_df, top_hubs_df):
     """Xuất tất cả kết quả ra file Excel VÀ TỰ CĂN CHỈNH."""
     
-    print(f"INFO (TV6-Export): Đang xuất báo cáo ra file Excel tại: {REPORT_FILE_PATH}")
-    
+    print(f"INFO (TV6-Export): Đang xuất báo cáo ra file Excel tại: {REPORT_FILE_PATH_XLSX}")
     try:
-        with pd.ExcelWriter(REPORT_FILE_PATH, engine='openpyxl') as writer:
+        with pd.ExcelWriter(REPORT_FILE_PATH_XLSX, engine='openpyxl') as writer:
             
-            # --- Sheet 1: Tổng quan ---
+            # Sheet 1: Tổng quan
             overview_df = pd.DataFrame.from_dict(stats_dict, orient='index', columns=['Value'])
             overview_df.to_excel(writer, sheet_name='Tong_Quan')
-            # Lấy worksheet và căn chỉnh
-            worksheet1 = writer.sheets['Tong_Quan']
-            auto_adjust_columns(worksheet1) # <-- GỌI HÀM CĂN CHỈNH
+            auto_adjust_columns(writer.sheets['Tong_Quan']) 
             
-            # --- Sheet 2: Top Sân bay (Bận rộn) ---
+            # Sheet 2: Top Sân bay (Bận rộn)
             if not top_airports_df.empty:
                 top_airports_df.to_excel(writer, sheet_name='Top_Airports_by_Routes', index=False)
-                # Lấy worksheet và căn chỉnh
-                worksheet2 = writer.sheets['Top_Airports_by_Routes']
-                auto_adjust_columns(worksheet2) # <-- GỌI HÀM CĂN CHỈNH
+                auto_adjust_columns(writer.sheets['Top_Airports_by_Routes'])
             
-            # --- Sheet 3: Top Hãng bay ---
+            # Sheet 3: Top Hãng bay (Độ phủ)
             if not top_airlines_df.empty:
-                top_airlines_df.to_excel(writer, sheet_name='Top_Airlines_by_Routes', index=False)
-                # Lấy worksheet và căn chỉnh
-                worksheet3 = writer.sheets['Top_Airlines_by_Routes']
-                auto_adjust_columns(worksheet3) # <-- GỌI HÀM CĂN CHỈNH
+                top_airlines_df.to_excel(writer, sheet_name='Top_Airlines_by_Coverage', index=False)
+                auto_adjust_columns(writer.sheets['Top_Airlines_by_Coverage'])
                 
-            # --- Sheet 4: Top Sân bay (Hubs) ---
+            # Sheet 4: Top Sân bay (Hubs)
             if not top_hubs_df.empty:
                 top_hubs_df.to_excel(writer, sheet_name='Top_Airport_Hubs_Centrality', index=False)
-                # Lấy worksheet và căn chỉnh
+                
+                # --- (!!! SỬA LỖI Ở ĐÂY !!!) ---
+                # Lấy worksheet
                 worksheet4 = writer.sheets['Top_Airport_Hubs_Centrality']
-                auto_adjust_columns(worksheet4) # <-- GỌI HÀM CĂN CHỈNH
+                
+                # Tìm chữ cái của cột 'betweenness_centrality'
+                target_col_letter = ''
+                for col_idx, col_name in enumerate(top_hubs_df.columns, 1):
+                    if col_name == 'betweenness_centrality':
+                        # Lấy chữ cái (ví dụ: 'B') từ đối tượng cell
+                        target_col_letter = worksheet4.cell(row=1, column=col_idx).column_letter
+                        break
+                
+                # Áp dụng định dạng 6 chữ số thập phân cho cột đó
+                if target_col_letter:
+                    print(f"INFO (TV6-Export): Đang áp dụng định dạng 6 chữ số thập phân cho cột {target_col_letter}...")
+                    # Lặp qua tất cả các ô trong cột đó (bỏ qua header)
+                    for cell in worksheet4[target_col_letter][1:]: 
+                        cell.number_format = '0.000000'
+                # ---------------------------------
+
+                # Chạy căn chỉnh cột (sau khi đã định dạng)
+                auto_adjust_columns(worksheet4)
             
-        print(f"\nĐã xuất báo cáo Excel (đã tự căn chỉnh) thành công!")
+        print(f"\nĐã xuất báo cáo Excel (đã tự căn chỉnh và định dạng) thành công!")
     
     except PermissionError:
-        print(f"LỖI (TV6-Export): Không thể ghi file Excel. File '{REPORT_FILE_PATH}' có thể đang được mở.")
+        print(f"LỖI (TV6-Export): Không thể ghi file Excel. File '{REPORT_FILE_PATH_XLSX}' có thể đang được mở.")
     except Exception as e:
         print(f"LỖI (TV6-Export): Không thể ghi file Excel. Lỗi: {e}")
 
@@ -107,17 +108,22 @@ def export_to_excel(stats_dict, top_airports_df, top_airlines_df, top_hubs_df):
 if __name__ == '__main__':
     print("--- Chạy file export_report.py (TV6) ---")
     
-    flights, airports, airlines = load_csv_data()
+    flights, airports, airlines = load_csv_data() 
     
     if flights is not None:
         print("INFO (TV6-Export): Đang tính toán tất cả số liệu...")
         
-        stats = get_overview_stats(flights, airports) 
+        stats = get_overview_stats(flights, airports, airlines) 
         top_airports = get_top_airports_by_routes(flights, airports)
-        top_airlines = get_top_airlines_by_routes(flights) 
+        top_airlines_coverage = get_top_airlines_by_country_coverage(flights, airports, airlines) 
         top_hubs = get_top_important_airports(airports)
         
-        export_to_excel(stats, top_airports, top_airlines, top_hubs)
+        # (LÀM TRÒN SỐ TRONG PANDAS)
+        if not top_hubs.empty:
+            print("INFO (TV6-Export): Đang làm tròn 'betweenness_centrality'...")
+            top_hubs['betweenness_centrality'] = top_hubs['betweenness_centrality'].round(6)
+        
+        export_to_excel(stats, top_airports, top_airlines_coverage, top_hubs)
         
         print("--- Hoàn thành file export_report.py (TV6) ---")
     else:
