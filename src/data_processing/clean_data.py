@@ -1,9 +1,14 @@
 import os
 import re
 import pandas as pd
+from pathlib import Path
 
 # ===== Paths =====
-PROJECT_DIR = r"C:\Users\admin\Documents\Graph_Network_Project"
+'''Dũng note ở đây nhé: sử dụng đường dẫn gốc của project (động) thay vì 
+đường dẫn cục bộ ở trong máy nhé'''
+# Use project root (dynamic) instead of hard-coded local path
+PROJECT_DIR = Path(__file__).resolve().parents[2]  # Graph_Network_Project
+PROJECT_DIR = str(PROJECT_DIR)
 
 RAW_DIR_VN   = os.path.join(PROJECT_DIR, "data", "raw_vn")
 CLEAN_DIR_VN = os.path.join(PROJECT_DIR, "data", "cleaned_vn")

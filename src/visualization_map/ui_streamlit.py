@@ -8,7 +8,7 @@ sys.path.insert(0, str(project_root))
 import streamlit as st
 from streamlit_folium import folium_static
 from src.visualization_map.map_routes import create_flight_map
-from src.visualization_map.ui_helper import load_airports
+from src.visualization_map.ui_helper import load_airports, load_cities
 import pandas as pd
 
 st.set_page_config(page_title="🛫 Group 3 | Flight Network", layout="wide")
@@ -21,27 +21,34 @@ if _df_airports is None:
 else:
     df_airports = _df_airports
 
-# helper: pick first existing column from candidates, return Series of strings
-def _pick_col_series(df, candidates):
-    for c in candidates:
-        if c in df.columns:
-            return df[c].fillna("").astype(str)
-    # return empty-string series with correct length
-    return pd.Series([""] * len(df), index=df.index)
+# Load cities
+_df_cities = load_cities()
+if _df_cities is None:
+    df_cities = pd.DataFrame()
+else:
+    df_cities = _df_cities
 
-airport_options = []
-if not df_airports.empty:
-    iata = _pick_col_series(df_airports, ['iata_code', 'IATA', 'departureiata', 'codeiataairport'])
-    name = _pick_col_series(df_airports, ['airport_name', 'name'])
-    country = _pick_col_series(df_airports, ['country', 'iso_country'])
-    airport_options = (iata + " - " + name + " (" + country + ")").tolist()
+# Build city -> list of iatas mapping
+city_map = {}
+if not df_cities.empty:
+    # city_iata may contain single IATA or comma-separated list; normalize to list
+    for _, r in df_cities.iterrows():
+        city = r['city_name'].strip()
+        iata_field = "" if pd.isna(r.get('city_iata', "")) else str(r.get('city_iata', ""))
+        iata_list = [s.strip() for s in iata_field.replace(';',',').split(',') if s.strip()] if iata_field else []
+        city_map.setdefault(city, []).extend(iata_list)
+    # deduplicate lists
+    for k in list(city_map.keys()):
+        city_map[k] = sorted(set([i.upper() for i in city_map[k] if i]))
 
-airport_choices = [""] + airport_options
-selected_airport = st.selectbox("Chọn sân bay khởi hành (hoặc để trống):", airport_choices)
-select_iata = selected_airport.split(" - ")[0] if selected_airport else None
+city_options = [""] + sorted(city_map.keys())
+
+selected_city = st.selectbox("Chọn thành phố khởi hành (để trống cũng được):", city_options)
+selected_iatas = city_map.get(selected_city, []) if selected_city else []
 
 if st.button("Hiển thị đường bay"):
-    st.info(f"Đang hiển thị các đường bay xuất phát từ {select_iata or 'TOÀN CẦU'} ...")
-    m = create_flight_map(departure_filter=select_iata)
+    st.info(f"Đang hiển thị các đường bay xuất phát từ thành phố {selected_city or 'TOÀN CẦU'} ...")
+    # pass list of IATA codes to map generator
+    m = create_flight_map(departure_city_iatas = selected_iatas)
     folium_static(m)
-    st.success("Đã hiển thị bản đồ thành công!")
+    st.success("Đã hiển thị bản đồ thành công <3")

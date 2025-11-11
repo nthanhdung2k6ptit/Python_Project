@@ -11,7 +11,8 @@ import os
 def create_flight_map(
     base_path = "data/cleaned",
     output_path = "data/reports/flight_routes_map.html",
-    departure_filter = None # Lọc theo sân bay khởi hành (nếu cần)
+    departure_filter = None, # Lọc theo sân bay (IATA) - string
+    departure_city_iatas = None # Lọc theo thành phố: danh sách IATA khởi hành
 ):
     '''
     Tạo bản đồ các đường bay (toàn cầu)
@@ -45,36 +46,97 @@ def create_flight_map(
 
     if airport_vn:
         df_air_vn = pd.read_csv(airport_vn)
+        # Ignore the 'country' column values coming from the VN file (they contain "Unknown").
+        # Use a consistent marker instead so popup won't show "Unknown".
+        df_air_vn['country'] = 'Vietnam'
+        # mark source (optional, useful later)
+        df_air_vn['__src'] = 'vn'
     else:
-        df_air_vn = pd.DataFrame(columns=df_air_global.columns)  # empty but compatible
+        # empty DataFrame with same columns as global (if available) to avoid KeyErrors later
+        if not df_air_global.empty:
+            df_air_vn = pd.DataFrame(columns=df_air_global.columns.tolist() + ['__src'])
+        else:
+            df_air_vn = pd.DataFrame()
 
     if routes_vn:
         df_route_vn = pd.read_csv(routes_vn)
+        df_route_vn['__src'] = 'vn'
     else:
-        df_route_vn = pd.DataFrame(columns=df_route_global.columns)
+        if not df_route_global.empty:
+            df_route_vn = pd.DataFrame(columns=df_route_global.columns.tolist() + ['__src'])
+        else:
+            df_route_vn = pd.DataFrame()
     
     # Gộp data toàn cầu và Việt Nam lại, loại bỏ trùng IATA nếu có
     airports = pd.concat([df_air_global, df_air_vn]).drop_duplicates(subset=['iata_code'])
     routes = pd.concat([df_route_global, df_route_vn]).drop_duplicates(subset=['departure_iata', 'arrival_iata'])
     
-    # Lọc dữ liệu theo sân bay (nếu có)
+    # --- New: load city DBs (global + VN) and build iata -> city name lookup ---
+    city_global = os.path.join(base_path, "city_db_cleaned.csv")
+    candidates_city_vn = [
+        os.path.join(base_path + "_vn", "city_db_cleaned_vn.csv"),
+        os.path.join(base_path, "vn", "city_db_cleaned_vn.csv"),
+        os.path.join(os.path.dirname(base_path), "cleaned_vn", "city_db_cleaned_vn.csv"),
+        os.path.join("data", "cleaned_vn", "city_db_cleaned_vn.csv"),
+    ]
+
+    df_city_global = pd.read_csv(city_global) if os.path.exists(city_global) else pd.DataFrame()
+    city_vn_path = next((p for p in candidates_city_vn if os.path.exists(p)), None)
+    df_city_vn = pd.read_csv(city_vn_path) if city_vn_path else pd.DataFrame()
+
+    if not df_city_global.empty or not df_city_vn.empty:
+        df_cities = pd.concat([df_city_global, df_city_vn], ignore_index=True).drop_duplicates()
+        # normalize column names (common names in your CSVs)
+        # code column:
+        for icol in ['code_iata_city', 'city_iata', 'iata_code', 'iata', 'code']:
+            if icol in df_cities.columns:
+                df_cities['city_code'] = df_cities[icol].astype(str)
+                break
+        # name column:
+        for ncol in ['name_city', 'city_name', 'name']:
+            if ncol in df_cities.columns:
+                df_cities['city_name_norm'] = df_cities[ncol].astype(str)
+                break
+        if 'city_code' not in df_cities.columns:
+            df_cities['city_code'] = ""
+        if 'city_name_norm' not in df_cities.columns:
+            df_cities['city_name_norm'] = ""
+        # build lookup (uppercase keys)
+        city_lookup = {
+            (c.strip().upper() if isinstance(c, str) else ""): n.strip()
+            for c, n in zip(df_cities['city_code'], df_cities['city_name_norm'])
+            if isinstance(c, str) and c.strip()
+        }
+    else:
+        city_lookup = {}
+    # --- end new code ---
+    
+    # Lọc dữ liệu theo sân bay (nếu có) hoặc theo danh sách IATA của một thành phố
     if departure_filter:
         routes = routes[routes['departure_iata'].str.upper() == departure_filter.upper()]
+    elif departure_city_iatas:
+        # ensure uppercase compare
+        iata_set = set([i.upper() for i in departure_city_iatas if isinstance(i, str) and i.strip() != ""])
+        if iata_set:
+            routes = routes[routes['departure_iata'].str.upper().isin(iata_set)]
         
     # Tạo từ điển lookup sân bay
     airport_dict = {
         row['iata_code']: {
             'lat': row['latitude'],
             'lon': row['longitude'],
-            'name': row['airport_name'],
-            'country': row['country'],
+            'name': row.get('airport_name') if 'airport_name' in row else row.get('name', ""),
+            'country': row.get('country', ""),
+            # attach city from city_lookup if available, fallback to any city column on airport row
+            'city': city_lookup.get(str(row['iata_code']).upper())
+                    or (row.get('city') if 'city' in row else row.get('municipality') if 'municipality' in row else None),
         }
         for _, row in airports.iterrows()
         if pd.notnull(row['latitude']) and pd.notnull(row['longitude'])
     }
     
     # Tạo bản đồ trung tâm
-    m = folium.Map(location=[20, 100], zoom_start=3, tiles="CartoDB positron")
+    m = folium.Map(location=[21.03718016261013, 105.83462635582046], zoom_start=5, tiles="CartoDB positron", width='100%', height='100%')
     
     # Vẽ các đường bay
     for _, route in routes.iterrows():
@@ -95,13 +157,33 @@ def create_flight_map(
             
     # Markers cho các sân bay
     for iata, info in airport_dict.items():
+        name = info.get('name', '').strip()
+        city = (info.get('city') or "").strip()
+        country = (info.get('country') or "").strip()
+
+        # build popup parts only when available
+        parts = []
+        header = f"{iata}"
+        if name:
+            header = f"{header} - {name}"
+        parts.append(header)
+        if city:
+            parts.append(f"City: {city}")
+        if country:
+            parts.append(country)
+        popup_text = " | ".join(parts)
+
+        # improved VN detection (accept 'VN' or 'Vietnam' or variants)
+        country_up = country.upper()
+        is_vn = 'VN' in country_up or 'VIET' in country_up
+
         folium.Marker(
             [info['lat'], info['lon']],
-            radius = 3,
-            color = 'red' if info['country'] == 'Vietnam' else 'gray',
-            fill = True,
-            fill_color = 'red' if info['country'] == 'Vietnam' else 'gray',
-            popup = f"{iata} - {info['name']} ({info['country']})"
+            radius=3,
+            color='red' if is_vn else 'gray',
+            fill=True,
+            fill_color='red' if is_vn else 'gray',
+            popup=popup_text
         ).add_to(m)
         
     m.save(output_path)
