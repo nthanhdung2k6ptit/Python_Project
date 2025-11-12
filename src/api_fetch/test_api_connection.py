@@ -2,11 +2,8 @@
 # CÀO DATA TOÀN CẦU
 # Class & functions lấy dữ liệu từ API Aviation Edge
 import requests
-import json
 import pandas as pd
 import os
-from datetime import datetime
-from collections import Counter
 import random
 
 class AviationEdgeAPI:

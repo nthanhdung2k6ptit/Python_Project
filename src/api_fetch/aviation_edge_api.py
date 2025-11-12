@@ -2,10 +2,8 @@
 # CÀO DATA RIÊNG CỦA VIỆT NAM
 # Class & functions lấy dữ liệu từ API Aviation Edge
 import requests
-import json
 import pandas as pd
 import os
-from datetime import datetime
 
 class AviationEdgeAPI:
     def __init__ (self, api_key):

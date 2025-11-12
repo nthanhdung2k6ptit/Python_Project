@@ -28,20 +28,38 @@ if _df_cities is None:
 else:
     df_cities = _df_cities
 
-# Build city -> list of iatas mapping
-city_map = {}
-if not df_cities.empty:
-    # city_iata may contain single IATA or comma-separated list; normalize to list
-    for _, r in df_cities.iterrows():
-        city = r['city_name'].strip()
-        iata_field = "" if pd.isna(r.get('city_iata', "")) else str(r.get('city_iata', ""))
-        iata_list = [s.strip() for s in iata_field.replace(';',',').split(',') if s.strip()] if iata_field else []
-        city_map.setdefault(city, []).extend(iata_list)
-    # deduplicate lists
-    for k in list(city_map.keys()):
-        city_map[k] = sorted(set([i.upper() for i in city_map[k] if i]))
+# Build city -> list of iatas mapping (display as "City (Country)")
+display_to_iatas = {}
 
-city_options = [""] + sorted(city_map.keys())
+if not df_cities.empty:
+    for _, r in df_cities.iterrows():
+        city = str(r.get('city_name', '')).strip()
+        if not city:
+            continue
+
+        # parse iata list (may be empty)
+        iata_field = "" if pd.isna(r.get('city_iata', "")) else str(r.get('city_iata', ""))
+        iata_list = [s.strip().upper() for s in iata_field.replace(';', ',').split(',') if s.strip()] if iata_field else []
+
+        # determine country: prefer city DB value, else try infer from airports table
+        country_val = str(r.get('country', "")).strip() if r.get('country', None) is not None else ""
+        if country_val.upper() == 'VN':
+            country_val = 'Vietnam'
+        if not country_val and iata_list and not df_airports.empty:
+            for i in iata_list:
+                match = df_airports.loc[df_airports['iata_code'].astype(str).str.upper() == i]
+                if not match.empty:
+                    possible = match['country'].dropna().astype(str).str.strip()
+                    if not possible.empty:
+                        country_val = possible.iloc[0]
+                        break
+
+        display = f"{city} ({country_val})" if country_val else city
+        display_to_iatas.setdefault(display, set()).update(iata_list)
+
+# finalize mapping -> lists (sorted display)
+city_map = {k: sorted(v) for k, v in display_to_iatas.items()}
+city_options = [""] + sorted(city_map.keys(), key=lambda s: s.lower())
 
 selected_city = st.selectbox("Chọn thành phố khởi hành (để trống cũng được):", city_options)
 selected_iatas = city_map.get(selected_city, []) if selected_city else []
