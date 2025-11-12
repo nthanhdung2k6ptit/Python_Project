@@ -13,9 +13,9 @@ try:
         get_top_airports_by_routes, 
         get_top_airlines_by_country_coverage # <-- (SỬA HÀM IMPORT)
     )
-    print("INFO (TV6-Charts): Import 'statistics_1.py' thành công.")
+    print("Import 'statistics_1.py' thành công.")
 except ImportError:
-    print("LỖI (TV6-Charts): Không tìm thấy file 'statistics_1.py'.")
+    print("LỖI : Không tìm thấy file 'statistics_1.py'.")
     sys.exit(1)
 
 # --- Cài đặt đường dẫn Output (Lưu vào data/report) ---
@@ -26,13 +26,13 @@ try:
 except NameError:
     PROJECT_ROOT = os.path.abspath('../..')
 
-REPORT_DIR = os.path.join(PROJECT_ROOT, 'data', 'report')
+REPORT_DIR = os.path.join(PROJECT_ROOT, 'data', 'reports')
 os.makedirs(REPORT_DIR, exist_ok=True)
 # ----------------------------------------------
 
 def setup_charts():
     sns.set_theme(style="whitegrid")
-    print(f"INFO (TV6-Charts): Các ảnh biểu đồ sẽ được lưu tại: {REPORT_DIR}")
+    print(f"Các ảnh biểu đồ sẽ được lưu tại: {REPORT_DIR}")
 
 def plot_top_airports(top_airports_df):
     """Vẽ biểu đồ bar chart top airports (Giữ nguyên)."""
@@ -43,7 +43,7 @@ def plot_top_airports(top_airports_df):
     plt.figure(figsize=(12, 8))
     data_to_plot = top_airports_df.sort_values('total_routes', ascending=False)
     ax = sns.barplot(x='total_routes', y='airport_name', data=data_to_plot, palette='Blues_d')
-    ax.set_title('Top 10 Sân bay có nhiều đường bay nhất', fontsize=16, pad=20)
+    ax.set_title('Top 10 sân bay có nhiều đường bay nhất', fontsize=16, pad=20)
     
     plt.tight_layout()
     plt.savefig(output_path)
@@ -63,8 +63,8 @@ def plot_top_airlines_by_coverage(top_airlines_df):
     
     # Vẽ biểu đồ với 'country_count' và 'airline_name'
     ax = sns.barplot(x='country_count', y='airline_name', data=data_to_plot, palette='Greens_d')
-    ax.set_title('Top 10 Hãng bay có Mạng lưới Quốc tế rộng nhất', fontsize=16, pad=20)
-    ax.set_xlabel('Số lượng Quốc gia Phục vụ', fontsize=12)
+    ax.set_title('Top 10 Hãng bay có mạng lưới quốc tế rộng nhất', fontsize=16, pad=20)
+    ax.set_xlabel('Số lượng quốc gia phục vụ', fontsize=12)
     ax.set_ylabel('Hãng hàng không', fontsize=12)
     # -----------------------------------
         
@@ -75,13 +75,12 @@ def plot_top_airlines_by_coverage(top_airlines_df):
 
 # --- Khối chính để chạy file này (ĐÃ CẬP NHẬT) ---
 if __name__ == '__main__':
-    print("--- Chạy file charts.py (TV6) ---")
     setup_charts()
     
     flights, airports, airlines = load_csv_data() 
     
     if flights is not None:
-        print("INFO (TV6-Charts): Bắt đầu vẽ biểu đồ...")
+        print("Bắt đầu vẽ biểu đồ...")
         
         top_airports = get_top_airports_by_routes(flights, airports)
         plot_top_airports(top_airports)
@@ -90,6 +89,6 @@ if __name__ == '__main__':
         top_airlines_coverage = get_top_airlines_by_country_coverage(flights, airports, airlines) 
         plot_top_airlines_by_coverage(top_airlines_coverage) # Gọi hàm vẽ mới
         
-        print("--- Hoàn thành file charts.py (TV6) ---")
+        print("Hoàn thành file charts.py")
     else:
-        print("LỖI (TV6-Charts): Không thể tải dữ liệu. Dừng lại.")
+        print("LỖI : Không thể tải dữ liệu. Dừng lại.")

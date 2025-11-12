@@ -4,7 +4,6 @@
 import pandas as pd
 import os
 import sys
-# (Không cần import fpdf)
 
 # --- Khối Import Logic (Import từ statistics_1.py) ---
 try:
@@ -15,9 +14,9 @@ try:
         get_top_airlines_by_country_coverage,
         get_top_important_airports
     )
-    print("INFO (TV6-Export): Import 'statistics_1.py' thành công.")
+    print("Import 'statistics_1.py' thành công.")
 except ImportError:
-    print("LỖI (TV6-Export): Không tìm thấy file 'statistics_1.py'.")
+    print("LỖI : Không tìm thấy file 'statistics_1.py'.")
     sys.exit(1)
 
 # --- Cài đặt đường dẫn Output ---
@@ -28,15 +27,14 @@ try:
 except NameError:
     PROJECT_ROOT = os.path.abspath('../..')
 
-REPORT_DIR = os.path.join(PROJECT_ROOT, 'data', 'report')
+REPORT_DIR = os.path.join(PROJECT_ROOT, 'data', 'reports')
 os.makedirs(REPORT_DIR, exist_ok=True)
 REPORT_FILE_PATH_XLSX = os.path.join(REPORT_DIR, 'statistical_report.xlsx')
 # ----------------------------------------------
 
-# --- Hàm tự động căn chỉnh (Giữ nguyên) ---
+# --- Hàm tự động căn chỉnh ---
 def auto_adjust_columns(worksheet):
     """Tự động căn chỉnh độ rộng của tất cả các cột trong một worksheet."""
-    print(f"INFO (TV6-Export): Đang tự căn chỉnh cột cho sheet '{worksheet.title}'...")
     for col in worksheet.columns:
         max_length = 0
         column_letter = col[0].column_letter 
@@ -51,7 +49,7 @@ def auto_adjust_columns(worksheet):
 def export_to_excel(stats_dict, top_airports_df, top_airlines_df, top_hubs_df):
     """Xuất tất cả kết quả ra file Excel VÀ TỰ CĂN CHỈNH."""
     
-    print(f"INFO (TV6-Export): Đang xuất báo cáo ra file Excel tại: {REPORT_FILE_PATH_XLSX}")
+    print(f"Đang xuất báo cáo ra file Excel tại: {REPORT_FILE_PATH_XLSX}")
     try:
         with pd.ExcelWriter(REPORT_FILE_PATH_XLSX, engine='openpyxl') as writer:
             
@@ -88,11 +86,9 @@ def export_to_excel(stats_dict, top_airports_df, top_airlines_df, top_hubs_df):
                 
                 # Áp dụng định dạng 6 chữ số thập phân cho cột đó
                 if target_col_letter:
-                    print(f"INFO (TV6-Export): Đang áp dụng định dạng 6 chữ số thập phân cho cột {target_col_letter}...")
                     # Lặp qua tất cả các ô trong cột đó (bỏ qua header)
                     for cell in worksheet4[target_col_letter][1:]: 
                         cell.number_format = '0.000000'
-                # ---------------------------------
 
                 # Chạy căn chỉnh cột (sau khi đã định dạng)
                 auto_adjust_columns(worksheet4)
@@ -100,18 +96,17 @@ def export_to_excel(stats_dict, top_airports_df, top_airlines_df, top_hubs_df):
         print(f"\nĐã xuất báo cáo Excel (đã tự căn chỉnh và định dạng) thành công!")
     
     except PermissionError:
-        print(f"LỖI (TV6-Export): Không thể ghi file Excel. File '{REPORT_FILE_PATH_XLSX}' có thể đang được mở.")
+        print(f"LỖI : Không thể ghi file Excel. File '{REPORT_FILE_PATH_XLSX}' có thể đang được mở.")
     except Exception as e:
-        print(f"LỖI (TV6-Export): Không thể ghi file Excel. Lỗi: {e}")
+        print(f"LỖI : Không thể ghi file Excel. Lỗi: {e}")
 
 # --- Khối chính để chạy file này (Giữ nguyên) ---
 if __name__ == '__main__':
-    print("--- Chạy file export_report.py (TV6) ---")
     
     flights, airports, airlines = load_csv_data() 
     
     if flights is not None:
-        print("INFO (TV6-Export): Đang tính toán tất cả số liệu...")
+        print("Đang tính toán tất cả số liệu...")
         
         stats = get_overview_stats(flights, airports, airlines) 
         top_airports = get_top_airports_by_routes(flights, airports)
@@ -120,11 +115,10 @@ if __name__ == '__main__':
         
         # (LÀM TRÒN SỐ TRONG PANDAS)
         if not top_hubs.empty:
-            print("INFO (TV6-Export): Đang làm tròn 'betweenness_centrality'...")
             top_hubs['betweenness_centrality'] = top_hubs['betweenness_centrality'].round(6)
         
         export_to_excel(stats, top_airports, top_airlines_coverage, top_hubs)
         
-        print("--- Hoàn thành file export_report.py (TV6) ---")
+        print("Hoàn thành file export_report.py")
     else:
-        print("LỖI (TV6-Export): Không thể tải dữ liệu. Dừng lại.")
+        print("LỖI : Không thể tải dữ liệu. Dừng lại.")
