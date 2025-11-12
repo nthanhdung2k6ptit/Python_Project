@@ -69,11 +69,11 @@ def get_overview_stats(flights_df, airports_df, airlines_df):
     return {
         'total_routes_data': len(flights_df),
         'total_airports_db': len(airports_df),
-        'total_airlines_db': len(airlines_df) # <-- SỬA LẠI
+        'total_airlines_db': len(airlines_df) 
     }
 
 def get_top_airports_by_routes(flights_df, airports_df, top_n=10):
-    """Phân tích top airport (Bận rộn) (Giữ nguyên)."""
+    """Phân tích top airport """
     departures = flights_df['origin_iata'].value_counts()
     arrivals = flights_df['destination_iata'].value_counts()
     total_routes = departures.add(arrivals, fill_value=0).sort_values(ascending=False)
@@ -108,7 +108,6 @@ def get_top_airlines_by_country_coverage(flights_df, airports_df, airlines_df, t
     top_airlines_df = country_count_series.sort_values(ascending=False).head(top_n).reset_index()
     top_airlines_df.columns = ['airline_iata', 'country_count']
     
-    # --- (!!! BƯỚC MỚI: MERGE ĐỂ LẤY TÊN !!!) ---
     # 7. Lọc file airlines_df
     unique_airlines_df = airlines_df[['airline_iata', 'airline_name']].drop_duplicates(subset=['airline_iata'])
 
