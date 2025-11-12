@@ -1,5 +1,6 @@
 import networkx as nx
 
+#hung khec dung file nay bang cach import
 def shortest_path(graph, start, end):
     """Return the shortest path by distance between two airports."""
     try:
