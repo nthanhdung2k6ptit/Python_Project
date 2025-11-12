@@ -11,14 +11,14 @@ try:
     from statistics_1 import (
         load_csv_data, 
         get_top_airports_by_routes, 
-        get_top_airlines_by_country_coverage # <-- (SỬA HÀM IMPORT)
+        get_top_airlines_by_country_coverage 
     )
     print("Import 'statistics_1.py' thành công.")
 except ImportError:
     print("LỖI : Không tìm thấy file 'statistics_1.py'.")
     sys.exit(1)
 
-# --- Cài đặt đường dẫn Output (Lưu vào data/report) ---
+# --- Cài đặt đường dẫn Output (Lưu vào data/reports) ---
 try:
     CURRENT_FILE_DIR = os.path.dirname(os.path.abspath(__file__))
     SRC_DIR = os.path.dirname(CURRENT_FILE_DIR)
@@ -35,7 +35,7 @@ def setup_charts():
     print(f"Các ảnh biểu đồ sẽ được lưu tại: {REPORT_DIR}")
 
 def plot_top_airports(top_airports_df):
-    """Vẽ biểu đồ bar chart top airports (Giữ nguyên)."""
+    """Vẽ biểu đồ bar chart top airports."""
     if top_airports_df.empty: return
     
     output_path = os.path.join(REPORT_DIR, 'report_top_10_airports.png')
@@ -50,7 +50,6 @@ def plot_top_airports(top_airports_df):
     print(f"Đã lưu biểu đồ: {output_path}")
     plt.close()
 
-# --- (!!! HÀM ĐÃ ĐƯỢC THAY THẾ !!!) ---
 def plot_top_airlines_by_coverage(top_airlines_df):
     """Vẽ biểu đồ bar chart top airlines (theo độ phủ quốc gia)."""
     if top_airlines_df.empty: return
@@ -63,17 +62,16 @@ def plot_top_airlines_by_coverage(top_airlines_df):
     
     # Vẽ biểu đồ với 'country_count' và 'airline_name'
     ax = sns.barplot(x='country_count', y='airline_name', data=data_to_plot, palette='Greens_d')
-    ax.set_title('Top 10 Hãng bay có mạng lưới quốc tế rộng nhất', fontsize=16, pad=20)
+    ax.set_title('Top 10 hãng bay có mạng lưới quốc tế rộng nhất', fontsize=16, pad=20)
     ax.set_xlabel('Số lượng quốc gia phục vụ', fontsize=12)
     ax.set_ylabel('Hãng hàng không', fontsize=12)
-    # -----------------------------------
         
     plt.tight_layout()
     plt.savefig(output_path)
     print(f"Đã lưu biểu đồ: {output_path}")
     plt.close()
 
-# --- Khối chính để chạy file này (ĐÃ CẬP NHẬT) ---
+# --- Khối chính để chạy file này ---
 if __name__ == '__main__':
     setup_charts()
     
@@ -85,9 +83,8 @@ if __name__ == '__main__':
         top_airports = get_top_airports_by_routes(flights, airports)
         plot_top_airports(top_airports)
         
-        # --- (SỬA HÀM GỌI) ---
         top_airlines_coverage = get_top_airlines_by_country_coverage(flights, airports, airlines) 
-        plot_top_airlines_by_coverage(top_airlines_coverage) # Gọi hàm vẽ mới
+        plot_top_airlines_by_coverage(top_airlines_coverage)
         
         print("Hoàn thành file charts.py")
     else:

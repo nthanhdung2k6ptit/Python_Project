@@ -1,5 +1,4 @@
 # Xuất PDF, Excel
-# src/analysis/export_report.py
 
 import pandas as pd
 import os
@@ -34,7 +33,6 @@ REPORT_FILE_PATH_XLSX = os.path.join(REPORT_DIR, 'statistical_report.xlsx')
 
 # --- Hàm tự động căn chỉnh ---
 def auto_adjust_columns(worksheet):
-    """Tự động căn chỉnh độ rộng của tất cả các cột trong một worksheet."""
     for col in worksheet.columns:
         max_length = 0
         column_letter = col[0].column_letter 
@@ -48,7 +46,6 @@ def auto_adjust_columns(worksheet):
 
 def export_to_excel(stats_dict, top_airports_df, top_airlines_df, top_hubs_df):
     """Xuất tất cả kết quả ra file Excel VÀ TỰ CĂN CHỈNH."""
-    
     print(f"Đang xuất báo cáo ra file Excel tại: {REPORT_FILE_PATH_XLSX}")
     try:
         with pd.ExcelWriter(REPORT_FILE_PATH_XLSX, engine='openpyxl') as writer:
@@ -72,7 +69,6 @@ def export_to_excel(stats_dict, top_airports_df, top_airlines_df, top_hubs_df):
             if not top_hubs_df.empty:
                 top_hubs_df.to_excel(writer, sheet_name='Top_Airport_Hubs_Centrality', index=False)
                 
-                # --- (!!! SỬA LỖI Ở ĐÂY !!!) ---
                 # Lấy worksheet
                 worksheet4 = writer.sheets['Top_Airport_Hubs_Centrality']
                 
@@ -100,7 +96,7 @@ def export_to_excel(stats_dict, top_airports_df, top_airlines_df, top_hubs_df):
     except Exception as e:
         print(f"LỖI : Không thể ghi file Excel. Lỗi: {e}")
 
-# --- Khối chính để chạy file này (Giữ nguyên) ---
+# --- Khối chính để chạy file này ---
 if __name__ == '__main__':
     
     flights, airports, airlines = load_csv_data() 
@@ -113,7 +109,6 @@ if __name__ == '__main__':
         top_airlines_coverage = get_top_airlines_by_country_coverage(flights, airports, airlines) 
         top_hubs = get_top_important_airports(airports)
         
-        # (LÀM TRÒN SỐ TRONG PANDAS)
         if not top_hubs.empty:
             top_hubs['betweenness_centrality'] = top_hubs['betweenness_centrality'].round(6)
         

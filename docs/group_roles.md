@@ -83,13 +83,6 @@ Mục đích:
 Nhận dữ liệu đã làm sạch (từ TV2).
 Tạo đồ thị hàng không (Flight Network) bằng NetworkX.
 Lưu graph ra file (.graphml, .csv, .json).
- Công việc cụ thể:
-Mục tiêu			Mô tả
-Đọc dữ liệu sạch		Từ data/cleaned/routes_clean.csv
-Tạo đồ thị NetworkX	nx.from_pandas_edgelist(df, 'origin', 'destination')
-Gán thuộc tính node		Ví dụ: thành phố, tên sân bay, quốc gia
-Gán trọng số edge		Ví dụ: số lượng chuyến bay giữa 2 sân bay
-Lưu file graph		.graphml và .csv trong data/graphs/
 ↓ ↓
 TV4 (Vẽ graph)  ->  TV5 (Vẽ map & UI)  ->  TV6 (Phân tích stats)
 

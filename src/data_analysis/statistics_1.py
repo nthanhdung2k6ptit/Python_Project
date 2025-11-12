@@ -20,7 +20,6 @@ except NameError:
 
 print(f"Thư mục gốc Project: {PROJECT_ROOT}")
 
-# --- (ĐÃ THÊM LẠI FILE HÃNG BAY) ---
 FLIGHTS_PATH = os.path.join(PROJECT_ROOT, 'data/cleaned/routes_cleaned.csv')
 AIRPORTS_PATH = os.path.join(PROJECT_ROOT, 'data/cleaned/airport_db_cleaned.csv')
 AIRLINES_PATH = os.path.join(PROJECT_ROOT, 'data/cleaned/airline_db_cleaned.csv') 
@@ -66,7 +65,7 @@ def load_csv_data():
         return None, None, None
 
 def get_overview_stats(flights_df, airports_df, airlines_df):
-    """(ĐÃ CẬP NHẬT) Tính thống kê tổng quan."""
+    """Tính thống kê tổng quan."""
     return {
         'total_routes_data': len(flights_df),
         'total_airports_db': len(airports_df),
@@ -88,11 +87,9 @@ def get_top_airports_by_routes(flights_df, airports_df, top_n=10):
     top_airports_full.index = top_airports_full.index + 1
     return top_airports_full
 
-# --- (!!! HÀM ĐÃ ĐƯỢC CẬP NHẬT ĐỂ CÓ TÊN !!!) ---
 def get_top_airlines_by_country_coverage(flights_df, airports_df, airlines_df, top_n=10):
     """
     Phân tích Top 10 Hãng bay bay đến nhiều quốc gia khác nhau nhất.
-    (Đã cập nhật để hiển thị Tên đầy đủ)
     """
     print("\n Đang tính 'Top Airlines by Country Coverage'...")
     
@@ -188,7 +185,7 @@ def main_test():
     print(top_airlines_coverage)
     
     top_hubs = get_top_important_airports(airports)
-    print(f"\n Top {len(top_hubs)} sân bay quan trọng nhất (Hubs)")
+    print(f"\n Top {len(top_hubs)} sân bay quan trọng nhất (hubs)")
     print(top_hubs)
     
     print("\n Hoàn thành chạy test statistics_1.py")
