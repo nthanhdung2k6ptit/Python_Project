@@ -2,18 +2,29 @@ import networkx as nx
 
 #hung khec dung file nay bang cach import
 def shortest_path(graph, start, end):
-    """Return the shortest path by distance between two airports."""
+    """Return the path with the fewest hops; if multiple, pick the one with smallest total distance."""
     try:
-        return nx.shortest_path(graph, start, end, weight="weight")
+        # First, find all paths with the minimal number of hops
+        min_hops = nx.shortest_path_length(graph, start, end)
+        all_min_hop_paths = list(nx.all_simple_paths(graph, start, end, cutoff=min_hops))
+        
+        # Compute total distance for each minimal-hop path
+        best_path = min(
+            all_min_hop_paths,
+            key=lambda p: sum(
+                graph[p[i]][p[i+1]].get("weight", 1) for i in range(len(p) - 1)
+            )
+        )
+        return best_path
     except nx.NetworkXNoPath:
         return None
 
-def shortest_distance(graph, start, end):
-    """Return the shortest distance (km) between two airports."""
-    try:
-        return nx.shortest_path_length(graph, start, end, weight="weight")
-    except nx.NetworkXNoPath:
-        return float('inf')
+def shortest_distance(graph, start, end): 
+    """Return the shortest path by distance between two airports.""" 
+    try: 
+        return nx.shortest_path(graph, start, end, weight="weight") 
+    except nx.NetworkXNoPath: 
+        return None
 
 def all_paths(graph, start, end, max_hops=None):
     """Return all simple paths, optionally limited by max_hops."""
