@@ -50,7 +50,7 @@ class AviationEdgeAPI:
         cleaned_params["key"] = self.api_key
         url = self.base_url + endpoint
         try:
-            response = requests.get(url, params=cleaned_params, timeout=10)
+            response = requests.get(url, params=cleaned_params, timeout=15)
             response.raise_for_status()
             data = response.json()
             if isinstance(data, dict) and data.get('error'):
