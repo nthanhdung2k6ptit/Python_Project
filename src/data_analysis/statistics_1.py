@@ -7,9 +7,7 @@ import networkx as nx
 from networkx.readwrite import json_graph
 import sys
 
-# ----------------------------------------------------------------------
 # KHỐI 1: CÀI ĐẶT ĐƯỜNG DẪN VÀ TÊN CỘT
-# ----------------------------------------------------------------------
 
 try:
     CURRENT_FILE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -18,50 +16,48 @@ try:
 except NameError:
     PROJECT_ROOT = os.path.abspath('../..')
 
-print(f"Thư mục gốc Project: {PROJECT_ROOT}")
+print(f"INFO (TV6): Thư mục gốc Project: {PROJECT_ROOT}")
 
 FLIGHTS_PATH = os.path.join(PROJECT_ROOT, 'data/cleaned/routes_cleaned.csv')
 AIRPORTS_PATH = os.path.join(PROJECT_ROOT, 'data/cleaned/airport_db_cleaned.csv')
-AIRLINES_PATH = os.path.join(PROJECT_ROOT, 'data/cleaned/airline_db_cleaned.csv') 
+AIRLINES_PATH = os.path.join(PROJECT_ROOT, 'data/cleaned/airline_db_cleaned.csv')
 GRAPH_JSON_PATH = os.path.join(PROJECT_ROOT, 'data/graph/flight_network.json')
-# -------------------------------------------------
 
 COLUMN_MAPPING = {
     'flights': {
-        'departure_iata': 'origin_iata',     #
-        'arrival_iata': 'destination_iata', #
-        'airline_iata': 'airline_iata'      #
+        'departure_iata': 'origin_iata',
+        'arrival_iata': 'destination_iata',
+        'airline_iata': 'airline_iata'
     },
     'airports': {
-        'iata_code': 'airport_iata',    #
-        'airport_name': 'airport_name', #
-        'country': 'country'            #
+        'iata_code': 'airport_iata', 
+        'airport_name': 'airport_name',
+        'country': 'country'
     },
     'airlines': {
-        'code_iata_airline': 'airline_iata', # (Từ airline_db_cleaned.csv)
-        'name_airline': 'airline_name'       # (Từ airline_db_cleaned.csv)
+        'code_iata_airline': 'airline_iata', 
+        'name_airline': 'airline_name'       
     }
 }
 
-# ----------------------------------------------------------------------
-# KHỐI 2: CÁC HÀM TÍNH TOÁN (Đã cập nhật)
-# ----------------------------------------------------------------------
+# KHỐI 2: CÁC HÀM TÍNH TOÁN 
 
 def load_csv_data():
-    print("Đang tải và xử lý dữ liệu file .csv ...")
+    """Tải và đổi tên cột cho 3 file data chính từ TV2."""
+    print("Đang tải và xử lý dữ liệu CSV từ TV2...")
     try:
         data_flights = pd.read_csv(FLIGHTS_PATH).rename(columns=COLUMN_MAPPING['flights'])
         data_airports = pd.read_csv(AIRPORTS_PATH).rename(columns=COLUMN_MAPPING['airports'])
-        data_airlines = pd.read_csv(AIRLINES_PATH).rename(columns=COLUMN_MAPPING['airlines']) # <-- THÊM LẠI
+        data_airlines = pd.read_csv(AIRLINES_PATH).rename(columns=COLUMN_MAPPING['airlines'])
         
-        print("Tải và đổi tên cột .csv thành công.")
-        return data_flights, data_airports, data_airlines 
+        print("Tải và đổi tên cột CSV thành công.")
+        return data_flights, data_airports, data_airlines
         
     except FileNotFoundError as e:
-        print(f"LỖI : Không tìm thấy file .csv. {e}")
+        print(f"LỖI: Không tìm thấy file CSV. {e}")
         return None, None, None
     except KeyError as e:
-        print(f"LỖI : KeyError. Tên cột trong 'COLUMN_MAPPING' không khớp với file .csv.")
+        print(f"LỖI: KeyError. Tên cột trong 'COLUMN_MAPPING' không khớp với file CSV.")
         return None, None, None
 
 def get_overview_stats(flights_df, airports_df, airlines_df):
@@ -69,11 +65,11 @@ def get_overview_stats(flights_df, airports_df, airlines_df):
     return {
         'total_routes_data': len(flights_df),
         'total_airports_db': len(airports_df),
-        'total_airlines_db': len(airlines_df) 
+        'total_airlines_db': len(airlines_df)
     }
 
-def get_top_airports_by_routes(flights_df, airports_df, top_n=10):
-    """Phân tích top airport """
+def get_top_airports_by_routes(flights_df, airports_df, top_n = 10):
+    """Phân tích top airport (theo số đường bay)"""
     departures = flights_df['origin_iata'].value_counts()
     arrivals = flights_df['destination_iata'].value_counts()
     total_routes = departures.add(arrivals, fill_value=0).sort_values(ascending=False)
@@ -88,60 +84,40 @@ def get_top_airports_by_routes(flights_df, airports_df, top_n=10):
     return top_airports_full
 
 def get_top_airlines_by_country_coverage(flights_df, airports_df, airlines_df, top_n=10):
-    """
-    Phân tích Top 10 Hãng bay bay đến nhiều quốc gia khác nhau nhất.
-    """
-    print("\n Đang tính 'Top Airlines by Country Coverage'...")
-    
-    # 1. & 2. Lấy dữ liệu cần thiết
+    """Phân tích Top 10 hãng bay theo mức độ hoạt động toàn cầu"""
     routes_data = flights_df[['airline_iata', 'destination_iata']]
     airports_data = airports_df[['airport_iata', 'country']]
     
-    # 3. Merge để lấy (airline_iata, country)
     merged_df = pd.merge(routes_data, airports_data, left_on='destination_iata', right_on='airport_iata', how='left')
     
-    # 4. & 5. Đếm số quốc gia duy nhất
     airline_countries = merged_df[['airline_iata', 'country']].drop_duplicates()
     country_count_series = airline_countries.groupby('airline_iata')['country'].count()
     
-    # 6. Lấy Top 10 (chỉ có IATA và count)
     top_airlines_df = country_count_series.sort_values(ascending=False).head(top_n).reset_index()
     top_airlines_df.columns = ['airline_iata', 'country_count']
-
-    # 7. Lọc file airlines_df
+    
     unique_airlines_df = airlines_df[['airline_iata', 'airline_name']].drop_duplicates(subset=['airline_iata'])
 
-    # 8. Merge Top 10 với file tên
-    top_airlines_full = pd.merge(
-        top_airlines_df,
-        unique_airlines_df, 
-        on='airline_iata',
-        how='left'
-    )
+    top_airlines_full = pd.merge(top_airlines_df, unique_airlines_df, on='airline_iata', how='left')
     
-    # 9. Fix NaN (nếu có)
-    top_airlines_full['airline_name'] = top_airlines_full['airline_name'].fillna(
-        top_airlines_full['airline_iata']
-    )
-    # -----------------------------------------------
+    top_airlines_full['airline_name'] = top_airlines_full['airline_name'].fillna(top_airlines_full['airline_iata'])
     
     top_airlines_full.index = top_airlines_full.index + 1
     return top_airlines_full
-# ------------------------------------------
 
 def get_top_important_airports(preprocessed_airports_df, top_n=10):
-    """Phân tích Top Hubs bằng cách tải file JSON của TV3 (Giữ nguyên)."""
-    print("\n Đang tính 'Top Important Hubs' (từ file JSON)...")
+    """Phân tích Top sân bay (Hubs) bằng cách tải file JSON của TV3"""
     try:
         with open(GRAPH_JSON_PATH, 'r') as f:
             data = json.load(f)
         
         G = json_graph.node_link_graph(data, directed=True)
         print("Tải file 'flight_network.json' thành công.")
-        print("Đang tính Betweenness Centrality...")
+        print("Đang tính Betweenness Centrality (có thể mất vài giây)...")
         
         centrality_dict = nx.betweenness_centrality(G, weight="weight", normalized=True)
         
+        print("Đã tính xong. Đang xử lý kết quả...")
         centrality_df = pd.DataFrame(centrality_dict.items(), columns=['airport_iata', 'betweenness_centrality'])
         
         top_hubs_df = centrality_df.sort_values(by='betweenness_centrality', ascending=False).head(top_n)
@@ -153,39 +129,74 @@ def get_top_important_airports(preprocessed_airports_df, top_n=10):
         return top_hubs_full
 
     except FileNotFoundError:
-        print(f"LỖI : Không tìm thấy file .json của TV3 tại: {GRAPH_JSON_PATH}")
+        print(f"Không tìm thấy file JSON của TV3 tại: {GRAPH_JSON_PATH}")
         return pd.DataFrame()
     except Exception as e:
-        print(f"LỖI : Gặp lỗi khi xử lý file .json. Lỗi: {e}")
+        print(f"Gặp lỗi khi xử lý file JSON. Lỗi: {e}")
         return pd.DataFrame()
 
-# ----------------------------------------------------------------------
-# KHỐI 3: CHẠY TEST (Đã cập nhật)
-# ----------------------------------------------------------------------
-def main_test():
-    flights, airports, airlines = load_csv_data() 
+# KHỐI 3: CHẠY TEST 
 
+# Dịch tên các cột và key sang Tiếng Việt 
+TRANSLATIONS = {
+    'overview': {
+        'total_routes_data': 'Tổng số đường bay',
+        'total_airports_db': 'Tổng số sân bay',
+        'total_airlines_db': 'Tổng số hãng bay'
+    },
+    'airports': {
+        'airport_iata': 'Mã IATA sân bay',
+        'total_routes': 'Tổng số đường bay',
+        'airport_name': 'Tên sân bay'
+    },
+    'airlines': {
+        'airline_iata': 'Mã IATA hãng bay',
+        'country_count': 'Số lượng quốc gia',
+        'airline_name': 'Tên hãng bay'
+    },
+    'hubs': {
+        'airport_iata': 'Mã IATA sân bay',
+        'betweenness_centrality': 'Điểm Centrality',
+        'airport_name': 'Tên sân bay'
+    }
+}
+
+def main_test():
+    flights, airports, airlines = load_csv_data()
+    
     if flights is None or airports is None or airlines is None:
-        print("LỖI: Không thể tải dữ liệu .csv. Dừng chương trình test.")
+        print("LỖI: Không thể tải dữ liệu CSV. Dừng chương trình test.")
         return
 
-    print("\n Đã tải và chuẩn hóa dữ liệu .csv. Bắt đầu tính toán: ")
+    print("\nĐã tải và chuẩn hóa dữ liệu CSV. Bắt đầu tính toán:...")
+    
+    # 1. Thống kê tổng quan
+    stats = get_overview_stats(flights, airports, airlines)
+    print(f"\nPhân tích tổng quan:")
 
-    stats = get_overview_stats(flights, airports, airlines) # Truyền cả 3
-    print(f"\n Phân tích tổng quan:")
-    print(stats)
+    stats_vi = {TRANSLATIONS['overview'].get(k, k): v for k, v in stats.items()}
+    print(stats_vi)
     
+    # 2. Top sân bay (theo số đường bay)
     top_airports = get_top_airports_by_routes(flights, airports)
-    print(f"\n Top {len(top_airports)} sân bay (theo số đường bay)")
-    print(top_airports)
+    print(f"\nTop {len(top_airports)} sân bay (theo số đường bay):")
+
+    print(top_airports.rename(columns=TRANSLATIONS['airports']))
     
+    # 3. Top Hãng bay (Độ phủ)
     top_airlines_coverage = get_top_airlines_by_country_coverage(flights, airports, airlines)
-    print(f"\n Top {len(top_airlines_coverage)} hãng bay (theo phạm vi hoạt động toàn cầu)")
-    print(top_airlines_coverage)
+    print(f"\nTop {len(top_airlines_coverage)} hãng bay (theo mức độ hoạt động toàn cầu):")
+
+    print(top_airlines_coverage.rename(columns=TRANSLATIONS['airlines']))
     
+    # 4. Top sân bay (Hubs)
     top_hubs = get_top_important_airports(airports)
-    print(f"\n Top {len(top_hubs)} sân bay quan trọng nhất (hubs)")
-    print(top_hubs)
+
+    if not top_hubs.empty:
+        top_hubs['betweenness_centrality'] = top_hubs['betweenness_centrality'].round(6)
+    print(f"\nTop {len(top_hubs)} sân bay quan trọng nhất (Hubs):")
+
+    print(top_hubs.rename(columns=TRANSLATIONS['hubs']))
     
     print("\n Hoàn thành chạy test statistics_1.py")
 
