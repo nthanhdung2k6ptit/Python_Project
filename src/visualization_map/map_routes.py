@@ -1,5 +1,3 @@
-#Import data từ file airports_db_cleaned.csv và routes_cleaned.csv
-
 #1. File 1 | Các cột Dũng sử dụng: iata_code, latitude, longitude, airport_name, country (optional), city_iata (optional)
 
 #2. File 2 | Các cột Dũng sử dụng: departure_iata, arrival_iata, flight_number (popup), airline_iata
@@ -13,16 +11,10 @@ from typing import Optional, Iterable
 def create_flight_map(
     base_path = "data/cleaned",
     output_path = "data/reports/flight_routes_map.html",
-    departure_filter = None, # Lọc theo sân bay (IATA) - string
-    departure_city_iatas = None, # Lọc theo thành phố: danh sách IATA khởi hành
-    allowed_iatas = None  # NEW: nếu cung cấp, chỉ vẽ những sân bay / route có IATA trong tập này
+    departure_filter = None, #IATA
+    departure_city_iatas = None,
+    allowed_iatas = None
 ):
-    '''
-    Tạo bản đồ các đường bay (toàn cầu)
-
-    allowed_iatas: iterable of IATA codes (strings). Nếu có thì airports/routes sẽ bị lọc xuống chỉ còn phần tử trong tập này.
-    '''
-    
     # build file paths (robust with fallbacks)
     airport_global = os.path.join(base_path, "airport_db_cleaned.csv")
     routes_global = os.path.join(base_path, "routes_cleaned.csv")
