@@ -175,8 +175,8 @@ if __name__ == "__main__":
             print(f"Routes: {len(routes)} tuyến")
         else:
             print(f"Không có routes cho {code}")
-            
-    #client.save_to_csv(all_flights, "flight_tracker_raw")
+
+    """client.save_to_csv(all_flights, "flight_tracker_raw")"""
     client.save_to_csv(all_routes, "routes_raw")
 
     # --- 5. CÁC API CÒN LẠI ---
