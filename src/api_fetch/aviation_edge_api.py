@@ -166,8 +166,7 @@ if __name__ == "__main__":
         flights = client.get_flight_tracker(code, limit=1000)
         if flights:
             all_flights.extend(flights)
-            print(f"Flight: {len(flights)} chuyến")
-    client.save_to_csv(all_flights, "flight_tracker_raw")"""
+            print(f"Flight: {len(flights)} chuyến")"""
 
         # 2. ROUTES
         routes = client.get_airline_routes(code, limit = 10000)
@@ -176,6 +175,8 @@ if __name__ == "__main__":
             print(f"Routes: {len(routes)} tuyến")
         else:
             print(f"Không có routes cho {code}")
+            
+    #client.save_to_csv(all_flights, "flight_tracker_raw")
     client.save_to_csv(all_routes, "routes_raw")
 
     # --- 5. CÁC API CÒN LẠI ---
