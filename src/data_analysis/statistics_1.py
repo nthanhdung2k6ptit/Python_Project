@@ -16,7 +16,7 @@ try:
 except NameError:
     PROJECT_ROOT = os.path.abspath('../..')
 
-print(f"INFO (TV6): Thư mục gốc Project: {PROJECT_ROOT}")
+print(f"Thư mục gốc Project: {PROJECT_ROOT}")
 
 FLIGHTS_PATH = os.path.join(PROJECT_ROOT, 'data/cleaned/routes_cleaned.csv')
 AIRPORTS_PATH = os.path.join(PROJECT_ROOT, 'data/cleaned/airport_db_cleaned.csv')
@@ -69,7 +69,7 @@ def get_overview_stats(flights_df, airports_df, airlines_df):
     }
 
 def get_top_airports_by_routes(flights_df, airports_df, top_n = 10):
-    """Phân tích top airport (theo số đường bay)"""
+    """Phân tích top 10 sân bay (theo số đường bay)"""
     departures = flights_df['origin_iata'].value_counts()
     arrivals = flights_df['destination_iata'].value_counts()
     total_routes = departures.add(arrivals, fill_value=0).sort_values(ascending=False)
@@ -84,7 +84,7 @@ def get_top_airports_by_routes(flights_df, airports_df, top_n = 10):
     return top_airports_full
 
 def get_top_airlines_by_country_coverage(flights_df, airports_df, airlines_df, top_n=10):
-    """Phân tích Top 10 hãng bay theo mức độ hoạt động toàn cầu"""
+    """Phân tích top 10 hãng bay theo mức độ hoạt động toàn cầu"""
     routes_data = flights_df[['airline_iata', 'destination_iata']]
     airports_data = airports_df[['airport_iata', 'country']]
     
@@ -106,14 +106,14 @@ def get_top_airlines_by_country_coverage(flights_df, airports_df, airlines_df, t
     return top_airlines_full
 
 def get_top_important_airports(preprocessed_airports_df, top_n=10):
-    """Phân tích Top sân bay (Hubs) bằng cách tải file JSON của TV3"""
+    """Phân tích top 10 sân bay (Hubs) bằng cách tải file JSON của TV3"""
     try:
         with open(GRAPH_JSON_PATH, 'r') as f:
             data = json.load(f)
         
         G = json_graph.node_link_graph(data, directed=True)
         print("Tải file 'flight_network.json' thành công.")
-        print("Đang tính Betweenness Centrality (có thể mất vài giây)...")
+        print("Đang tính betweenness_centrality (có thể mất vài giây)...")
         
         centrality_dict = nx.betweenness_centrality(G, weight="weight", normalized=True)
         
