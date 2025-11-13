@@ -349,11 +349,11 @@ def create_realtime_map(
     for f in flights:
         AntPath(
             locations=[f['start'], f['end']],
-            color='#FF4500',
+            color='red',
             weight=3,
             delay=800,
             dash_array=[10, 20],
-            pulse_color='#FFFF00'
+            pulse_color='gold'
         ).add_to(m)
         # popup at midpoint
         mid = ((f['start'][0] + f['end'][0]) / 2.0, (f['start'][1] + f['end'][1]) / 2.0)
@@ -378,5 +378,5 @@ def create_realtime_map(
 
 if __name__ == "__main__":
     create_flight_map(
-        departure_filter = "HAN"  # Ví dụ lọc thử theo sân bay Nội Bài
+        departure_filter = "HAN"
     )

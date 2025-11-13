@@ -42,7 +42,7 @@ def main():
             print(f"Lỗi khi gọi API: {e}")
             return
     else:
-        print("⚪ Skipping API fetching (using existing data)")
+        print("Skipping API fetching (using existing data)")
 
     # 2️ CLEAN DATA (TV2)
     if MODE == "AUTO":
