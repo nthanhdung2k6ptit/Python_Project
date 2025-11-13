@@ -4,7 +4,7 @@ import pandas as pd
 import os
 import sys
 
-# --- Khối Import Logic (Import từ statistics_1.py) ---
+# Khối Import Logic (Import từ statistics_1.py)
 try:
     from statistics_1 import (
         load_csv_data, 
@@ -13,12 +13,12 @@ try:
         get_top_airlines_by_country_coverage,
         get_top_important_airports
     )
-    print("Import 'statistics_1.py' thành công.")
+    print("INFO (TV6-Export): Import 'statistics_1.py' thành công.")
 except ImportError:
-    print("LỖI : Không tìm thấy file 'statistics_1.py'.")
+    print("LỖI (TV6-Export): Không tìm thấy file 'statistics_1.py'.")
     sys.exit(1)
 
-# --- Cài đặt đường dẫn Output ---
+# Cài đặt đường dẫn Output
 try:
     CURRENT_FILE_DIR = os.path.dirname(os.path.abspath(__file__))
     SRC_DIR = os.path.dirname(CURRENT_FILE_DIR)
@@ -29,10 +29,32 @@ except NameError:
 REPORT_DIR = os.path.join(PROJECT_ROOT, 'data', 'reports')
 os.makedirs(REPORT_DIR, exist_ok=True)
 REPORT_FILE_PATH_XLSX = os.path.join(REPORT_DIR, 'statistical_report.xlsx')
-# ----------------------------------------------
 
-# --- Hàm tự động căn chỉnh ---
+TRANSLATIONS = {
+    'overview': {
+        'total_routes_data': 'Tổng số đường bay',
+        'total_airports_db': 'Tổng số sân bay',
+        'total_airlines_db': 'Tổng số hãng bay'
+    },
+    'airports': {
+        'airport_iata': 'Mã IATA sân bay',
+        'total_routes': 'Tổng số đường bay',
+        'airport_name': 'Tên sân bay'
+    },
+    'airlines': {
+        'airline_iata': 'Mã IATA hãng bay',
+        'country_count': 'Số lượng quốc gia',
+        'airline_name': 'Tên hãng bay'
+    },
+    'hubs': {
+        'airport_iata': 'Mã IATA sân bay',
+        'betweenness_centrality': 'Điểm Centrality',
+        'airport_name': 'Tên sân bay (Hub)'
+    }
+}
+
 def auto_adjust_columns(worksheet):
+    """Tự động điều chỉnh độ rộng cột trong Excel."""
     for col in worksheet.columns:
         max_length = 0
         column_letter = col[0].column_letter 
@@ -45,64 +67,61 @@ def auto_adjust_columns(worksheet):
         worksheet.column_dimensions[column_letter].width = adjusted_width
 
 def export_to_excel(stats_dict, top_airports_df, top_airlines_df, top_hubs_df):
-    """Xuất tất cả kết quả ra file Excel VÀ TỰ CĂN CHỈNH."""
+    
     print(f"Đang xuất báo cáo ra file Excel tại: {REPORT_FILE_PATH_XLSX}")
     try:
         with pd.ExcelWriter(REPORT_FILE_PATH_XLSX, engine='openpyxl') as writer:
             
             # Sheet 1: Tổng quan
-            overview_df = pd.DataFrame.from_dict(stats_dict, orient='index', columns=['Value'])
-            overview_df.to_excel(writer, sheet_name='Tong_Quan')
-            auto_adjust_columns(writer.sheets['Tong_Quan']) 
+            overview_df = pd.DataFrame.from_dict(stats_dict, orient='index', columns=['Số lượng'])
+            overview_df.index.name = "Hạng mục"
+            overview_df.to_excel(writer, sheet_name='Tổng quan', index_label = 'Hạng mục')
+            auto_adjust_columns(writer.sheets['Tổng quan']) 
             
-            # Sheet 2: Top Sân bay (Bận rộn)
+            # Sheet 2: Top sân bay theo số đường bay
             if not top_airports_df.empty:
-                top_airports_df.to_excel(writer, sheet_name='Top_Airports_by_Routes', index=False)
-                auto_adjust_columns(writer.sheets['Top_Airports_by_Routes'])
+                top_airports_df.to_excel(writer, sheet_name='Top sân bay (đường bay)', index_label="STT")
+                auto_adjust_columns(writer.sheets['Top sân bay (đường bay)'])
             
             # Sheet 3: Top Hãng bay (Độ phủ)
             if not top_airlines_df.empty:
-                top_airlines_df.to_excel(writer, sheet_name='Top_Airlines_by_Coverage', index=False)
-                auto_adjust_columns(writer.sheets['Top_Airlines_by_Coverage'])
+                top_airlines_df.to_excel(writer, sheet_name='Top hãng bay (mức độ hoạt động toàn cầu)', index_label="STT")
+                auto_adjust_columns(writer.sheets['Top hãng bay (mức độ hoạt động toàn cầu)'])
                 
             # Sheet 4: Top Sân bay (Hubs)
             if not top_hubs_df.empty:
-                top_hubs_df.to_excel(writer, sheet_name='Top_Airport_Hubs_Centrality', index=False)
+                top_hubs_df.to_excel(writer, sheet_name='Top sân bay (Hubs)', index_label="STT") # Dịch tên sheet
                 
                 # Lấy worksheet
-                worksheet4 = writer.sheets['Top_Airport_Hubs_Centrality']
+                worksheet4 = writer.sheets['Top sân bay (Hubs)']
                 
-                # Tìm chữ cái của cột 'betweenness_centrality'
+                target_col_name = TRANSLATIONS['hubs']['betweenness_centrality']
                 target_col_letter = ''
                 for col_idx, col_name in enumerate(top_hubs_df.columns, 1):
-                    if col_name == 'betweenness_centrality':
-                        # Lấy chữ cái (ví dụ: 'B') từ đối tượng cell
-                        target_col_letter = worksheet4.cell(row=1, column=col_idx).column_letter
+                    if col_name == target_col_name:
+                        target_col_letter = worksheet4.cell(row=1, column=col_idx + 1).column_letter
                         break
                 
-                # Áp dụng định dạng 6 chữ số thập phân cho cột đó
                 if target_col_letter:
-                    # Lặp qua tất cả các ô trong cột đó (bỏ qua header)
                     for cell in worksheet4[target_col_letter][1:]: 
                         cell.number_format = '0.000000'
-
-                # Chạy căn chỉnh cột (sau khi đã định dạng)
+                
                 auto_adjust_columns(worksheet4)
             
-        print(f"\nĐã xuất báo cáo Excel (đã tự căn chỉnh và định dạng) thành công!")
+        print(f"\nĐã xuất báo cáo Excel thành công!")
     
     except PermissionError:
         print(f"LỖI : Không thể ghi file Excel. File '{REPORT_FILE_PATH_XLSX}' có thể đang được mở.")
     except Exception as e:
         print(f"LỖI : Không thể ghi file Excel. Lỗi: {e}")
 
-# --- Khối chính để chạy file này ---
+
+# Khối chính để chạy file này 
 if __name__ == '__main__':
-    
     flights, airports, airlines = load_csv_data() 
     
     if flights is not None:
-        print("Đang tính toán tất cả số liệu...")
+        print("INFO : Đang tính toán tất cả số liệu...")
         
         stats = get_overview_stats(flights, airports, airlines) 
         top_airports = get_top_airports_by_routes(flights, airports)
@@ -112,6 +131,13 @@ if __name__ == '__main__':
         if not top_hubs.empty:
             top_hubs['betweenness_centrality'] = top_hubs['betweenness_centrality'].round(6)
         
+        stats = {TRANSLATIONS['overview'].get(k, k): v for k, v in stats.items()}
+        top_airports = top_airports.rename(columns=TRANSLATIONS['airports'])
+        top_airlines_coverage = top_airlines_coverage.rename(columns=TRANSLATIONS['airlines'])
+        top_hubs = top_hubs.rename(columns=TRANSLATIONS['hubs'])
+        # ------------------------------------
+
+        # Gọi hàm xuất file đã Việt hóa
         export_to_excel(stats, top_airports, top_airlines_coverage, top_hubs)
         
         print("Hoàn thành file export_report.py")

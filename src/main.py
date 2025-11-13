@@ -6,7 +6,7 @@ Author: [Tên bạn] (Team Leader)
 import os
 from src.graph_building.build_graph import build_flight_graph
 from src.visualization_map.map_routes import draw_routes
-from src.data_analysis.statistics import analyze_data
+from src.data_analysis.statistics_1 import analyze_data
 
 # Thêm phần API & Cleaning (nếu ở chế độ AUTO)
 try:
@@ -18,7 +18,7 @@ except ImportError:
 # ==============================
 # CHỌN CHẾ ĐỘ CHẠY
 # ==============================
-# "AUTO" → chạy toàn bộ pipeline (API → Clean → Graph → Map → Report)
+# "AUTO" → chạy toàn bộ pipeline (API → Clean → Graph → Map → Reprot)
 # "MANUAL" → chỉ dùng data có sẵn (bỏ qua API và cleaning)
 MODE = "MANUAL"   # đổi thành "AUTO" nếu muốn demo full
 
@@ -42,7 +42,7 @@ def main():
             print(f"Lỗi khi gọi API: {e}")
             return
     else:
-        print("⚪ Skipping API fetching (using existing data)")
+        print("Skipping API fetching (using existing data)")
 
     # 2️ CLEAN DATA (TV2)
     if MODE == "AUTO":
