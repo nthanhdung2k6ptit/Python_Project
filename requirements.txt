@@ -10,11 +10,15 @@ matplotlib
 plotly
 seaborn
 dash
+os
+dys
+json
 # Map + Web UI
 folium
 streamlit
 streamlit-folium
-
+#graph
+random
 # Export & Report
 openpyxl
 reportlab
