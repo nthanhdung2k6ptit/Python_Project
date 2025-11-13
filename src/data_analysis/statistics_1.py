@@ -183,7 +183,7 @@ def main_test():
 
     print(top_airports.rename(columns=TRANSLATIONS['airports']))
     
-    # 3. Top Hãng bay (Độ phủ)
+    # 3. Top hãng bay (mức độ hoạt động toàn cầu)
     top_airlines_coverage = get_top_airlines_by_country_coverage(flights, airports, airlines)
     print(f"\nTop {len(top_airlines_coverage)} hãng bay (theo mức độ hoạt động toàn cầu):")
 

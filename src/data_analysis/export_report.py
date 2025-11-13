@@ -49,7 +49,7 @@ TRANSLATIONS = {
     'hubs': {
         'airport_iata': 'Mã IATA sân bay',
         'betweenness_centrality': 'Điểm Centrality',
-        'airport_name': 'Tên sân bay (Hub)'
+        'airport_name': 'Tên sân bay'
     }
 }
 
