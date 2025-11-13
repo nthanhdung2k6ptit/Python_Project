@@ -22,3 +22,5 @@ reportlab
 # Optional (nếu có)
 customtkinter
 dash
+pycountry
+pycountry-convert
