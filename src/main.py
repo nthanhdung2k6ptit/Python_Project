@@ -10,7 +10,7 @@ from src.data_analysis.statistics_1 import analyze_data
 
 # Thêm phần API & Cleaning (nếu ở chế độ AUTO)
 try:
-    from src.api_fetch.aviation_edge_api import fetch_routes_data
+    from api_fetch.aviation_edge_api_vn import fetch_routes_data
     from src.data_processing.clean_data import clean_routes_data
 except ImportError:
     print("Module API hoặc Cleaning chưa sẵn sàng, sẽ bỏ qua khi ở MANUAL mode.")

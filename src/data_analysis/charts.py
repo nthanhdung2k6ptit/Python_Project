@@ -53,7 +53,6 @@ def plot_top_airports(top_airports_df):
     plt.close()
 
 def plot_top_airlines_by_coverage(top_airlines_df):
-    """Vẽ biểu đồ bar chart top airlines (theo độ phủ quốc gia)."""
     if top_airlines_df.empty: return
 
     output_path = os.path.join(REPORT_DIR, 'top_10_airlines_coverage.png')

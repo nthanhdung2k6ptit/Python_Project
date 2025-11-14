@@ -1,25 +1,31 @@
 
-# CÀO DATA RIÊNG CỦA VIỆT NAM
+# CÀO DATA TOÀN CẦU
 # Class & functions lấy dữ liệu từ API Aviation Edge
 import requests
 import pandas as pd
 import os
+import random
+import time
 
 class AviationEdgeAPI:
     def __init__ (self, api_key):
         self.api_key = api_key
         self.base_url = "http://aviation-edge.com/v2/public/"
 
-    def get_flight_tracker(self, airline_iata=None, limit=100, offset=0):
+    def get_flight_tracker(self, airline_iata=None, limit=1000):
         if airline_iata is None: return []
-        return self._make_request("flights", {"airlineIata": airline_iata, "limit": limit, "offset": offset})
+        return self._make_request("flights", {"airlineIata": airline_iata, "limit": limit})
     
-    def get_real_time_schedules(self, airport_iata_code, schedule_type="departure"):
+    def get_real_time_schedules(self, airport_iata_code, schedule_type=None):
         return self._make_request("timetable", {"iataCode": airport_iata_code, "type": schedule_type})
     
-    def get_airline_routes(self, airline_iata=None):
+    def get_airline_routes(self, airline_iata=None, limit = 10000):
         if airline_iata is None: return []
-        return self._make_request("routes", {"airlineIata": airline_iata})
+        params = {
+            "airlineIata": airline_iata,
+            "limit": limit,
+            }
+        return self._make_request("routes", params)
     
     def get_nearby_airports(self, lat, lng, distance=50):
         return self._make_request("nearby", {"lat": lat, "lng": lng, "distance": distance})
@@ -30,14 +36,17 @@ class AviationEdgeAPI:
             return []
         return self._make_request("autocomplete", {"city": city.strip()})
     
-    def get_airports_database(self, code_iso2_country="VN"): 
+    def get_airports_database(self, code_iso2_country=None): 
         return self._make_request("airportDatabase", {"codeIso2Country": code_iso2_country})
     
-    def get_city_database(self, code_iso2_country="VN"):
+    def get_city_database(self, code_iso2_country= None):
         return self._make_request("cityDatabase", {"codeIso2Country": code_iso2_country})
     
-    def get_airline_database(self, code_iso2_country="VN"):
+    def get_airline_database(self, code_iso2_country=None):
         return self._make_request("airlineDatabase", {"codeIso2Country": code_iso2_country})
+    
+    def get_country_database(self):
+        return self._make_request("countryDatabase")
     
     def _clean_params(self, params):
         #Loại bỏ các param có giá trị None.
@@ -50,7 +59,7 @@ class AviationEdgeAPI:
         cleaned_params["key"] = self.api_key
         url = self.base_url + endpoint
         try:
-            response = requests.get(url, params=cleaned_params, timeout=10)
+            response = requests.get(url, params=cleaned_params, timeout=15)
             response.raise_for_status()
             data = response.json()
             if isinstance(data, dict) and data.get('error'):
@@ -76,14 +85,13 @@ class AviationEdgeAPI:
             print(f"Không có dữ liệu để lưu vào {filename}.")
             return
 
-        #folder_path = r"C:\Users\ADMIN\Graph_Network_Project\data\raw"   ### Dũng Note: Cái này là đường dẫn tĩnh, chỉ ai viết file này mới dùng được thôi nhé. Để cả nhóm đều chạy được trên máy của mình thì nên để đường dẫn động, lấy luôn vị trí của folder dự án
-        
+        #folder_path = r"C:\Users\ADMIN\Graph_Network_Project\data\raw"   
         # Đi từ vị trí file script (.../src/api_fetch)
         current_script_dir = os.path.dirname(os.path.abspath(__file__))
         # Đi lùi 2 cấp ra thư mục gốc (.../Graph_Network_Project)
         project_root = os.path.dirname(os.path.dirname(current_script_dir))
         # Đi xuôi vào .../data/raw
-        folder_path = os.path.join(project_root, 'data', 'raw_vn')
+        folder_path = os.path.join(project_root, 'data', 'raw')
         os.makedirs(folder_path, exist_ok=True)
         file_path = os.path.join(folder_path, f"{filename}.csv")
 
@@ -102,43 +110,127 @@ if __name__ == "__main__":
     api_key = "96b7d0-5b0bc0"  
     client = AviationEdgeAPI(api_key)
 
-    airports_vn = client.get_airports_database()
-    airlines_vn = client.get_airline_database()
-    cities_vn = client.get_city_database()
+    # --- 1. LẤY DATABASE QUỐC GIA --- 
+    countries = client.get_country_database()
+    if not countries:
+        print("Không thể lấy danh sách quốc gia. Dừng chương trình.")
+        exit()
 
-    client.save_to_csv(airports_vn, "airport_db_raw_vn")
-    client.save_to_csv(cities_vn, "city_db_raw_vn")
-    client.save_to_csv(airlines_vn, "airline_db_raw_vn")
+    # --- 2. LẤY CÁC DATABASE CẦN THIẾT (SÂN BAY, THÀNH PHỐ, HÃNG BAY) ---
+    all_airlines, all_airports, all_cities = [], [], []
 
-    airline_codes = [a["codeIataAirline"] for a in airlines_vn if a.get("codeIataAirline")]
-    flights_vn, routes_vn = [], []
-    for code in airline_codes:
-        flights_vn.extend(client.get_flight_tracker(code))
-        routes_vn.extend(client.get_airline_routes(code))
-    client.save_to_csv(flights_vn, "flight_tracker_raw_vn")
-    client.save_to_csv(routes_vn, "routes_raw_vn")
+    for country in countries:
+        code = country.get("codeIso2Country")
+        if code:
+           airports = client.get_airports_database(code)
+           cities = client.get_city_database(code)
+           airlines = client.get_airline_database(code)
 
-    airport_codes = [a["codeIataAirport"] for a in airports_vn if a.get("codeIataAirport")]
+           if airports: all_airports.extend(airports)
+           if cities: all_cities.extend(cities)
+           if airlines: all_airlines.extend(airlines)
+
+    client.save_to_csv(all_airports, "airport_db_raw")
+    client.save_to_csv(all_cities, "city_db_raw")
+    client.save_to_csv(all_airlines, "airline_db_raw")
+
+    # --- 3. LẤY DỮ LIỆU REALTIME ---
+    all_airports = pd.read_csv("data/raw/airport_db_raw.csv").to_dict(orient="records")
+    random.shuffle(all_airports)  
+    """selected_airports = all_airports[:500]
     all_realtime = []
-    for airport in airport_codes:
-        all_realtime.extend(client.get_real_time_schedules(airport))
-    client.save_to_csv(all_realtime, "realtime_schedules_raw_vn")
+    # Lấy 500 sân bay ngẫu nhiên từ list 'all_airports'
+    for i, airport in enumerate(selected_airports, 1):  
+        airport_code = airport.get("codeIataAirport")
+        country_code = airport.get("codeIso2Country") 
 
-    client.save_to_csv(client.get_nearby_airports(21.03, 105.85, 200), "nearby_airports_raw_vn")
+        print(f"[{i}/{len(selected_airports)}] Lấy realtime cho sân bay: {airport_code}, Quốc gia: ({country_code})")
 
-    city_iata_codes = [c["codeIataCity"] for c in cities_vn if c.get("codeIataCity")]
-    all_autocomplete = []
-    for code_iata_city in city_iata_codes:
-        data_dict = client.get_autocomplete(code_iata_city)
-        if isinstance(data_dict, dict) and "airportsByCities" in data_dict:
-            list_ben_trong = data_dict["airportsByCities"]
-            if list_ben_trong: 
-                all_autocomplete.extend(list_ben_trong)
+        if airport_code:
+           realtime = client.get_real_time_schedules(airport_code)
+           if realtime: 
+              all_realtime.extend(realtime)
+    client.save_to_csv(all_realtime, "realtime_schedules_raw")"""
+
+    # --- 4. LẤY FLIGHTS/ROUTES CHO HÃNG BAY ---
+    top_airlines = [
+    "AA","DL","UA","WN","EK","LH","AF","BA","CX","QR",
+    "CZ","MU","CA","SQ","TK","JL","KE","NH","QF","SU",
+    "AC","AS","B6","F9","FR","EY","KL","AI","BR","SK"
+    ]
+    all_flights, all_routes = [], []
+    for i, code in enumerate(top_airlines, 1):
+        print(f"[{i}/{len(top_airlines)}] Hãng: {code}")
+
+        """# 1. FLIGHT TRACKER 
+        flights = client.get_flight_tracker(code, limit=1000)
+        if flights:
+            all_flights.extend(flights)
+            print(f"Flight: {len(flights)} chuyến")"""
+
+        # 2. ROUTES
+        routes = client.get_airline_routes(code, limit = 10000)
+        if routes:
+            all_routes.extend(routes)
+            print(f"Routes: {len(routes)} tuyến")
         else:
-            print(f"Không tìm thấy dữ liệu 'airportsByCities' cho {code_iata_city}")
-    client.save_to_csv(all_autocomplete, "autocomplete_raw_vn")
+            print(f"Không có routes cho {code}")
 
+    """client.save_to_csv(all_flights, "flight_tracker_raw")"""
+    client.save_to_csv(all_routes, "routes_raw")
 
+    # --- 5. CÁC API CÒN LẠI ---
+    # Autocomplete 
+    top_autocomplete_countries = countries[:10]
+    all_autocomplete = []
+    autocomplete_city_codes = [c["codeIataCity"] for c in all_cities if c.get("codeIataCity") and c.get("codeIso2Country") in 
+                               {co.get("codeIso2Country") for co in top_autocomplete_countries}][:10]
+    
+    for city_code in autocomplete_city_codes:
+        data = client.get_autocomplete(city_code) 
+        if isinstance(data, dict) and "airportsByCities" in data:
+             all_autocomplete.extend(data["airportsByCities"])
+    client.save_to_csv(all_autocomplete, "autocomplete_raw")
 
+    # Nearby Airports
+    nearby = client.get_nearby_airports(21.03, 105.85, 200)
+    client.save_to_csv(nearby, "nearby_airports_raw")
+ 
+    # Phần tự động cập nhật dữ liệu flight tracker và realtime schedules mỗi 60 giây
+    print("Bắt đầu tự động cập nhật dữ liệu live mỗi 60 giây...")   
+    try:
+        while True:
+            print(f"\n--- Bắt đầu lấy dữ liệu ---")
 
+            # 1. Cập nhật Flight Tracker (dựa trên 30 hãng bay)
+            flights_live = []
+            for i, code in enumerate(top_airlines, 1):
+                print(f"[{i}/{len(top_airlines)}] Lấy flighttracker cho: {code}")
+                flights_live.extend(client.get_flight_tracker(code, limit=1000))
+                time.sleep(0.2)
+            client.save_to_csv(flights_live, "flight_tracker_live")
+
+            # 2. Cập nhật Realtime Schedules (dựa trên 100 sân bay)
+            all_realtime_live = []
+            for i, airport in enumerate(all_airports[:100], 1):  
+                airport_code = airport.get("codeIataAirport")
+                country_code = airport.get("codeIso2Country") 
+
+                if not airport_code:
+                    continue
+                
+                print(f"[{i}/{len(all_airports[:100])}] Lấy realtime cho: {airport_code}, Quốc gia: ({country_code})")
+                data = client.get_real_time_schedules(airport_code)
+                if data:
+                    all_realtime_live.extend(data)
+                time.sleep(0.2)
+            client.save_to_csv(all_realtime_live, "realtime_schedules_live")
+            
+            print("Đã cập nhật dữ liệu live. Chờ 60 giây để cập nhật tiếp theo...")
+            time.sleep(60)
+
+    except KeyboardInterrupt:
+        print("\n--- Dừng chương trình. ---")
+    except Exception as e:
+        print(f"\n--- Vòng lặp chính bị lỗi: {e} ---")
 

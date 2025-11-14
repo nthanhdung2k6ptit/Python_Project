@@ -13,9 +13,9 @@ try:
         get_top_airlines_by_country_coverage,
         get_top_important_airports
     )
-    print("INFO (TV6-Export): Import 'statistics_1.py' thành công.")
+    print("Import 'statistics_1.py' thành công.")
 except ImportError:
-    print("LỖI (TV6-Export): Không tìm thấy file 'statistics_1.py'.")
+    print("LỖI : Không tìm thấy file 'statistics_1.py'.")
     sys.exit(1)
 
 # Cài đặt đường dẫn Output
@@ -49,7 +49,7 @@ TRANSLATIONS = {
     'hubs': {
         'airport_iata': 'Mã IATA sân bay',
         'betweenness_centrality': 'Điểm Centrality',
-        'airport_name': 'Tên sân bay (Hub)'
+        'airport_name': 'Tên sân bay'
     }
 }
 
@@ -83,7 +83,7 @@ def export_to_excel(stats_dict, top_airports_df, top_airlines_df, top_hubs_df):
                 top_airports_df.to_excel(writer, sheet_name='Top sân bay (đường bay)', index_label="STT")
                 auto_adjust_columns(writer.sheets['Top sân bay (đường bay)'])
             
-            # Sheet 3: Top Hãng bay (Độ phủ)
+            # Sheet 3: Top Hãng bay (mức độ hoạt động toàn cầu)
             if not top_airlines_df.empty:
                 top_airlines_df.to_excel(writer, sheet_name='Top hãng bay (mức độ hoạt động toàn cầu)', index_label="STT")
                 auto_adjust_columns(writer.sheets['Top hãng bay (mức độ hoạt động toàn cầu)'])
@@ -116,7 +116,6 @@ def export_to_excel(stats_dict, top_airports_df, top_airlines_df, top_hubs_df):
         print(f"LỖI : Không thể ghi file Excel. Lỗi: {e}")
 
 
-# Khối chính để chạy file này 
 if __name__ == '__main__':
     flights, airports, airlines = load_csv_data() 
     
@@ -135,9 +134,7 @@ if __name__ == '__main__':
         top_airports = top_airports.rename(columns=TRANSLATIONS['airports'])
         top_airlines_coverage = top_airlines_coverage.rename(columns=TRANSLATIONS['airlines'])
         top_hubs = top_hubs.rename(columns=TRANSLATIONS['hubs'])
-        # ------------------------------------
 
-        # Gọi hàm xuất file đã Việt hóa
         export_to_excel(stats, top_airports, top_airlines_coverage, top_hubs)
         
         print("Hoàn thành file export_report.py")
