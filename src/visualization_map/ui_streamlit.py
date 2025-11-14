@@ -14,7 +14,7 @@ st.title("🛫 Flight Network - Real Routes Visualization")
 df_airports = load_airports()
 df_cities = load_cities()
 
-tab1, tab2, tab3 = st.tabs(['Xem trên map theo sân bay toàn cầu', 'Xem trên map sân bay theo khu vực', 'Ứng dụng'])
+tab1, tab2, tab3 = st.tabs(['Xem trên map theo sân bay toàn cầu', 'Xem trên map sân bay theo khu vực'])
 with tab1:
     st.markdown("Xem các đường bay thực tế trên bản đồ thế giới, xuất phát từ một thành phố cụ thể hoặc toàn cầu.")
 
