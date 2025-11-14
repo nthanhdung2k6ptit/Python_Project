@@ -211,13 +211,13 @@ def create_graph_figure(graph, pos_dict, node_colors_dict={}, highlight_edges=[]
 app = dash.Dash(__name__)
 
 app.layout = html.Div(style={'fontFamily': 'Arial'}, children=[
-    html.H1("Hệ thống Phân tích Mạng lưới Chuyến bay"),
+    html.H1("HỆ THỐNG MẠNG LƯỚI CHUYẾN BAY"),
     
     # layout
     html.Div(style={'width': '95%', 'margin': 'auto', 'padding': '10px', 'border': '1px solid #ddd', 'borderRadius': '5px'}, children=[
         
-        html.H3("Bộ lọc Chính & Thống kê"),
-        html.Label("Lọc Graph theo Quốc gia:"),
+        html.H3("Bộ lọc và Thống kê"),
+        html.Label("Lọc theo quốc gia:"),
         html.Div(style={'display': 'flex', 'alignItems': 'center'}, children=[
             dcc.Dropdown(
                 id='dropdown-country-filter', 
@@ -226,8 +226,8 @@ app.layout = html.Div(style={'fontFamily': 'Arial'}, children=[
                 style={'flex': '1'},
                 clearable=False
             ),
-            html.Button('Lọc Quốc gia', id='button-filter-country', n_clicks=0, style={'marginLeft': '10px', 'padding': '10px'}),
-            html.Button('Xóa Lọc', id='button-clear-filter', n_clicks=0, style={'marginLeft': '10px', 'padding': '10px', 'backgroundColor': '#ffcccc'})
+            html.Button('Lọc quốc gia', id='button-filter-country', n_clicks=0, style={'marginLeft': '10px', 'padding': '10px'}),
+            html.Button('Xóa lọc', id='button-clear-filter', n_clicks=0, style={'marginLeft': '10px', 'padding': '10px', 'backgroundColor': '#ffcccc'})
         ]),
         
         # THÊM KHUNG HIỂN THỊ METRICS
@@ -235,7 +235,7 @@ app.layout = html.Div(style={'fontFamily': 'Arial'}, children=[
         
         html.Hr(style={'margin': '20px 0'}),
         
-        html.H3("Chức năng 1: Tìm đường bay"),
+        html.H3("Tìm đường bay"),
         
         html.Label("Chọn Sân bay đi:"),
         dcc.Dropdown(
@@ -255,8 +255,8 @@ app.layout = html.Div(style={'fontFamily': 'Arial'}, children=[
             dcc.RadioItems(
                 id='radio-path-type',
                 options=[
-                    {'label': ' Tìm theo Ít chặng (Hops)', 'value': 'hops'},
-                    {'label': ' Tìm theo Ít KM', 'value': 'km'}
+                    {'label': ' Tìm theo ít chặng', 'value': 'hops'},
+                    {'label': ' Tìm theo ít KM', 'value': 'km'}
                 ],
                 value='hops',
                 labelStyle={'display': 'inline-block', 'margin-right': '20px'}
@@ -268,15 +268,15 @@ app.layout = html.Div(style={'fontFamily': 'Arial'}, children=[
         dcc.Input(id='input-max-hops', type='number', value=4, min=2, max=7, style={'width': '100px', 'marginRight': '10px'}),
         
         html.Button('Tìm 1 đường bay', id='button-find-path', n_clicks=0, style={'marginTop': '10px', 'padding': '10px'}),
-        html.Button('Tìm TẤT CẢ đường bay', id='button-find-all-paths', n_clicks=0, style={'marginTop': '10px', 'marginLeft': '10px', 'padding': '10px'}),
-        html.Button('Reset Biểu đồ', id='button-reset', n_clicks=0, style={'marginTop': '10px', 'marginLeft': '10px', 'padding': '10px'}),
+        html.Button('Tìm đường bay khác', id='button-find-all-paths', n_clicks=0, style={'marginTop': '10px', 'marginLeft': '10px', 'padding': '10px'}),
+        html.Button('Reset biểu đồ', id='button-reset', n_clicks=0, style={'marginTop': '10px', 'marginLeft': '10px', 'padding': '10px'}),
         
         html.Pre(id='path-output-text', style={'border': '1px solid #eee', 'padding': '5px', 'background': '#f9f9f9'}),
         
         html.Hr(style={'margin': '20px 0'}),
 
-        html.H3("Chức năng 2: Xem kết nối (Click hoặc Gõ tìm)"),
-        html.P("Click vào một sân bay bất kỳ TRÊN BIỂU ĐỒ, HOẶC gõ tìm sân bay dưới đây:"),
+        html.H3("Xem kết nối"),
+        html.P("Click vào một sân bay bất kỳ hoặc gõ tìm sân bay dưới đây:"),
         html.Div(style={'display': 'flex', 'alignItems': 'center'}, children=[
             dcc.Dropdown(
                 id='dropdown-click-search', 

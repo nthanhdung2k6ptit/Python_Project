@@ -1,20 +1,20 @@
-
 # CÀO DATA RIÊNG CỦA VIỆT NAM
 # Class & functions lấy dữ liệu từ API Aviation Edge
 import requests
 import pandas as pd
 import os
+import time
 
 class AviationEdgeAPI:
     def __init__ (self, api_key):
         self.api_key = api_key
         self.base_url = "http://aviation-edge.com/v2/public/"
 
-    def get_flight_tracker(self, airline_iata=None, limit=100, offset=0):
+    def get_flight_tracker(self, airline_iata=None, limit=1000):
         if airline_iata is None: return []
-        return self._make_request("flights", {"airlineIata": airline_iata, "limit": limit, "offset": offset})
+        return self._make_request("flights", {"airlineIata": airline_iata, "limit": limit})
     
-    def get_real_time_schedules(self, airport_iata_code, schedule_type="departure"):
+    def get_real_time_schedules(self, airport_iata_code, schedule_type=None):
         return self._make_request("timetable", {"iataCode": airport_iata_code, "type": schedule_type})
     
     def get_airline_routes(self, airline_iata=None):
@@ -50,7 +50,7 @@ class AviationEdgeAPI:
         cleaned_params["key"] = self.api_key
         url = self.base_url + endpoint
         try:
-            response = requests.get(url, params=cleaned_params, timeout=10)
+            response = requests.get(url, params=cleaned_params, timeout=15)
             response.raise_for_status()
             data = response.json()
             if isinstance(data, dict) and data.get('error'):
@@ -76,8 +76,6 @@ class AviationEdgeAPI:
             print(f"Không có dữ liệu để lưu vào {filename}.")
             return
 
-        #folder_path = r"C:\Users\ADMIN\Graph_Network_Project\data\raw"   ### Dũng Note: Cái này là đường dẫn tĩnh, chỉ ai viết file này mới dùng được thôi nhé. Để cả nhóm đều chạy được trên máy của mình thì nên để đường dẫn động, lấy luôn vị trí của folder dự án
-        
         # Đi từ vị trí file script (.../src/api_fetch)
         current_script_dir = os.path.dirname(os.path.abspath(__file__))
         # Đi lùi 2 cấp ra thư mục gốc (.../Graph_Network_Project)
@@ -111,18 +109,20 @@ if __name__ == "__main__":
     client.save_to_csv(airlines_vn, "airline_db_raw_vn")
 
     airline_codes = [a["codeIataAirline"] for a in airlines_vn if a.get("codeIataAirline")]
-    flights_vn, routes_vn = [], []
+    """flights_vn = []
     for code in airline_codes:
         flights_vn.extend(client.get_flight_tracker(code))
+    client.save_to_csv(flights_vn, "flight_tracker_raw_vn")"""
+    routes_vn = []
+    for code in airline_codes:
         routes_vn.extend(client.get_airline_routes(code))
-    client.save_to_csv(flights_vn, "flight_tracker_raw_vn")
     client.save_to_csv(routes_vn, "routes_raw_vn")
 
     airport_codes = [a["codeIataAirport"] for a in airports_vn if a.get("codeIataAirport")]
-    all_realtime = []
+    """all_realtime = []
     for airport in airport_codes:
         all_realtime.extend(client.get_real_time_schedules(airport))
-    client.save_to_csv(all_realtime, "realtime_schedules_raw_vn")
+    client.save_to_csv(all_realtime, "realtime_schedules_raw_vn")"""
 
     client.save_to_csv(client.get_nearby_airports(21.03, 105.85, 200), "nearby_airports_raw_vn")
 
@@ -138,7 +138,33 @@ if __name__ == "__main__":
             print(f"Không tìm thấy dữ liệu 'airportsByCities' cho {code_iata_city}")
     client.save_to_csv(all_autocomplete, "autocomplete_raw_vn")
 
+    # Phần tự động cập nhật dữ liệu flight tracker và realtime schedules mỗi 60 giây
+    print("Bắt đầu tự động cập nhật dữ liệu live mỗi 60 giây...")
+    try:
+        while True:
+            flights_live = []
+            for i, code in enumerate(airline_codes, 1):
+                print(f"[{i}/{len(airline_codes)}] Lấy flighttracker cho: {code}")
+                flights_live.extend(client.get_flight_tracker(code))
+            client.save_to_csv(flights_live, "flight_tracker_live_vn")
 
+            all_realtime_live = []
+            for i, codeIataAirport in enumerate(airport_codes, 1):
+                print(f"[{i}/{len(airport_codes)}] Lấy realtime cho: {codeIataAirport}")
+                data = client.get_real_time_schedules(codeIataAirport)
+                if data: 
+                    all_realtime_live.extend(data)
+                else:
+                    print(f"Không có dữ liệu realtime cho {codeIataAirport}")
+            client.save_to_csv(all_realtime_live, "realtime_schedules_live_vn")
 
+            print("Đã cập nhật dữ liệu live. Chờ 60 giây để cập nhật tiếp theo...")
+            time.sleep(60)
+    
+    except KeyboardInterrupt:
+        print("\n--- Dừng chương trình. ---")
+    except Exception as e:
+        print(f"\n--- Vòng lặp bị lỗi: {e} ---")
 
-
+    
+   
