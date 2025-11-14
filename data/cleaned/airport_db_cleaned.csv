@@ -839,7 +839,6 @@
 7,10438,PHQ,,YTMO,8555618.0,-21.811667,139.923333,The Monument Airport,Australia
 10,10491,TQP,,YTEE,8533833.0,-21.835,140.888056,Trepell Airport,Australia
 -5,10499,WLE,,YMLS,8556009.0,-26.809167,150.165,Miles Airport,Australia
-8,10500,WLP,,YANG,8556010.0,,,West Angelas Airport,Australia
 10,10505,WTB,,YBWW,9881357.0,-27.558332,151.793335,Toowoomba Wellcamp Airport,Australia
 8,10562,TTX,,YTST,8644119.0,-14.089722,126.380833,Mungalalu Truscott Airbase,Australia
 8,10567,WRN,,YWDG,8555625.0,-30.031667,119.39,Windarling Airport,Australia
@@ -2575,7 +2574,6 @@ Unknown,10053,PKX,PEK,ZBAD,,39.5092,116.411,Beijing Daxing International Airport
 8,10508,XAI,,ZHXY,11493830.0,32.541389,114.077778,Xinyang Minggang Airport,China
 8,10511,YIC,,ZSYC,8435706.0,27.8025,114.3062,Yichun Mingyueshan Airport,China
 8,10512,YKH,,ZYYK,11102736.0,40.542524,122.3586,Yingkou Lanqi Airport,China
-8,10515,YTW,,ZWYT,,,,Yutian Airport,China
 8,10524,FYJ,,ZYFY,,48.199494,134.366447,Dongji Aiport,China
 8,10526,GXH,,ZLXH,8521364.0,34.8105,102.6447,Gannan Xiahe Airport,China
 8,10527,HCJ,,ZGHC,,24.805,107.6997,Hechi Jinchengjiang Airport,China
@@ -3103,8 +3101,6 @@ Unknown,10053,PKX,PEK,ZBAD,,39.5092,116.411,Beijing Daxing International Airport
 1,9863,ZMW,ZMW,,2623554.0,55.93814,9.12178,Brande Bus Station,Denmark
 1,9924,ZRY,ZRY,,2620425.0,56.13932,8.97378,Herning Bus Station,Denmark
 1,9957,ZTG,AAL,,0.0,57.028811,9.917771,Aalborg Railway Station,Denmark
-Unknown,10444,QEA,,EKAC,,,,Aarhus Sea Airport,Denmark
-Unknown,10445,QEC,,EKCC,,,,Copenhagen Sea Airport,Denmark
 -4,1719,DCF,DOM,TDCF,3575879.0,15.5,-61.333332,Cane Field,Dominica
 -4,1879,DOM,DOM,TDPD,6301865.0,15.543056,-61.309166,Melville Hall,Dominica
 -4,517,AZS,AZS,MDZY,7175127.0,19.270555,-69.736946,Samaná El Catey International,Dominican Republic
@@ -3866,7 +3862,6 @@ Unknown,10445,QEC,,EKCC,,,,Copenhagen Sea Airport,Denmark
 0,10013,ZXA,ABZ,,0.0,57.1474915,-2.095397,Aberdeen Railway Station,United Kingdom
 0,10014,ZXE,EDI,,0.0,55.9501755,-3.1875359,Waverley Railway Station,United Kingdom
 0,10017,ZXP,PSL,,0.0,56.4094132,-3.447528,ScotRailway,United Kingdom
-0,10365,DGX,,EGSY,,,,St. Athan Airport,United Kingdom
 0,10457,QLA,,EGHL,7668208.0,51.1871986389,-1.0334999,Lasham Airport,United Kingdom
 0,10503,WRT,,EGNO,9034837.0,53.745098,-2.88306,Warton Airport,United Kingdom
 0,10522,AYH,,EGWZ,11591974.0,52.363333,-0.222778,Royal Air Force Alconbury,United Kingdom
@@ -9880,7 +9875,6 @@ Unknown,10414,KXB,,WAWP,,-4.341217,121.523983,Kolaka Airport,Indonesia
 -5,10038,ZYQ,SYR,,0.0,43.0481221,-76.1474244,Syracuse  Railway,United States
 -5,10051,ZZV,ZZV,KZZV,4528929.0,39.933334,-82.01667,Zanesville,United States
 -5,10359,CSG,,KCSG,4188990.0,32.5163002014,-84.9389038086,Columbus Metropolitan Airport,United States
--6,10370,DXE,,KMBO,4419655.0,,,Bruce Campbell Field,United States
 -6,10371,EDC,,KEDC,,30.3974931,-97.5663935,Austin Executive Airport,United States
 -5,10385,GTB,,KGTB,6298323.0,44.05562,-75.71946,Wheeler-Sack Army Airfield,United States
 -6,10386,GYB,,KGYB,,30.169167,-96.98,Giddings–Lee County Airport,United States

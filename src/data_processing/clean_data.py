@@ -4,9 +4,6 @@ import pandas as pd
 from pathlib import Path
 
 # ===== Paths =====
-'''Dũng note ở đây nhé: sử dụng đường dẫn gốc của project (động) thay vì 
-đường dẫn cục bộ ở trong máy nhé'''
-# Use project root (dynamic) instead of hard-coded local path
 PROJECT_DIR = Path(__file__).resolve().parents[2]  # Graph_Network_Project
 PROJECT_DIR = str(PROJECT_DIR)
 
@@ -27,6 +24,8 @@ FILES_VN = {
     "airport_db_raw_vn": "airport_db_raw_vn.csv",
     "city_db_raw_vn": "city_db_raw_vn.csv",
     "airline_db_raw_vn": "airline_db_raw_vn.csv",
+    "flight_tracker_live_vn": "flight_tracker_live_vn.csv",
+    "realtime_schedules_live_vn": "realtime_schedules_live_vn.csv",
 }
 FILES_GLOBAL = {k.replace("_vn", ""): v.replace("_vn", "") for k, v in FILES_VN.items()}
 
@@ -41,8 +40,10 @@ def is_timezone_col(col: str) -> bool:
 
 def is_datetime_col(col: str) -> bool:
     c = col.lower()
-    if any(k in c for k in ["terminal", "iata", "icao", "airport", "city", "country"]): return False
-    if is_timezone_col(c): return False
+    if any(k in c for k in ["terminal", "iata", "icao", "airport", "city", "country"]):
+        return False
+    if is_timezone_col(c):
+        return False
     return any(k in c for k in ["scheduled","actual","updated","created","timestamp","utc","_time","time_","date"])
 
 def smart_to_datetime(series: pd.Series) -> pd.Series:
@@ -51,12 +52,14 @@ def smart_to_datetime(series: pd.Series) -> pd.Series:
     if as_num.notna().mean() >= 0.8:
         m = as_num.dropna().abs().median()
         unit = "ns" if m > 1e13 else "ms" if m > 1e12 else "us" if m > 1e10 else "s" if m > 1e9 else None
-        if unit: return pd.to_datetime(as_num, unit=unit, origin="unix", utc=True)
+        if unit:
+            return pd.to_datetime(as_num, unit=unit, origin="unix", utc=True)
     return pd.to_datetime(s, errors="coerce", utc=True)
 
 def read_csv_safe(path: str) -> pd.DataFrame | None:
     if not os.path.exists(path):
-        print(f"⚠️ Missing: {path}"); return None
+        print(f"⚠️ Missing: {path}")
+        return None
     try:
         df = pd.read_csv(path, encoding="utf-8", on_bad_lines="skip", low_memory=False)
     except UnicodeDecodeError:
@@ -100,7 +103,8 @@ def clean_dataframe(df: pd.DataFrame) -> pd.DataFrame:
         if is_datetime_col(col):
             df[col] = smart_to_datetime(df[col])
 
-    if obj_cols: df[obj_cols] = df[obj_cols].fillna("Unknown")
+    if obj_cols:
+        df[obj_cols] = df[obj_cols].fillna("Unknown")
 
     for col in df.columns:
         if is_timezone_col(col) and df[col].dtype == object:
@@ -138,12 +142,12 @@ def clean_airport_db(df: pd.DataFrame) -> pd.DataFrame:
         if "country_iso2" in df.columns:
             df["country"] = df["country"].fillna(df["country_iso2"])
 
-    # 👇 THÊM PHẦN NÀY: ép country = "Vietnam" nếu country_iso2 = "VN"
+    # ép country = "Vietnam" nếu country_iso2 = "VN"
     if "country_iso2" in df.columns and "country" in df.columns:
         mask_vn = df["country_iso2"].astype(str).str.strip().str.upper().eq("VN")
         df.loc[mask_vn, "country"] = "Vietnam"
 
-    # (tuỳ chọn) dọn Unknown/NA thành Vietnam nếu mã VN
+    # dọn Unknown/NA thành Vietnam nếu mã VN
     if "country" in df.columns and "country_iso2" in df.columns:
         mask_unknown = df["country"].astype(str).str.strip().str.lower().isin(["unknown", "nan", "none", ""])
         mask_vn = df["country_iso2"].astype(str).str.strip().str.upper().eq("VN")
@@ -158,6 +162,12 @@ def clean_airport_db(df: pd.DataFrame) -> pd.DataFrame:
     for c in ["latitude","longitude","gmt"]:
         if c in df.columns:
             df[c] = pd.to_numeric(df[c], errors="coerce")
+    # Nếu latitude hoặc longitude bị thiếu → loại bỏ luôn
+    if "latitude" in df.columns and "longitude" in df.columns:
+        before = len(df)
+        df = df.dropna(subset=["latitude", "longitude"])
+        after = len(df)
+        print(f"Airport DB: removed {before - after} rows because of missing lat/lon")
 
     # Khử trùng lặp
     if "iata_code" in df.columns and df["iata_code"].notna().any():
@@ -165,7 +175,6 @@ def clean_airport_db(df: pd.DataFrame) -> pd.DataFrame:
     if "icao_code" in df.columns and df["icao_code"].notna().any():
         return df.drop_duplicates(subset=["icao_code"])
     return df.drop_duplicates()
-
 
 def clean_schedule(df: pd.DataFrame) -> pd.DataFrame:
     rename = {
@@ -178,22 +187,26 @@ def clean_schedule(df: pd.DataFrame) -> pd.DataFrame:
 
 def clean_flight_tracker(df: pd.DataFrame) -> pd.DataFrame:
     df = df.rename(columns=str.lower)
-    for c in ["system_squawk","speed_is_ground","speed_vspeed"]:
-        if c in df.columns: df.drop(columns=c, inplace=True)
+    for c in ["system_squawk","speed_is_ground","speed_vspeed"]:  
+        if c in df.columns:
+            df.drop(columns=c, inplace=True)
     return df
 
 def clean_nearby_airports(df: pd.DataFrame) -> pd.DataFrame:
-    if "timezone" in df.columns: df.drop(columns=["timezone"], inplace=True)
+    if "timezone" in df.columns:
+        df.drop(columns=["timezone"], inplace=True)
     return df
 
 def clean_city_db(df: pd.DataFrame) -> pd.DataFrame:
     for c in ["timezone","phone"]:
-        if c in df.columns: df.drop(columns=c, inplace=True)
+        if c in df.columns:
+            df.drop(columns=c, inplace=True)
     return df
 
 def clean_autocomplete(df: pd.DataFrame) -> pd.DataFrame:
     for c in ["phone","timezone"]:
-        if c in df.columns: df.drop(columns=c, inplace=True)
+        if c in df.columns:
+            df.drop(columns=c, inplace=True)
     return df
 
 def _normalize_status_values(df: pd.DataFrame, col: str) -> pd.DataFrame:
@@ -231,25 +244,92 @@ def clean_airline_db(df: pd.DataFrame, keep_status: set[str]) -> pd.DataFrame:
 
     if status_col:
         df = _normalize_status_values(df, status_col)
-        # một số dataset ghi 'notready' -> đồng nhất về 'not_ready'
         df[status_col] = df[status_col].replace({"notready": "not_ready"})
         df = df[df[status_col].isin(keep_status)]
     else:
         print("⚠️ airline_db: không tìm thấy cột trạng thái (status_airline/status).")
 
-    # loại dòng trùng lặp hoàn toàn (nếu có)
     df = df.drop_duplicates()
     return df
 
 
-# ===== Core pipeline for one folder =====
+# ===== AUTO CLEAN CHO FLIGHT TRACKER & REALTIME (LIVE) =====
+def auto_clean_dataframe(name: str, df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Chỉ auto-clean cho:
+      - flight_tracker_* (raw/live)
+      - realtime_schedules_* (raw/live)
+    """
+    df = normalize_columns(df)
+    df = clean_dataframe(df)
+
+    base = re.sub(r"_(live|raw)(_vn)?$", "", name)
+
+    if base.startswith("flight_tracker"):
+        df = clean_flight_tracker(df)
+    elif base.startswith("realtime_schedules"):
+        df = clean_schedule(df)
+
+    return df
+
+def clean_and_save_live(name: str, records: list[dict], client):
+    """
+    Dùng trong vòng lặp LIVE:
+      - name: 'flight_tracker_live' hoặc 'realtime_schedules_live'
+      - records: list dict từ API
+      - client: object có hàm save_to_csv(records, name)
+
+    Return:
+      (cleaned_file_name, unknown_file_name_or_None)
+    """
+    if not records:
+        print(f"⚠️ Không có dữ liệu để clean cho {name}")
+        return None, None
+
+    df = pd.DataFrame(records)
+    df = auto_clean_dataframe(name, df)
+
+    # ---- TÊN FILE CLEAN THEO ĐÚNG YÊU CẦU ----
+    cleaned_name = f"{name}_cleaned"            # VD: flight_tracker_live_cleaned
+    unknown_name = f"unknow_{name}_cleaned"     # VD: unknow_flight_tracker_live_cleaned
+
+    # Tách status unknown
+    base = re.sub(r"_(live|raw)(_vn)?$", "", name)
+    unknown_file_written = None
+
+    if base in ("flight_tracker", "realtime_schedules") and "status" in df.columns:
+        mask_unknown = (
+            df["status"]
+            .astype(str)
+            .str.strip()
+            .str.lower()
+            .eq("unknown")
+        )
+        df_unknown = df[mask_unknown]
+
+        if not df_unknown.empty:
+            client.save_to_csv(df_unknown.to_dict(orient="records"), unknown_name)
+            print(f"Đã lưu {len(df_unknown)} dòng status='unknown' -> {unknown_name}")
+            unknown_file_written = unknown_name
+
+        df = df[~mask_unknown]
+
+    # Lưu bản cleaned
+    client.save_to_csv(df.to_dict(orient="records"), cleaned_name)
+    print(f" Đã clean & lưu file: {cleaned_name}")
+
+    return cleaned_name, unknown_file_written
+
+
+# ===== Core pipeline for one folder (batch RAW -> CLEANED) =====
 def process_folder(files_map, raw_dir, out_dir):
     datasets: dict[str, pd.DataFrame] = {}
 
     for name, filename in files_map.items():
         path = os.path.join(raw_dir, filename)
         df = read_csv_safe(path)
-        if df is None: continue
+        if df is None:
+            continue
         df = normalize_columns(df)
         df = clean_dataframe(df)
         datasets[name] = df
@@ -276,7 +356,7 @@ def process_folder(files_map, raw_dir, out_dir):
     for k in [g("airline_db_raw")]:
         if k: datasets[k] = clean_airline_db(datasets[k], keep_status={"active"})
 
-    # save + split unknown
+    # save + split unknown (cho batch)
     for name, df in datasets.items():
         suffix = "_vn" if name.endswith("_vn") else ""
         base_name = name.replace(f"_raw{suffix}", "")
