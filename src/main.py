@@ -1,7 +1,3 @@
-"""
-Main script - Graph Network Project
-Author: [Tên bạn] (Team Leader)
-"""
 
 import os
 from src.graph_building.build_graph import build_flight_graph
@@ -22,34 +18,31 @@ except ImportError:
 # "MANUAL" → chỉ dùng data có sẵn (bỏ qua API và cleaning)
 MODE = "MANUAL"   # đổi thành "AUTO" nếu muốn demo full
 
-# ==============================
-# PIPELINE CHÍNH
-# ==============================
 def main():
     print("\nGraph Network Project Starting...")
     print(f" Running mode: {MODE}\n")
 
-    raw_path = "data/raw/routes_raw.json"
+    raw_path = "data/raw/_raw.json"
     cleaned_path = "data/cleaned/routes_clean.csv"
 
     # 1️ FETCH DATA (TV1)
     if MODE == "AUTO":
-        print("🔹 Step 1: Fetching data from Aviation Edge API...")
+        print("Lấy dữ liệu từ API")
         try:
             fetch_routes_data(save_path=raw_path)
-            print(f"Data saved: {raw_path}")
+            print(f"Dữ liệu đã lưu: {raw_path}")
         except Exception as e:
             print(f"Lỗi khi gọi API: {e}")
             return
     else:
-        print("Skipping API fetching (using existing data)")
+        print("Bỏ qua bước lấy dữ liệu từ API (dùng dữ liệu có sẵn)")
 
     # 2️ CLEAN DATA (TV2)
     if MODE == "AUTO":
-        print("🔹 Step 2: Cleaning data...")
+        print("Làm sạch dữ liệu")
         try:
             clean_routes_data(input_path=raw_path, output_path=cleaned_path)
-            print(f"Cleaned data saved: {cleaned_path}")
+            print(f"Dữ liệu đã được làm sạch và lưu tại: {cleaned_path}")
         except Exception as e:
             print(f"Lỗi khi làm sạch dữ liệu: {e}")
             return
@@ -57,25 +50,22 @@ def main():
         if not os.path.exists(cleaned_path):
             print("Không tìm thấy file cleaned data!")
             return
-        print(f"Using existing cleaned data: {cleaned_path}")
-
+        print(f"Đang sử dụng dữ liệu đã làm sạch: {cleaned_path}")
     # 3️ BUILD GRAPH (TV3)
-    print("🔹 Step 3: Building flight network graph...")
+    print("Xây dựng đồ thị mạng lưới chuyến bay...")
     graph = build_flight_graph(cleaned_path)
 
     # 4️ ANALYZE DATA (TV6)
-    print("🔹 Step 4: Analyzing data...")
+    print("Phân tích dữ liệu...")
     analyze_data(cleaned_path)
 
     # 5️ DRAW MAP (TV5)
-    print("🔹 Step 5: Drawing flight map...")
+    print("Vẽ bản đồ các đường bay...")
     draw_routes(cleaned_path)
 
-    #  KẾT THÚC
-    print("\nPipeline completed successfully!")
-    print("Graph saved in: data/graphs/")
-    print("Reports saved in: data/reports/")
-    print("To open web UI, run: streamlit run src/visualization_map/ui_streamlit.py")
+    print("Đã hoàn tất quá trình.")
+    print("Đồ thị đã được lưu tại: data/graphs/")
+    print("Báo cáo đã được lưu tại: data/reports/")
 
 if __name__ == "__main__":
     main()
