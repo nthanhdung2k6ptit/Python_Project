@@ -4,7 +4,7 @@ import pandas as pd
 from pathlib import Path
 
 # ===== Paths =====
-PROJECT_DIR = Path(__file__).resolve().parents[2]  # Graph_Network_Project
+PROJECT_DIR = Path(__file__).resolve().parents[2]  
 PROJECT_DIR = str(PROJECT_DIR)
 
 RAW_DIR_VN   = os.path.join(PROJECT_DIR, "data", "raw_vn")
@@ -58,7 +58,7 @@ def smart_to_datetime(series: pd.Series) -> pd.Series:
 
 def read_csv_safe(path: str) -> pd.DataFrame | None:
     if not os.path.exists(path):
-        print(f"⚠️ Missing: {path}")
+        print(f" Missing: {path}")
         return None
     try:
         df = pd.read_csv(path, encoding="utf-8", on_bad_lines="skip", low_memory=False)
@@ -131,45 +131,38 @@ def clean_airport_db(df: pd.DataFrame) -> pd.DataFrame:
     }
     df = df.rename(columns={k:v for k,v in rename.items() if k in df.columns})
 
-    # Chuẩn hoá mã
     for c in ["iata_code","icao_code","city_iata","country_iso2"]:
         if c in df.columns:
             df[c] = df[c].astype("string").str.upper().str.strip()
 
-    # Tạo cột country (ưu tiên country_name, fallback country_iso2)
     if "country_name" in df.columns or "country_iso2" in df.columns:
         df["country"] = df.get("country_name")
         if "country_iso2" in df.columns:
             df["country"] = df["country"].fillna(df["country_iso2"])
 
-    # ép country = "Vietnam" nếu country_iso2 = "VN"
     if "country_iso2" in df.columns and "country" in df.columns:
         mask_vn = df["country_iso2"].astype(str).str.strip().str.upper().eq("VN")
         df.loc[mask_vn, "country"] = "Vietnam"
 
-    # dọn Unknown/NA thành Vietnam nếu mã VN
     if "country" in df.columns and "country_iso2" in df.columns:
         mask_unknown = df["country"].astype(str).str.strip().str.lower().isin(["unknown", "nan", "none", ""])
         mask_vn = df["country_iso2"].astype(str).str.strip().str.upper().eq("VN")
         df.loc[mask_unknown & mask_vn, "country"] = "Vietnam"
 
-    # Xoá các cột không cần
     for c in ["country_name","country_iso2","phone","timezone"]:
         if c in df.columns:
             df.drop(columns=c, inplace=True)
 
-    # Kiểu dữ liệu số
     for c in ["latitude","longitude","gmt"]:
         if c in df.columns:
             df[c] = pd.to_numeric(df[c], errors="coerce")
-    # Nếu latitude hoặc longitude bị thiếu → loại bỏ luôn
+
     if "latitude" in df.columns and "longitude" in df.columns:
         before = len(df)
         df = df.dropna(subset=["latitude", "longitude"])
         after = len(df)
         print(f"Airport DB: removed {before - after} rows because of missing lat/lon")
 
-    # Khử trùng lặp
     if "iata_code" in df.columns and df["iata_code"].notna().any():
         return df.drop_duplicates(subset=["iata_code"])
     if "icao_code" in df.columns and df["icao_code"].notna().any():
@@ -210,32 +203,27 @@ def clean_autocomplete(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 def _normalize_status_values(df: pd.DataFrame, col: str) -> pd.DataFrame:
-    """Chuẩn hoá giá trị status về snake_case: 'Not Ready' -> 'not_ready'."""
     if col in df.columns:
         df[col] = (
             df[col]
             .astype(str)
             .str.strip()
             .str.lower()
-            .str.replace(r"[\s\-]+", "_", regex=True)   # space/hyphen -> underscore
+            .str.replace(r"[\s\-]+", "_", regex=True)   
         )
     return df
 
 def clean_airline_db(df: pd.DataFrame, keep_status: set[str]) -> pd.DataFrame:
-    """Clean airline_db cho VN / Global tuỳ tập 'keep_status' truyền vào."""
     df = df.copy()
     df = df.rename(columns=str.lower)
 
-    # xoá cột founding nếu có
     if "founding" in df.columns:
         df.drop(columns=["founding"], inplace=True)
 
-    # chuẩn hoá mã viết hoa
     for c in ["code_iata_airline", "code_icao_airline", "code_iso2_country", "codehub", "code_hub"]:
         if c in df.columns:
             df[c] = df[c].astype("string").str.upper().str.strip()
 
-    # xác định cột status & chuẩn hoá giá trị
     status_col = None
     for cand in ["status_airline", "status"]:
         if cand in df.columns:
@@ -247,7 +235,7 @@ def clean_airline_db(df: pd.DataFrame, keep_status: set[str]) -> pd.DataFrame:
         df[status_col] = df[status_col].replace({"notready": "not_ready"})
         df = df[df[status_col].isin(keep_status)]
     else:
-        print("⚠️ airline_db: không tìm thấy cột trạng thái (status_airline/status).")
+        print(" airline_db: không tìm thấy cột trạng thái (status_airline/status).")
 
     df = df.drop_duplicates()
     return df
@@ -255,11 +243,6 @@ def clean_airline_db(df: pd.DataFrame, keep_status: set[str]) -> pd.DataFrame:
 
 # ===== AUTO CLEAN CHO FLIGHT TRACKER & REALTIME (LIVE) =====
 def auto_clean_dataframe(name: str, df: pd.DataFrame) -> pd.DataFrame:
-    """
-    Chỉ auto-clean cho:
-      - flight_tracker_* (raw/live)
-      - realtime_schedules_* (raw/live)
-    """
     df = normalize_columns(df)
     df = clean_dataframe(df)
 
@@ -273,15 +256,6 @@ def auto_clean_dataframe(name: str, df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 def clean_and_save_live(name: str, records: list[dict], client):
-    """
-    Dùng trong vòng lặp LIVE:
-      - name: 'flight_tracker_live' hoặc 'realtime_schedules_live'
-      - records: list dict từ API
-      - client: object có hàm save_to_csv(records, name)
-
-    Return:
-      (cleaned_file_name, unknown_file_name_or_None)
-    """
     if not records:
         print(f"⚠️ Không có dữ liệu để clean cho {name}")
         return None, None
@@ -289,11 +263,9 @@ def clean_and_save_live(name: str, records: list[dict], client):
     df = pd.DataFrame(records)
     df = auto_clean_dataframe(name, df)
 
-    # ---- TÊN FILE CLEAN THEO ĐÚNG YÊU CẦU ----
-    cleaned_name = f"{name}_cleaned"            # VD: flight_tracker_live_cleaned
-    unknown_name = f"unknow_{name}_cleaned"     # VD: unknow_flight_tracker_live_cleaned
+    cleaned_name = f"{name}_cleaned"            
+    unknown_name = f"unknow_{name}_cleaned"     
 
-    # Tách status unknown
     base = re.sub(r"_(live|raw)(_vn)?$", "", name)
     unknown_file_written = None
 
@@ -314,7 +286,6 @@ def clean_and_save_live(name: str, records: list[dict], client):
 
         df = df[~mask_unknown]
 
-    # Lưu bản cleaned
     client.save_to_csv(df.to_dict(orient="records"), cleaned_name)
     print(f" Đã clean & lưu file: {cleaned_name}")
 
@@ -356,7 +327,6 @@ def process_folder(files_map, raw_dir, out_dir):
     for k in [g("airline_db_raw")]:
         if k: datasets[k] = clean_airline_db(datasets[k], keep_status={"active"})
 
-    # save + split unknown (cho batch)
     for name, df in datasets.items():
         suffix = "_vn" if name.endswith("_vn") else ""
         base_name = name.replace(f"_raw{suffix}", "")
@@ -381,8 +351,8 @@ def process_folder(files_map, raw_dir, out_dir):
 
 # ===== Main =====
 def main():
-    process_folder(FILES_VN, RAW_DIR_VN, CLEAN_DIR_VN)   # VN
-    process_folder(FILES_GLOBAL, RAW_DIR, CLEAN_DIR)     # Global
+    process_folder(FILES_VN, RAW_DIR_VN, CLEAN_DIR_VN)   
+    process_folder(FILES_GLOBAL, RAW_DIR, CLEAN_DIR)    
     print("\n Done cleaning & splitting unknown for BOTH datasets.")
 
 if __name__ == "__main__":
