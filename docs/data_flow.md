@@ -1,3 +1,3 @@
 Mô tả pipeline dữ liệu
 
-lấy dữ liệu -> lọc -> phân tích -> viết node, thuật toán -> vẽ map ->vẽ giao diện
+lấy dữ liệu -> lọc -> viết node, thuật toán -> phân tích -> vẽ map -> vẽ giao diện
