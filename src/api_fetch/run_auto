@@ -1,0 +1,159 @@
+import requests
+import pandas as pd
+import os
+import random
+import time
+
+class AviationEdgeAPI:
+    def __init__ (self, api_key):
+        self.api_key = api_key
+        self.base_url = "http://aviation-edge.com/v2/public/"
+
+    def get_flight_tracker(self, airline_iata=None, limit=1000):
+        if airline_iata is None: return []
+        return self._make_request("flights", {"airlineIata": airline_iata, "limit": limit})
+    
+    def get_real_time_schedules(self, airport_iata_code, schedule_type=None):
+        return self._make_request("timetable", {"iataCode": airport_iata_code, "type": schedule_type})
+    
+    def get_country_database(self):
+        return self._make_request("countryDatabase")
+    
+    def _clean_params(self, params):
+        return {k: v for k, v in params.items() if v is not None}
+    
+    def _make_request(self, endpoint, params=None):
+        if params is None:
+            params = {}
+        cleaned_params = self._clean_params(params)
+        cleaned_params["key"] = self.api_key
+        url = self.base_url + endpoint
+
+        try:
+            response = requests.get(url, params=cleaned_params, timeout=20)
+            response.raise_for_status()
+            data = response.json()
+            if isinstance(data, dict) and data.get('error'):
+                print(f"Lỗi từ API Aviation Edge: {data['error']}")
+                return []
+            print(f"--- Lấy dữ liệu {endpoint} thành công! ---")
+            return data
+
+        except requests.exceptions.HTTPError as e:
+            print(f"Lỗi HTTP: {e.response.status_code} - {e}")
+        except requests.exceptions.ConnectionError:
+            print("Lỗi kết nối: Không thể kết nối tới server.")
+        except requests.exceptions.Timeout:
+            print("Lỗi: Request hết thời gian chờ (timeout).")
+        except requests.exceptions.JSONDecodeError:
+            print("Lỗi: Không thể phân tích JSON.")
+        except requests.exceptions.RequestException as e:
+            print(f"Lỗi request không xác định: {e}") 
+        return None
+    
+    def save_to_csv(self, data, filename):
+        if not data:
+            print(f"Không có dữ liệu để lưu vào {filename}.")
+            return
+
+        # Xác định đường dẫn lưu file
+        current_script_dir = os.path.dirname(os.path.abspath(__file__))
+        project_root = os.path.dirname(os.path.dirname(current_script_dir))
+        folder_path = os.path.join(project_root, 'data', 'raw')
+        os.makedirs(folder_path, exist_ok=True)
+        file_path = os.path.join(folder_path, f"{filename}.csv")
+
+        # Xử lý dữ liệu
+        if isinstance(data, dict) and "airportsByCities" in data:
+            data_to_save = data["airportsByCities"]
+        else:
+            data_to_save = data
+
+        try:
+            df = pd.json_normalize(data_to_save)
+            df.to_csv(file_path, index=False, encoding="utf-8-sig")
+            print(f"Đã lưu file: {file_path}")
+        except Exception as e:
+            print(f"Lỗi khi lưu {filename}: {e}")
+
+
+#                     CHƯƠNG TRÌNH CHÍNH
+
+if __name__ == "__main__":
+    api_key = "96b7d0-5b0bc0"  
+    client = AviationEdgeAPI(api_key)
+
+    # --- LẤY DANH SÁCH QUỐC GIA --- 
+    countries = client.get_country_database()
+    if not countries:
+        print("Không thể lấy danh sách quốc gia. Dừng chương trình.")
+        exit()
+
+    # Danh sách 30 hãng bay lớn nhất
+    top_airlines = [
+        "AA","DL","UA","WN","EK","LH","AF","BA","CX","QR",
+        "CZ","MU","CA","SQ","TK","JL","KE","NH","QF","SU",
+        "AC","AS","B6","F9","FR","EY","KL","AI","BR","SK"
+    ]
+
+    # Đọc danh sách sân bay
+    all_airports = pd.read_csv("data/raw/airport_db_raw.csv").to_dict(orient="records")
+    random.shuffle(all_airports)
+
+    # ---------------- TIMER SETUP ----------------
+    FLIGHT_INTERVAL = 60              # 60 giây
+    REALTIME_INTERVAL = 24 * 60 * 60  # 1 ngày
+
+    last_flight_update = 0
+    last_realtime_update = 0
+
+    print("Bắt đầu tự động cập nhật dữ liệu...")
+
+    try:
+        while True:
+            now = time.time()
+
+            # 1. FLIGHT TRACKER → cập nhật mỗi 60 giây
+            if now - last_flight_update >= FLIGHT_INTERVAL:
+                print("\n--- CẬP NHẬT FLIGHT TRACKER (60 giây) ---")
+                
+                flights_live = []
+                for i, code in enumerate(top_airlines, 1):
+                    print(f"[{i}/{len(top_airlines)}] Lấy flight tracker: {code}")
+                    flight_data = client.get_flight_tracker(code, limit=500)
+                    if flight_data is not None:
+                        flights_live.extend(flight_data)
+                    time.sleep(0.6)
+
+                client.save_to_csv(flights_live, "flight_tracker_live")
+                last_flight_update = now
+                print("Đã cập nhật Flight Tracker. Chờ 60s đến lần cập nhật tiếp theo.")
+                
+
+            # 2. REALTIME SCHEDULES → cập nhật 1 lần 1 ngày
+            if now - last_realtime_update >= REALTIME_INTERVAL:
+                print("\n--- CẬP NHẬT REALTIME SCHEDULES (1 ngày) ---")
+
+                all_realtime_live = []
+                for i, airport in enumerate(all_airports[:100], 1):
+                    airport_code = airport.get("codeIataAirport")
+                    country_code = airport.get("codeIso2Country") 
+                    if not airport_code:
+                        continue
+
+                    print(f"[{i}/{len(all_airports[:100])}] Lấy realtime cho: {airport_code}, Quốc gia: ({country_code})")
+                    data = client.get_real_time_schedules(airport_code)
+                    if data:
+                        all_realtime_live.extend(data)
+                    time.sleep(0.6)
+
+                client.save_to_csv(all_realtime_live, "realtime_schedules_live")
+                last_realtime_update = now
+                print("Đã cập nhật Realtime Schedules. Chờ 1 ngày đến lần cập nhật tiếp theo.")
+
+            time.sleep(1)  
+
+    except KeyboardInterrupt:
+        print("\n--- Dừng chương trình. ---")
+    except Exception as e:
+        print(f"\n--- Lỗi trong vòng lặp chính: {e} ---")
