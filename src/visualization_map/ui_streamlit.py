@@ -14,7 +14,7 @@ st.title("🛫 Flight Network - Real Routes Visualization")
 df_airports = load_airports()
 df_cities = load_cities()
 
-tab1, tab2, tab3 = st.tabs(['Xem trên map theo sân bay toàn cầu', 'Xem trên map sân bay theo khu vực', 'Xem trên map có những chuyến bay hiện tại'])
+tab1, tab2, tab3 = st.tabs(['Xem trên map theo sân bay toàn cầu', 'Xem trên map sân bay theo khu vực', 'Ứng dụng'])
 with tab1:
     st.markdown("Xem các đường bay thực tế trên bản đồ thế giới, xuất phát từ một thành phố cụ thể hoặc toàn cầu.")
 
@@ -147,8 +147,4 @@ with tab2:
                 with c2:
                     folium_static(m, width=900, height=650)
                 st.success("Đã tải xong bản đồ khu vực được chọn, có thể xem ngay bây giờ <3.")
-       
-from src.visualization_map.map_routes import create_flight_map, create_realtime_map
-with tab3:
-    st.markdown("Xem các chuyến bay hiện tại đến và đi từ một sân bay cụ thể.")
     
