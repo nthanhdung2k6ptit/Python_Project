@@ -1,4 +1,3 @@
-# --- 1. IMPORT các thư viện ---
 import os
 import sys
 import networkx as nx
@@ -11,8 +10,6 @@ import dash
 from dash import dcc, html
 from dash.dependencies import Input, Output, State
 
-# --- 2. THIẾT LẬP ĐƯỜNG DẪN (PATH) ---
-print("Đang thiết lập đường dẫn...")
 CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
 SRC_DIR = os.path.dirname(CURRENT_DIR)
 PROJECT_ROOT = os.path.dirname(SRC_DIR)
@@ -20,7 +17,6 @@ PROJECT_ROOT = os.path.dirname(SRC_DIR)
 if SRC_DIR not in sys.path:
     sys.path.append(SRC_DIR)
 
-# --- 3. IMPORT TỪ CÁC MODULE KHÁC ---
 try:
     from graph_building.build_graph import haversine
     from graph_building.algorithms import shortest_path, shortest_distance, all_paths, graph_metrics
@@ -29,8 +25,6 @@ except ImportError as e:
     print(f"LỖI IMPORT: {e}")
     sys.exit(1)
 
-# --- 4. TẢI DỮ LIỆU (GỘP 4 FILES) ---
-# (Phần này giữ nguyên logic tải G, thêm cạnh, và tính 'weight')
 DATA_DIR = os.path.join(PROJECT_ROOT, 'data', 'graph')
 CLEANED_DATA_DIR = os.path.join(PROJECT_ROOT, 'data', 'cleaned')
 CLEANED_DATA_VN_DIR = os.path.join(PROJECT_ROOT, 'data', 'cleaned_vn')
@@ -89,16 +83,6 @@ except Exception as e:
     print(f"LỖI KHI TẢI DỮ LIỆU: {e}")
     sys.exit(1)
 
-
-# --- 5. TÍNH TOÁN LAYOUT (BƯỚC NẶNG NHẤT) ---
-# --- (ĐÃ XÓA BỎ) ---
-# Chúng ta không cần 'nx.spring_layout' hay 'POS' nữa.
-# Chúng ta sẽ dùng 'lat' và 'lon' trực tiếp từ G.nodes.
-print("Đã bỏ qua Giai đoạn 5 (Tính toán Layout NetworkX). Sử dụng Lat/Lon.")
-
-
-# --- 6. TẠO DANH SÁCH SÂN BAY VÀ QUỐC GIA ---
-# --- (ĐÃ CẬP NHẬT: Xóa check 'if node in POS') ---
 print("Đang chuẩn bị danh sách Sân bay và Quốc gia...")
 AIRPORT_OPTIONS = [] 
 AIRPORT_COUNTRY_MAP = {} 
@@ -110,7 +94,6 @@ for node in G.nodes():
     lat = node_data.get('lat')
     lon = node_data.get('lon')
 
-    # Chỉ thêm các sân bay có đủ thông tin
     if country == 'Unknown' or lat is None or lon is None:
         continue
         
@@ -123,9 +106,6 @@ COUNTRY_OPTIONS = [{'label': '--- Tất cả Quốc gia ---', 'value': 'ALL'}] +
                   [{'label': country, 'value': country} for country in sorted(list(COUNTRY_SET))]
 print("Hoàn tất chuẩn bị.")
 
-
-# --- 7. HÀM VẼ BIỂU ĐỒ (CORE FUNCTION) ---
-# --- (VIẾT LẠI LẦN 2: ĐÃ SỬA LỖI 'Scatterglobe' THÀNH 'Scattergeo') ---
 def get_random_color():
     """Tạo một màu hex ngẫu nhiên"""
     return f"#{random.randint(0, 0xFFFFFF):06x}"
@@ -138,7 +118,6 @@ def create_graph_figure(graph, node_colors_dict={}, highlight_edges=[]):
     - highlight_edges: Các cạnh cần tô màu (từ tìm đường, click)
     """
     
-    # 1. Chuẩn bị dữ liệu cho Nút (Nodes)
     base_lats, base_lons, base_texts = [], [], []
     hl_lats, hl_lons, hl_texts, hl_colors = [], [], [], []
     
@@ -161,8 +140,7 @@ def create_graph_figure(graph, node_colors_dict={}, highlight_edges=[]):
             base_lats.append(lat)
             base_lons.append(lon)
             base_texts.append(text)
-    
-    # 2. Chuẩn bị dữ liệu cho Cạnh (Edges)
+            
     edge_lats, edge_lons = [], []
     for n1, n2 in highlight_edges:
         try:
@@ -173,11 +151,9 @@ def create_graph_figure(graph, node_colors_dict={}, highlight_edges=[]):
         except (KeyError, TypeError):
             continue
 
-    # 3. Tạo các Lớp (Traces)
+    
     traces = []
     
-    # Lớp 1: Vẽ các đường bay (Cạnh) được highlight
-    # (SỬA LỖI) Dùng 'go.Scattergeo'
     traces.append(go.Scattergeo(
         lat=edge_lats,
         lon=edge_lons,
@@ -187,8 +163,6 @@ def create_graph_figure(graph, node_colors_dict={}, highlight_edges=[]):
         name="Đường bay"
     ))
 
-    # Lớp 2: Vẽ các Sân bay (Nút) nền
-    # (SỬA LỖI) Dùng 'go.Scattergeo'
     traces.append(go.Scattergeo(
         lat=base_lats,
         lon=base_lons,
@@ -203,8 +177,6 @@ def create_graph_figure(graph, node_colors_dict={}, highlight_edges=[]):
         name="Sân bay"
     ))
     
-    # Lớp 3: Vẽ các Sân bay (Nút) được highlight
-    # (SỬA LỖI) Dùng 'go.Scattergeo'
     traces.append(go.Scattergeo(
         lat=hl_lats,
         lon=hl_lons,
@@ -219,8 +191,6 @@ def create_graph_figure(graph, node_colors_dict={}, highlight_edges=[]):
         name="Sân bay được chọn"
     ))
         
-    # 4. Tạo Layout (Bố cục)
-    # (SỬA LỖI) Bỏ 'globe=dict' và thay bằng 'geo=dict'
     layout = go.Layout(
         title="Bản đồ Mạng lưới Chuyến bay 3D",
         showlegend=False,
@@ -240,13 +210,11 @@ def create_graph_figure(graph, node_colors_dict={}, highlight_edges=[]):
     )
     
     return go.Figure(data=traces, layout=layout)
-# --- KẾT THÚC HÀM VẼ MỚI ---
 
 
-# --- 8. KHỞI TẠO APP DASH ---
+
 app = dash.Dash(__name__)
 
-# --- (CẬP NHẬT LAYOUT: Xóa Metrics, Thêm All Paths) ---
 app.layout = html.Div(style={'fontFamily': 'Arial'}, children=[
     html.H1("Hệ thống Phân tích Mạng lưới Chuyến bay"),
     
@@ -313,7 +281,6 @@ app.layout = html.Div(style={'fontFamily': 'Arial'}, children=[
     html.Div(style={'border': '1px solid black', 'margin': '20px'}, children=[
         dcc.Graph(
             id='map-graph',
-            # (CẬP NHẬT) Gọi hàm vẽ mới, không cần POS
             figure=create_graph_figure(G, node_colors_dict={}, highlight_edges=[]),
             style={'height': '80vh'}
         )
@@ -321,8 +288,6 @@ app.layout = html.Div(style={'fontFamily': 'Arial'}, children=[
 ])
 
 
-# --- 9. CALLBACK 1: CẬP NHẬT CÁC DROPDOWN TÌM KIẾM ---
-# --- (ĐÃ CẬP NHẬT: Xóa check 'if node in POS' ở Giai đoạn 6) ---
 @app.callback(
     [Output('dropdown-source', 'options'),
      Output('dropdown-target', 'options'),
@@ -334,8 +299,6 @@ app.layout = html.Div(style={'fontFamily': 'Arial'}, children=[
      Input('button-clear-filter', 'n_clicks')] 
 )
 def update_airport_dropdowns(selected_country, n_clear_filter):
-    # (Hàm này giữ nguyên logic, vì nó hoạt động dựa trên AIRPORT_OPTIONS
-    # mà chúng ta đã sửa ở Giai đoạn 6)
     ctx = dash.callback_context
     triggered_id = ctx.triggered[0]['prop_id'].split('.')[0]
     
@@ -352,8 +315,6 @@ def update_airport_dropdowns(selected_country, n_clear_filter):
     return filtered_options, filtered_options, filtered_options, None, None, None
 
 
-# --- 10. CALLBACK 2 (CHÍNH): CẬP NHẬT BIỂU ĐỒ ---
-# --- (CẬP NHẬT: Xóa logic 'POS') ---
 @app.callback(
     [Output('map-graph', 'figure'),
      Output('path-output-text', 'children'),
@@ -385,22 +346,18 @@ def update_map(btn_find_path, btn_find_all_paths,
     if ctx.triggered:
         triggered_id = ctx.triggered[0]['prop_id'].split('.')[0]
 
-    # 1. LỌC GRAPH (Giữ nguyên logic)
     if triggered_id == 'button-clear-filter':
         country_filter = 'ALL' 
 
     if country_filter == 'ALL':
         active_G = G 
     else:
-        # (Sửa lại logic lọc: chỉ lọc nút, không cần lọc POS)
         nodes_to_keep = [
             n for n in G.nodes() 
             if G.nodes[n].get('country') == country_filter
         ]
         active_G = G.subgraph(nodes_to_keep)
-        # (Đã xóa active_POS)
 
-    # 2. TÍNH METRICS (Giữ nguyên logic)
     metrics = graph_metrics(active_G)
     metrics_text = (
         f"--- THỐNG KÊ MẠNG LƯỚI ĐANG XEM ---\n"
@@ -411,20 +368,16 @@ def update_map(btn_find_path, btn_find_all_paths,
         f"Số đường bay TB (mỗi sân bay): {metrics['average_degree']:.2f}"
     )
 
-    # (MỚI) Xử lý khi TẢI TRANG LẦN ĐẦU
     if not ctx.triggered:
         return dash.no_update, " ", " ", metrics_text
 
-    # 3. XỬ LÝ CÁC TRIGGER (Cập nhật các lệnh gọi hàm vẽ)
     if triggered_id == 'button-reset' or triggered_id == 'button-clear-filter':
         return create_graph_figure(G, node_colors_dict={}, highlight_edges=[]), " ", " ", metrics_text
 
     if triggered_id == 'button-filter-country':
         return create_graph_figure(active_G, node_colors_dict={}, highlight_edges=[]), " ", " ", metrics_text
 
-    # (Tìm 1 đường bay)
     if triggered_id == 'button-find-path' and source_node and target_node:
-        # (Logic bên trong không đổi, chỉ cập nhật lệnh gọi hàm vẽ)
         if source_node not in active_G:
             return dash.no_update, f"Lỗi: Sân bay đi {source_node} không thuộc quốc gia đã chọn.", " ", dash.no_update
         if target_node not in active_G:
@@ -455,9 +408,7 @@ def update_map(btn_find_path, btn_find_all_paths,
         except Exception as e:
             return dash.no_update, f"Lỗi thuật toán: {e}", " ", dash.no_update
 
-    # (Tìm TẤT CẢ đường bay)
     if triggered_id == 'button-find-all-paths' and source_node and target_node:
-        # (Logic bên trong không đổi, chỉ cập nhật lệnh gọi hàm vẽ)
         if max_hops is None or not (2 <= int(max_hops) <= 7):
              return dash.no_update, f"Lỗi: Vui lòng đặt 'Số chặng tối đa' từ 2 đến 7.", " ", dash.no_update
         try:
@@ -504,7 +455,7 @@ def update_map(btn_find_path, btn_find_all_paths,
 
     if triggered_id == 'map-graph' and clickData:
         try:
-            # (CẬP NHẬT) Cách lấy IATA từ 'go.Scatterglobe'
+            # (cập nhật) Cách lấy IATA từ 'go.Scatterglobe'
             clicked_text = clickData['points'][0]['text']
             node_iata = clicked_text.split('(')[-1].replace(')', '')
             node_name = clicked_text.split(' (')[0]
@@ -522,8 +473,7 @@ def update_map(btn_find_path, btn_find_all_paths,
 
     return dash.no_update, " ", " ", dash.no_update
 
-# --- 11. CALLBACK 3 (MỚI): RESET GIÁ TRỊ DROPDOWN QUỐC GIA ---
-# (Giữ nguyên)
+
 @app.callback(
     Output('dropdown-country-filter', 'value'),
     [Input('button-clear-filter', 'n_clicks')]
@@ -533,8 +483,8 @@ def clear_country_filter_value(n_clicks):
         return 'ALL' 
     return dash.no_update
 
-# --- 12. CHẠY APP ---
 if __name__ == '__main__':
     print("Khởi động Dash server...")
     print("Mở trình duyệt và truy cập: http://127.0.0.1:8050/")
     app.run(debug=True)
+    

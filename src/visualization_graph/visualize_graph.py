@@ -330,12 +330,11 @@ def update_airport_dropdowns(selected_country, n_clear_filter):
 
 
 # --- 10. CALLBACK 2 (CHÍNH): CẬP NHẬT BIỂU ĐỒ ---
-
 @app.callback(
     [Output('map-graph', 'figure'),
      Output('path-output-text', 'children'),
      Output('click-output-text', 'children'),
-     Output('metrics-output-text', 'children')], 
+     Output('metrics-output-text', 'children')],
     [Input('button-find-path', 'n_clicks'),
      Input('button-find-all-paths', 'n_clicks'),
      Input('map-graph', 'clickData'),
@@ -346,9 +345,9 @@ def update_airport_dropdowns(selected_country, n_clear_filter):
     [State('dropdown-source', 'value'),
      State('dropdown-target', 'value'),
      State('dropdown-click-search', 'value'),
-     State('dropdown-country-filter', 'value'), 
+     State('dropdown-country-filter', 'value'),
      State('radio-path-type', 'value'),
-     State('input-max-hops', 'value')] 
+     State('input-max-hops', 'value')]
 )
 def update_map(btn_find_path, btn_find_all_paths,
                clickData, btn_reset, btn_click_search, 
@@ -357,16 +356,12 @@ def update_map(btn_find_path, btn_find_all_paths,
                country_filter, path_type, 
                max_hops): 
 
-    
     ctx = dash.callback_context
     triggered_id = 'N/A'
     if ctx.triggered:
         triggered_id = ctx.triggered[0]['prop_id'].split('.')[0]
 
-   
-    
-    # 1. XÁC ĐỊNH GRAPH ĐANG HOẠT ĐỘNG (ACTIVE_G)
-    # Nếu trigger là Xóa Lọc, ép country_filter về 'ALL'
+    # 1. LỌC GRAPH 
     if triggered_id == 'button-clear-filter':
         country_filter = 'ALL' 
 
@@ -381,8 +376,7 @@ def update_map(btn_find_path, btn_find_all_paths,
         active_G = G.subgraph(nodes_to_keep)
         active_POS = {node: POS[node] for node in nodes_to_keep}
 
-    # 2. LUÔN TÍNH TOÁN METRICS
-   
+    # 2. TÍNH METRICS 
     metrics = graph_metrics(active_G)
     metrics_text = (
         f"--- THỐNG KÊ MẠNG LƯỚI ĐANG XEM ---\n"
@@ -392,16 +386,11 @@ def update_map(btn_find_path, btn_find_all_paths,
         f"Mật độ mạng lưới: {metrics['density']:.4f}\n"
         f"Số đường bay TB (mỗi sân bay): {metrics['average_degree']:.2f}"
     )
-   
 
     # 3. XỬ LÝ CÁC TRIGGER
-    
-    #  Xử lý khi TẢI TRANG LẦN ĐẦU
     if not ctx.triggered:
-        # Trả về metrics_text (đã được tính ở trên)
         return dash.no_update, " ", " ", metrics_text
 
-    # (Các trigger còn lại giữ nguyên)
     if triggered_id == 'button-reset' or triggered_id == 'button-clear-filter':
         return create_graph_figure(G, POS, node_colors_dict={}, highlight_edges=[]), " ", " ", metrics_text
 
@@ -410,7 +399,6 @@ def update_map(btn_find_path, btn_find_all_paths,
 
     # (Tìm 1 đường bay)
     if triggered_id == 'button-find-path' and source_node and target_node:
-        # (Phần này không thay đổi, trả về dash.no_update cho metrics)
         if source_node not in active_G:
             return dash.no_update, f"Lỗi: Sân bay đi {source_node} không thuộc quốc gia đã chọn.", " ", dash.no_update
         if target_node not in active_G:
@@ -441,40 +429,56 @@ def update_map(btn_find_path, btn_find_all_paths,
         except Exception as e:
             return dash.no_update, f"Lỗi thuật toán: {e}", " ", dash.no_update
 
+   
     # (Tìm TẤT CẢ đường bay)
     if triggered_id == 'button-find-all-paths' and source_node and target_node:
-        # (Phần này không thay đổi, trả về dash.no_update cho metrics)
+        print(f"Đang tìm TẤT CẢ đường bay (max hops={max_hops}) từ {source_node} đến {target_node}...")
+        
         if max_hops is None or not (2 <= int(max_hops) <= 7):
              return dash.no_update, f"Lỗi: Vui lòng đặt 'Số chặng tối đa' từ 2 đến 7.", " ", dash.no_update
+        
         try:
+            # 1. TÌM TẤT CẢ ĐƯỜNG BAY
             paths_list = all_paths(active_G, source_node, target_node, max_hops=int(max_hops))
+            
             if not paths_list:
                 node_colors = {source_node: 'red', target_node: 'red'}
                 figure = create_graph_figure(active_G, active_POS, node_colors_dict=node_colors, highlight_edges=[])
                 return figure, f"Không tìm thấy đường bay nào (max {max_hops} chặng) giữa {source_node} và {target_node}.", " ", dash.no_update
 
+            # 2. SẮP XẾP
             def get_path_distance(path):
                 dist = 0
                 for i in range(len(path) - 1):
                     dist += active_G[path[i]][path[i+1]].get('weight', 0)
                 return dist
-            paths_list.sort(key=get_path_distance)
+            paths_list.sort(key=get_path_distance) 
             
+            # 3. TẠO OUTPUT TEXT (Liệt kê 5 đường)
             output_text = f"Tìm thấy {len(paths_list)} đường bay (tối đa {max_hops} chặng).\nHiển thị 5 đường ngắn nhất (theo KM):\n"
-            for path in paths_list[:5]:
+            for path in paths_list[:5]: # Lặp qua 5 đường ngắn nhất
                 dist = get_path_distance(path)
                 output_text += f"  - ({len(path)-1} chặng, {dist:.2f} km): {' -> '.join(path)}\n"
             
-            first_path = paths_list[0]
+            # 4.  HIGHLIGHT CHỈ 1 ĐƯỜNG NGẮN NHẤT
+            first_path = paths_list[0] 
             path_edges = list(zip(first_path[:-1], first_path[1:]))
             node_colors = {node: 'red' for node in first_path}
-            node_colors[source_node] = 'green'; node_colors[target_node] = 'green'
-            figure = create_graph_figure(active_G, active_POS, node_colors_dict=node_colors, highlight_edges=path_edges)
+            node_colors[source_node] = 'green'
+            node_colors[target_node] = 'green'
+            
+            # 5. VẼ LẠI BIỂU ĐỒ 
+            figure = create_graph_figure(active_G, active_POS, 
+                                         node_colors_dict=node_colors, 
+                                         highlight_edges=path_edges) 
+            
             return figure, output_text, " ", dash.no_update
+
         except Exception as e:
             return dash.no_update, f"Lỗi: {e}", " ", dash.no_update
+   
 
-    # (Click/Gõ tìm)
+    # (Click/Gõ )
     def handle_click_search(node_iata, node_name):
         if node_iata not in active_G:
             return dash.no_update, " ", f"Lỗi: Sân bay {node_iata} không có trong graph đã lọc.", dash.no_update
