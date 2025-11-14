@@ -143,12 +143,14 @@ if __name__ == "__main__":
     try:
         while True:
             flights_live = []
-            for code in airline_codes:
+            for i, code in enumerate(airline_codes, 1):
+                print(f"[{i}/{len(airline_codes)}] Lấy flighttracker cho: {code}")
                 flights_live.extend(client.get_flight_tracker(code))
             client.save_to_csv(flights_live, "flight_tracker_live_vn")
 
             all_realtime_live = []
-            for codeIataAirport in airport_codes:
+            for i, codeIataAirport in enumerate(airport_codes, 1):
+                print(f"[{i}/{len(airport_codes)}] Lấy realtime cho: {codeIataAirport}")
                 data = client.get_real_time_schedules(codeIataAirport)
                 if data: 
                     all_realtime_live.extend(data)
