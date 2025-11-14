@@ -31,19 +31,7 @@ Số hiệu chuyến bay
 
 Use case: Airport departure/arrival boards, booking platforms
 
-# 3. HISTORICAL SCHEDULES API (API mở rộng thêm)
-Mô tả: Lịch sử lịch bay của sân bay (dữ liệu quá khứ). So sánh dữ liệu real-time với quá khứ (biến động đường bay, delay, cancelled, ...)
-Dữ liệu:
-
-Lịch sử trạng thái: landed, cancelled, delayed, unknown
-Thời gian thực tế vs dự kiến
-Số phút delay
-Terminal & Gate lịch sử
-Lọc theo date range (tối đa 30 ngày/lần)
-
-Use case: Flight delay claims, performance analysis, statistics
-
-# 4. AIRLINE ROUTES API
+# 3. AIRLINE ROUTES API
 Mô tả: Tất cả tuyến bay của các hãng hàng không. Tạo tuyến bay (edges) trong đồ thị
 Dữ liệu:
 
@@ -56,7 +44,7 @@ Số đăng ký máy bay
 
 Use case: Route analysis, competitor research, network planning
 
-# 5. NEARBY AIRPORTS API (API mở rộng thêm)
+# 4. NEARBY AIRPORTS API (API mở rộng thêm)
 Mô tả: Tìm sân bay/thành phố gần tọa độ GPS / Tìm các sân bay gần một điểm tọa độ (lat/lng).
 Dữ liệu:
 
@@ -69,7 +57,7 @@ Quốc gia
 
 Use case: Alternative airports, travel apps, location-based services
 
-# 6. AUTOCOMPLETE API
+# 5. AUTOCOMPLETE API
 Mô tả: Gợi ý tìm kiếm (tên) sân bay/thành phố khi gõ
 Dữ liệu:
 
@@ -82,7 +70,7 @@ Timezone
 
 Use case: Search boxes, booking forms, user input assistance
 
-# 7. AIRPORTS DATABASE API
+# 6. AIRPORTS DATABASE API
 Mô tả: Database tất cả sân bay, helipad, seaport thế giới. Cung cấp toạ độ & tên sân bay (nodes)
 Dữ liệu:
 
@@ -98,7 +86,7 @@ Danh sách tuyến bay
 
 Use case: Airport lookups, mapping, travel apps
 
-# 8. CITY DATABASE API
+# 7. CITY DATABASE API
 Mô tả: Database tất cả thành phố có liên quan hàng không. Gắn sân bay vào thành phố tương ứng.
 Dữ liệu:
 
@@ -112,9 +100,9 @@ Tên dịch
 
 Use case: City lookups, travel planning
 
-# 9. AIRLINE DATABASE API
-
-
+# 8. AIRLINE DATABASE API
+Mô tả: Database hãng bay
+...
 ======================================================================================================
  
  1. FLIGHT TRACKER API
@@ -151,36 +139,7 @@ Example:
 http://aviation-edge.com/v2/public/timetable?key=YOUR_KEY&iataCode=HAN&type=departure
 http://aviation-edge.com/v2/public/timetable?key=YOUR_KEY&iataCode=SGN&type=arrival
 
-3. HISTORICAL SCHEDULES API (nên bỏ)
-Endpoint: http://aviation-edge.com/v2/public/flightsHistory
-Parameters:
-
-key - API key (required)
-iataCode - IATA code sân bay (required)
-type - "departure" hoặc "arrival" (required)
-date_from - Ngày bắt đầu YYYY-MM-DD (required)
-date_to - Ngày kết thúc YYYY-MM-DD (required, max 30 days range)
-status - Lọc theo trạng thái (optional): cancelled, delayed, landed
-
-Example:
-http://aviation-edge.com/v2/public/flightsHistory?key=YOUR_KEY&iataCode=HAN&type=departure&date_from=2025-10-01&date_to=2025-10-31
-http://aviation-edge.com/v2/public/flightsHistory?key=YOUR_KEY&iataCode=SGN&type=arrival&date_from=2025-10-01&date_to=2025-10-15&status=delayed
-
-3B. FLIGHT HISTORY API (Alternative)
-Endpoint: http://aviation-edge.com/v2/public/flightHistory
-Parameters:
-
-key - API key (required)
-code - Flight code hoặc Airport code (required)
-type - "flight" hoặc "airport" (required)
-date_from - Ngày bắt đầu YYYY-MM-DD (required)
-date_to - Ngày kết thúc YYYY-MM-DD (required)
-
-Example:
-http://aviation-edge.com/v2/public/flightHistory?key=YOUR_KEY&code=VN123&type=flight&date_from=2025-10-01&date_to=2025-10-31
-http://aviation-edge.com/v2/public/flightHistory?key=YOUR_KEY&code=HAN&type=airport&date_from=2025-10-01&date_to=2025-10-31
-
-4. AIRLINE ROUTES API
+3. AIRLINE ROUTES API
 Endpoint: http://aviation-edge.com/v2/public/routes
 Parameters:
 
@@ -197,7 +156,7 @@ http://aviation-edge.com/v2/public/routes?key=YOUR_KEY&airlineIata=VN
 http://aviation-edge.com/v2/public/routes?key=YOUR_KEY&departureIata=HAN&arrivalIata=BKK
 http://aviation-edge.com/v2/public/routes?key=YOUR_KEY&departureIata=HAN
 
-5. NEARBY AIRPORTS API
+4. NEARBY AIRPORTS API
 Endpoint: http://aviation-edge.com/v2/public/nearby
 Parameters:
 
@@ -210,7 +169,7 @@ Example:
 http://aviation-edge.com/v2/public/nearby?key=YOUR_KEY&lat=21.0285&lng=105.8542&distance=100
 http://aviation-edge.com/v2/public/nearby?key=YOUR_KEY&lat=10.8231&lng=106.6297&distance=50
 
-6. AUTOCOMPLETE API
+5. AUTOCOMPLETE API
 Endpoint: http://aviation-edge.com/v2/public/autocomplete
 Parameters:
 
@@ -222,7 +181,7 @@ http://aviation-edge.com/v2/public/autocomplete?key=YOUR_KEY&name=han
 http://aviation-edge.com/v2/public/autocomplete?key=YOUR_KEY&name=saigon
 http://aviation-edge.com/v2/public/autocomplete?key=YOUR_KEY&name=JFK
 
-7. AIRPORTS DATABASE API
+6. AIRPORTS DATABASE API
 Endpoint: http://aviation-edge.com/v2/public/airportDatabase
 Parameters:
 
@@ -239,7 +198,7 @@ http://aviation-edge.com/v2/public/airportDatabase?key=YOUR_KEY&codeIataAirport=
 http://aviation-edge.com/v2/public/airportDatabase?key=YOUR_KEY&codeIso2Country=VN
 http://aviation-edge.com/v2/public/airportDatabase?key=YOUR_KEY&codeIataCity=HAN
 
-8. CITY DATABASE API
+7. CITY DATABASE API
 Endpoint: http://aviation-edge.com/v2/public/cityDatabase
 Parameters:
 
@@ -254,7 +213,7 @@ http://aviation-edge.com/v2/public/cityDatabase?key=YOUR_KEY&codeIataCity=HAN
 http://aviation-edge.com/v2/public/cityDatabase?key=YOUR_KEY&codeIso2Country=VN
 
 
-9. AIRLINE DATABASE API
+8. AIRLINE DATABASE API
 Endmoint: https://aviation-edge.com/v2/public/airlineDatabase
 
 Example: https://aviation-edge.com/v2/public/airlineDatabase?key=96b7d0-5b0bc0

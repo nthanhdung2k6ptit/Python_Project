@@ -49,7 +49,6 @@ class AviationEdgeAPI:
         return self._make_request("countryDatabase")
     
     def _clean_params(self, params):
-        #Loại bỏ các param có giá trị None.
         return {k: v for k, v in params.items() if v is not None}
     
     def _make_request(self, endpoint, params=None):
@@ -58,27 +57,36 @@ class AviationEdgeAPI:
         cleaned_params = self._clean_params(params)
         cleaned_params["key"] = self.api_key
         url = self.base_url + endpoint
-        try:
-            response = requests.get(url, params=cleaned_params, timeout=15)
-            response.raise_for_status()
-            data = response.json()
-            if isinstance(data, dict) and data.get('error'):
-                print(f"Lỗi từ API Aviation Edge: {data['error']}")
-                return []
-            print(f"--- Lấy dữ liệu {endpoint} thành công! ---")
-            return data
-        except requests.exceptions.HTTPError as e:
-            # Lỗi này xảy ra khi key sai (401), hoặc hết hạn (403)
-            print(f"Lỗi HTTP: {e.response.status_code} - {e}")
-        except requests.exceptions.ConnectionError:
-            print(f"Lỗi kết nối: Không thể kết nối tới server.")
-        except requests.exceptions.Timeout:
-            print("Lỗi: Request hết thời gian chờ (timeout).")
-        except requests.exceptions.JSONDecodeError:
-            print("Lỗi: Không thể phân tích JSON (server có thể trả về HTML).")
-        except requests.exceptions.RequestException as e:
-            print(f"Lỗi request không xác định: {e}") 
-        return None
+
+        for attempt in range(2): 
+            try:
+                response = requests.get(url, params=cleaned_params, timeout=20)
+                response.raise_for_status()
+                data = response.json()
+                if isinstance(data, dict) and data.get('error'):
+                   print(f"Lỗi từ API Aviation Edge: {data['error']}")
+                   return []
+                print(f"--- Lấy dữ liệu {endpoint} thành công! ---")
+                return data
+
+            except requests.exceptions.HTTPError as e:
+                if e.response.status_code == 522:
+                   print(f"Lỗi 522 Server Timeout, thử lại {attempt + 1}/2 ...")
+                else:
+                   print(f"Lỗi HTTP: {e.response.status_code} - {e}")
+                   break
+            except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
+                print(f"Lỗi kết nối/timeout, thử lại {attempt + 1}/2 ...")
+            except requests.exceptions.JSONDecodeError:
+                print("Lỗi: Không thể phân tích JSON.")
+                break
+            except requests.exceptions.RequestException as e:
+                print(f"Lỗi request không xác định: {e}") 
+                break
+
+            time.sleep(2)  # đợi 2 giây trước khi thử lại
+        print(f"Không lấy được dữ liệu từ {endpoint} sau 1 lần thử lại.")
+        return []
     
     def save_to_csv(self, data, filename):
         if not data:
@@ -197,40 +205,58 @@ if __name__ == "__main__":
     client.save_to_csv(nearby, "nearby_airports_raw")
  
     # Phần tự động cập nhật dữ liệu flight tracker và realtime schedules mỗi 60 giây
-    print("Bắt đầu tự động cập nhật dữ liệu live mỗi 60 giây...")   
+    flight_interval = 60              # 60 giây
+    realtime_interval = 24 * 60 * 60  # 1 ngày
+
+    last_flight_update = 0
+    last_realtime_update = 0
+
+    print("Bắt đầu tự động cập nhật dữ liệu...")
+
     try:
         while True:
-            print(f"\n--- Bắt đầu lấy dữ liệu ---")
+            now = time.time()
 
-            # 1. Cập nhật Flight Tracker (dựa trên 30 hãng bay)
-            flights_live = []
-            for i, code in enumerate(top_airlines, 1):
-                print(f"[{i}/{len(top_airlines)}] Lấy flighttracker cho: {code}")
-                flights_live.extend(client.get_flight_tracker(code, limit=1000))
-                time.sleep(0.2)
-            client.save_to_csv(flights_live, "flight_tracker_live")
-
-            # 2. Cập nhật Realtime Schedules (dựa trên 100 sân bay)
-            all_realtime_live = []
-            for i, airport in enumerate(all_airports[:100], 1):  
-                airport_code = airport.get("codeIataAirport")
-                country_code = airport.get("codeIso2Country") 
-
-                if not airport_code:
-                    continue
+            # 1. FLIGHT TRACKER → cập nhật mỗi 60 giây
+            if now - last_flight_update >= flight_interval:
+                print("\n--- CẬP NHẬT FLIGHT TRACKER (60 giây) ---")
                 
-                print(f"[{i}/{len(all_airports[:100])}] Lấy realtime cho: {airport_code}, Quốc gia: ({country_code})")
-                data = client.get_real_time_schedules(airport_code)
-                if data:
-                    all_realtime_live.extend(data)
-                time.sleep(0.2)
-            client.save_to_csv(all_realtime_live, "realtime_schedules_live")
-            
-            print("Đã cập nhật dữ liệu live. Chờ 60 giây để cập nhật tiếp theo...")
-            time.sleep(60)
+                flights_live = []
+                for i, code in enumerate(top_airlines, 1):
+                    print(f"[{i}/{len(top_airlines)}] Lấy flight tracker: {code}")
+                    flight_data = client.get_flight_tracker(code, limit=500)
+                    if flight_data is not None:
+                        flights_live.extend(flight_data)
+                    time.sleep(0.6)
+
+                client.save_to_csv(flights_live, "flight_tracker_live")
+                last_flight_update = now
+                print("Đã cập nhật Flight Tracker. Chờ 60s đến lần cập nhật tiếp theo.")
+                
+
+            # 2. REALTIME SCHEDULES → cập nhật 1 lần 1 ngày
+            if now - last_realtime_update >= realtime_interval:
+                print("\n--- CẬP NHẬT REALTIME SCHEDULES (1 ngày) ---")
+
+                all_realtime_live = []
+                for i, airport in enumerate(all_airports[:100], 1):
+                    airport_code = airport.get("codeIataAirport") 
+                    if not airport_code:
+                        continue
+
+                    print(f"[{i}/{len(all_airports[:100])}] Lấy realtime cho: {airport_code}")
+                    data = client.get_real_time_schedules(airport_code)
+                    if data:
+                        all_realtime_live.extend(data)
+                    time.sleep(0.6)
+
+                client.save_to_csv(all_realtime_live, "realtime_schedules_live")
+                last_realtime_update = now
+                print("Đã cập nhật Realtime Schedules. Chờ 1 ngày đến lần cập nhật tiếp theo.")
+
+            time.sleep(1)  
 
     except KeyboardInterrupt:
         print("\n--- Dừng chương trình. ---")
     except Exception as e:
-        print(f"\n--- Vòng lặp chính bị lỗi: {e} ---")
-
+        print(f"\n--- Lỗi trong vòng lặp chính: {e} ---")

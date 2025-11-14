@@ -1,10 +1,8 @@
-# Tạo menu chọn thành phố
 
 import sys
 from pathlib import Path
 project_root = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(project_root))
-
 import streamlit as st
 from streamlit_folium import folium_static
 from src.visualization_map.map_routes import create_flight_map
@@ -16,14 +14,11 @@ st.title("🛫 Flight Network - Real Routes Visualization")
 df_airports = load_airports()
 df_cities = load_cities()
 
-tab1, tab2, tab3 = st.tabs(['Xem trên map theo sân bay toàn cầu', 'Xem trên map sân bay theo khu vực', 'Xem trên map có những chuyến bay hiện tại'])
+tab1, tab2, tab3 = st.tabs(['Xem trên map theo sân bay toàn cầu', 'Xem trên map sân bay theo khu vực', 'Ứng dụng'])
 with tab1:
     st.markdown("Xem các đường bay thực tế trên bản đồ thế giới, xuất phát từ một thành phố cụ thể hoặc toàn cầu.")
 
-
-    # build fast lookup iata -> country (normalize column names first)
     if not df_airports.empty:
-        # ensure column name is 'country'
         if 'nameCountry' in df_airports.columns and 'country' not in df_airports.columns:
             df_airports = df_airports.rename(columns={'nameCountry': 'country'})
         df_airports['iata_code'] = df_airports['iata_code'].astype(str).str.upper().str.strip()
@@ -46,14 +41,12 @@ with tab1:
         iata_field = str(r.get('city_iata','') or '')
         iata_list = [s.strip().upper() for s in iata_field.replace(';',',').split(',') if s.strip()]
 
-        # prefer airport-derived country via iata map
         country_full = ""
         for i in iata_list:
             if i in iata_country and iata_country[i]:
                 country_full = str(iata_country[i]).strip()
                 break
 
-        # fallback to city raw_country if still empty
         if not country_full and raw_country:
             country_full = raw_country
 
@@ -75,11 +68,11 @@ with tab1:
         unsafe_allow_html=True,
     )
     selected_city = st.selectbox("Chọn thành phố khởi hành (bỏ trống để chọn toàn cầu):", city_options)
+    
     selected_iatas = city_map.get(selected_city, []) if selected_city else []
 
     if st.button("Hiển thị đường bay"):
         st.info(f"Đang hiển thị các đường bay xuất phát từ thành phố {selected_city or 'trên TOÀN CẦU'} ...")
-        # pass list of IATA codes to map generator
         m = create_flight_map(departure_city_iatas = selected_iatas) 
         col_left, col_center, col_right = st.columns([1,6,1])
         with col_center:
@@ -91,15 +84,13 @@ with tab2:
 
     airports_df = df_airports.copy()
     airports_df['iata_code'] = airports_df['iata_code'].astype(str).str.upper().str.strip()
-
     countries = sorted(airports_df['country'].dropna().unique().tolist())
     chosen_countries = st.multiselect("Chọn quốc gia để mô phỏng khu vực:", countries, default=[])
+    
     airports_region = airports_df[airports_df['country'].isin(chosen_countries)].copy() if chosen_countries else airports_df.copy()
-
     region_iatas_set = set(airports_region['iata_code'].astype(str).str.upper().dropna().unique())
 
     st.markdown("<div style='max-width:520px;margin:0 auto;'>", unsafe_allow_html=True)
-    # build city dropdown but only cities that have at least one IATA inside region
     region_city_map = {}
     for _, r in df_cities.iterrows():
         city = str(r.get('city_name','')).strip()
@@ -125,7 +116,6 @@ with tab2:
             st.warning("Chưa chọn khu vực hoặc khu vực không có sân bay trong dữ liệu.")
         else:
             status = st.info("Đang nạp dữ liệu khu vực...")
-            # compute arrivals from selected city (tham khảo file routes)
             arrivals_valid = set()
             if sel_iatas_reg:
                 routes_path = project_root / "data" / "cleaned" / "routes_cleaned.csv"
@@ -135,14 +125,13 @@ with tab2:
                         df_routes['departure_iata'] = df_routes['departure_iata'].astype(str).str.upper().str.strip()
                         df_routes['arrival_iata'] = df_routes['arrival_iata'].astype(str).str.upper().str.strip()
                         arrivals_from_selected = set(df_routes[df_routes['departure_iata'].isin([s.upper() for s in sel_iatas_reg])]['arrival_iata'].unique())
-                        # only keep arrivals that exist in master airports list
+                        
                         arrivals_valid = {a for a in arrivals_from_selected if a in set(df_airports['iata_code'].astype(str).str.upper())}
                     except Exception as e:
                         st.error("Không đọc được routes file để tìm điểm đến; sẽ chỉ hiện sân bay trong khu vực đã chọn.")
                 else:
                     st.caption("Không tìm thấy routes_cleaned.csv — sẽ chỉ hiện sân bay trong khu vực đã chọn.")
 
-            # allowed = tất cả sân bay trong region + arrivals từ selected city + selected departure iatas
             allowed_iatas = set(region_iatas_set)
             allowed_iatas.update(arrivals_valid)
             allowed_iatas.update([s.upper() for s in sel_iatas_reg])
@@ -158,8 +147,4 @@ with tab2:
                 with c2:
                     folium_static(m, width=900, height=650)
                 st.success("Đã tải xong bản đồ khu vực được chọn, có thể xem ngay bây giờ <3.")
-       
-from src.visualization_map.map_routes import create_flight_map, create_realtime_map
-with tab3:
-    st.markdown("Xem các chuyến bay hiện tại đến và đi từ một sân bay cụ thể.")
     
