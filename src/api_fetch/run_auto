@@ -29,27 +29,36 @@ class AviationEdgeAPI:
         cleaned_params["key"] = self.api_key
         url = self.base_url + endpoint
 
-        try:
-            response = requests.get(url, params=cleaned_params, timeout=20)
-            response.raise_for_status()
-            data = response.json()
-            if isinstance(data, dict) and data.get('error'):
-                print(f"Lỗi từ API Aviation Edge: {data['error']}")
-                return []
-            print(f"--- Lấy dữ liệu {endpoint} thành công! ---")
-            return data
+        for attempt in range(2): 
+            try:
+                response = requests.get(url, params=cleaned_params, timeout=20)
+                response.raise_for_status()
+                data = response.json()
+                if isinstance(data, dict) and data.get('error'):
+                   print(f"Lỗi từ API Aviation Edge: {data['error']}")
+                   return []
+                print(f"--- Lấy dữ liệu {endpoint} thành công! ---")
+                return data
 
-        except requests.exceptions.HTTPError as e:
-            print(f"Lỗi HTTP: {e.response.status_code} - {e}")
-        except requests.exceptions.ConnectionError:
-            print("Lỗi kết nối: Không thể kết nối tới server.")
-        except requests.exceptions.Timeout:
-            print("Lỗi: Request hết thời gian chờ (timeout).")
-        except requests.exceptions.JSONDecodeError:
-            print("Lỗi: Không thể phân tích JSON.")
-        except requests.exceptions.RequestException as e:
-            print(f"Lỗi request không xác định: {e}") 
-        return None
+            except requests.exceptions.HTTPError as e:
+                if e.response.status_code == 522:
+                   print(f"Lỗi 522 Server Timeout, thử lại {attempt + 1}/2 ...")
+                else:
+                   print(f"Lỗi HTTP: {e.response.status_code} - {e}")
+                   break
+            except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
+                print(f"Lỗi kết nối/timeout, thử lại {attempt + 1}/2 ...")
+            except requests.exceptions.JSONDecodeError:
+                print("Lỗi: Không thể phân tích JSON.")
+                break
+            except requests.exceptions.RequestException as e:
+                print(f"Lỗi request không xác định: {e}") 
+                break
+
+            time.sleep(2)  # đợi 2 giây trước khi thử lại
+
+        print(f"Không lấy được dữ liệu từ {endpoint} sau 1 lần thử lại.")
+        return []  
     
     def save_to_csv(self, data, filename):
         if not data:
@@ -76,18 +85,11 @@ class AviationEdgeAPI:
         except Exception as e:
             print(f"Lỗi khi lưu {filename}: {e}")
 
-
-#                     CHƯƠNG TRÌNH CHÍNH
+#  CHƯƠNG TRÌNH CHÍNH
 
 if __name__ == "__main__":
     api_key = "96b7d0-5b0bc0"  
     client = AviationEdgeAPI(api_key)
-
-    # --- LẤY DANH SÁCH QUỐC GIA --- 
-    countries = client.get_country_database()
-    if not countries:
-        print("Không thể lấy danh sách quốc gia. Dừng chương trình.")
-        exit()
 
     # Danh sách 30 hãng bay lớn nhất
     top_airlines = [
@@ -136,12 +138,11 @@ if __name__ == "__main__":
 
                 all_realtime_live = []
                 for i, airport in enumerate(all_airports[:100], 1):
-                    airport_code = airport.get("codeIataAirport")
-                    country_code = airport.get("codeIso2Country") 
+                    airport_code = airport.get("codeIataAirport") 
                     if not airport_code:
                         continue
 
-                    print(f"[{i}/{len(all_airports[:100])}] Lấy realtime cho: {airport_code}, Quốc gia: ({country_code})")
+                    print(f"[{i}/{len(all_airports[:100])}] Lấy realtime cho: {airport_code}")
                     data = client.get_real_time_schedules(airport_code)
                     if data:
                         all_realtime_live.extend(data)
