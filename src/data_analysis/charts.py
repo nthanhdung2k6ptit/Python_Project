@@ -1,7 +1,7 @@
 # Biểu đồ (bar, pie, top 10)
 
 import pandas as pd
-import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt 
 import seaborn as sns
 import os
 import sys
