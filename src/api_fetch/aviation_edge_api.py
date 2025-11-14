@@ -12,9 +12,9 @@ class AviationEdgeAPI:
         self.api_key = api_key
         self.base_url = "http://aviation-edge.com/v2/public/"
 
-    def get_flight_tracker(self, airline_iata=None, limit=100, offset=0):
+    def get_flight_tracker(self, airline_iata=None, limit=1000):
         if airline_iata is None: return []
-        return self._make_request("flights", {"airlineIata": airline_iata, "limit": limit, "offset": offset})
+        return self._make_request("flights", {"airlineIata": airline_iata, "limit": limit})
     
     def get_real_time_schedules(self, airport_iata_code, schedule_type=None):
         return self._make_request("timetable", {"iataCode": airport_iata_code, "type": schedule_type})
