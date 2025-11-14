@@ -150,12 +150,10 @@ if __name__ == "__main__":
     # Phần tự động cập nhật dữ liệu flight tracker và realtime schedules mỗi 60 giây
     flight_interval = 60              # 60 giây
     realtime_interval = 24 * 60 * 60  # 1 ngày
-
     last_flight_update = 0
     last_realtime_update = 0
 
     print("Bắt đầu tự động cập nhật dữ liệu...")
-
     try:
         while True:
             now = time.time()
@@ -170,7 +168,6 @@ if __name__ == "__main__":
                     if flight_data is not None:
                         flights_live.extend(flight_data)
                     time.sleep(0.6)
-
                 client.save_to_csv(flights_live, "flight_tracker_live_vn")
                 last_flight_update = now
                 print("Đã cập nhật Flight Tracker. Chờ 60s đến lần cập nhật tiếp theo.")
@@ -185,7 +182,6 @@ if __name__ == "__main__":
                     if data: 
                        all_realtime_live.extend(data)
                     time.sleep(0.6)
-
                 client.save_to_csv(all_realtime_live, "realtime_schedules_live_vn")
                 last_realtime_update = now
                 print("Đã cập nhật Realtime Schedules. Chờ 1 ngày đến lần cập nhật tiếp theo.")

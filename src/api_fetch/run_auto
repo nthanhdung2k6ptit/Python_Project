@@ -16,8 +16,11 @@ class AviationEdgeAPI:
     def get_real_time_schedules(self, airport_iata_code, schedule_type=None):
         return self._make_request("timetable", {"iataCode": airport_iata_code, "type": schedule_type})
     
-    def get_country_database(self):
-        return self._make_request("countryDatabase")
+    def get_airports_database(self, code_iso2_country="VN"): 
+        return self._make_request("airportDatabase", {"codeIso2Country": code_iso2_country})
+    
+    def get_airline_database(self, code_iso2_country="VN"):
+        return self._make_request("airlineDatabase", {"codeIso2Country": code_iso2_country})
     
     def _clean_params(self, params):
         return {k: v for k, v in params.items() if v is not None}
@@ -68,7 +71,7 @@ class AviationEdgeAPI:
         # Xác định đường dẫn lưu file
         current_script_dir = os.path.dirname(os.path.abspath(__file__))
         project_root = os.path.dirname(os.path.dirname(current_script_dir))
-        folder_path = os.path.join(project_root, 'data', 'raw')
+        folder_path = os.path.join(project_root, 'data', 'raw_vn')
         os.makedirs(folder_path, exist_ok=True)
         file_path = os.path.join(folder_path, f"{filename}.csv")
 
@@ -91,64 +94,48 @@ if __name__ == "__main__":
     api_key = "96b7d0-5b0bc0"  
     client = AviationEdgeAPI(api_key)
 
-    # Danh sách 30 hãng bay lớn nhất
-    top_airlines = [
-        "AA","DL","UA","WN","EK","LH","AF","BA","CX","QR",
-        "CZ","MU","CA","SQ","TK","JL","KE","NH","QF","SU",
-        "AC","AS","B6","F9","FR","EY","KL","AI","BR","SK"
-    ]
+    airports_vn = client.get_airports_database()
+    airlines_vn = client.get_airline_database()
+    
+    airline_codes = [a["codeIataAirline"] for a in airlines_vn if a.get("codeIataAirline")]
+    airport_codes = [a["codeIataAirport"] for a in airports_vn if a.get("codeIataAirport")]
 
-    # Đọc danh sách sân bay
-    all_airports = pd.read_csv("data/raw/airport_db_raw.csv").to_dict(orient="records")
-    random.shuffle(all_airports)
-
-    # ---------------- TIMER SETUP ----------------
-    FLIGHT_INTERVAL = 60              # 60 giây
-    REALTIME_INTERVAL = 24 * 60 * 60  # 1 ngày
-
+    # Phần tự động cập nhật dữ liệu flight tracker và realtime schedules mỗi 60 giây
+    flight_interval = 60              # 60 giây
+    realtime_interval = 24 * 60 * 60  # 1 ngày
     last_flight_update = 0
     last_realtime_update = 0
 
     print("Bắt đầu tự động cập nhật dữ liệu...")
-
     try:
         while True:
             now = time.time()
 
             # 1. FLIGHT TRACKER → cập nhật mỗi 60 giây
-            if now - last_flight_update >= FLIGHT_INTERVAL:
+            if now - last_flight_update >= flight_interval:
                 print("\n--- CẬP NHẬT FLIGHT TRACKER (60 giây) ---")
-                
                 flights_live = []
-                for i, code in enumerate(top_airlines, 1):
-                    print(f"[{i}/{len(top_airlines)}] Lấy flight tracker: {code}")
-                    flight_data = client.get_flight_tracker(code, limit=500)
-                    if flight_data is not None:
+                for i, code in enumerate(airline_codes, 1):
+                    print(f"[{i}/{len(airline_codes)}] Lấy flighttracker cho: {code}")
+                    flight_data = client.get_flight_tracker(code, limit=300)
+                    if flight_data:
                         flights_live.extend(flight_data)
                     time.sleep(0.6)
-
-                client.save_to_csv(flights_live, "flight_tracker_live")
+                client.save_to_csv(flights_live, "flight_tracker_live_vn")
                 last_flight_update = now
                 print("Đã cập nhật Flight Tracker. Chờ 60s đến lần cập nhật tiếp theo.")
-                
 
             # 2. REALTIME SCHEDULES → cập nhật 1 lần 1 ngày
-            if now - last_realtime_update >= REALTIME_INTERVAL:
+            if now - last_realtime_update >= realtime_interval:
                 print("\n--- CẬP NHẬT REALTIME SCHEDULES (1 ngày) ---")
-
                 all_realtime_live = []
-                for i, airport in enumerate(all_airports[:100], 1):
-                    airport_code = airport.get("codeIataAirport") 
-                    if not airport_code:
-                        continue
-
-                    print(f"[{i}/{len(all_airports[:100])}] Lấy realtime cho: {airport_code}")
-                    data = client.get_real_time_schedules(airport_code)
-                    if data:
-                        all_realtime_live.extend(data)
+                for i, codeIataAirport in enumerate(airport_codes, 1):
+                    print(f"[{i}/{len(airport_codes)}] Lấy realtime cho: {codeIataAirport}")
+                    data = client.get_real_time_schedules(codeIataAirport)
+                    if data: 
+                       all_realtime_live.extend(data)
                     time.sleep(0.6)
-
-                client.save_to_csv(all_realtime_live, "realtime_schedules_live")
+                client.save_to_csv(all_realtime_live, "realtime_schedules_live_vn")
                 last_realtime_update = now
                 print("Đã cập nhật Realtime Schedules. Chờ 1 ngày đến lần cập nhật tiếp theo.")
 
