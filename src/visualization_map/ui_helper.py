@@ -1,4 +1,3 @@
-# Gộp 2 file airports cho dropdown chọn thành phố và lọc routes
 
 import pandas as pd
 import os

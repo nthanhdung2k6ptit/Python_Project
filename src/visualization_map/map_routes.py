@@ -3,6 +3,7 @@ import pandas as pd
 import folium
 import os
 
+
 def create_flight_map(
     base_path = "data/cleaned",
     output_path = "data/reports/flight_routes_map.html",
