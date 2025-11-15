@@ -255,7 +255,7 @@ app.layout = html.Div(style={'fontFamily': 'Arial'}, children=[
         ]),
         
         html.Label("Số chặng tối đa (cho 'Tìm tất cả'):", style={'marginTop': '10px'}),
-        dcc.Input(id='input-max-hops', type='number', value=4, min=2, max=7, style={'width': '100px', 'marginRight': '10px'}),
+        dcc.Input(id='input-max-hops', type='number', value=4, min=2, max=7, style={'width': '100px', 'marginRight': '10px'}), # số chặng tối đa
         
         html.Button('Tìm 1 đường bay', id='button-find-path', n_clicks=0, style={'marginTop': '10px', 'padding': '10px'}),
         html.Button('Tìm TẤT CẢ đường bay', id='button-find-all-paths', n_clicks=0, style={'marginTop': '10px', 'marginLeft': '10px', 'padding': '10px'}),
