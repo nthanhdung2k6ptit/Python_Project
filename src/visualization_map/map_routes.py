@@ -1,10 +1,7 @@
 
 import pandas as pd
 import folium
-from folium.plugins import AntPath
 import os
-from typing import Optional, Iterable
-
 
 def create_flight_map(
     base_path = "data/cleaned",
