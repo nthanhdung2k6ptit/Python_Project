@@ -196,7 +196,7 @@ def create_graph_figure(graph, node_colors_dict={}, highlight_edges=[]):
         showlegend=False,
         # 'geo' là cài đặt cho 'Scattergeo'
         geo=dict(
-            projection_type='orthographic', # <-- Đây là dòng tạo ra hiệu ứng 3D
+            projection_type='orthographic', # 3D nằm ở đây chứ đâu
             showland=True,
             landcolor='rgb(217, 217, 217)',
             showcountries=True,
