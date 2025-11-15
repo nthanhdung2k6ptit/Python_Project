@@ -5884,13 +5884,6 @@
       "id": "WLE"
     },
     {
-      "name": "West Angelas Airport",
-      "country": "Australia",
-      "lat": NaN,
-      "lon": NaN,
-      "id": "WLP"
-    },
-    {
       "name": "Toowoomba Wellcamp Airport",
       "country": "Australia",
       "lat": -27.558332,
@@ -18036,13 +18029,6 @@
       "id": "YKH"
     },
     {
-      "name": "Yutian Airport",
-      "country": "China",
-      "lat": NaN,
-      "lon": NaN,
-      "id": "YTW"
-    },
-    {
       "name": "Dongji Aiport",
       "country": "China",
       "lat": 48.199494,
@@ -21730,20 +21716,6 @@
       "lat": 57.028811,
       "lon": 9.917771,
       "id": "ZTG"
-    },
-    {
-      "name": "Aarhus Sea Airport",
-      "country": "Denmark",
-      "lat": NaN,
-      "lon": NaN,
-      "id": "QEA"
-    },
-    {
-      "name": "Copenhagen Sea Airport",
-      "country": "Denmark",
-      "lat": NaN,
-      "lon": NaN,
-      "id": "QEC"
     },
     {
       "name": "Cane Field",
@@ -27071,13 +27043,6 @@
       "lat": 56.4094132,
       "lon": -3.447528,
       "id": "ZXP"
-    },
-    {
-      "name": "St. Athan Airport",
-      "country": "United Kingdom",
-      "lat": NaN,
-      "lon": NaN,
-      "id": "DGX"
     },
     {
       "name": "Lasham Airport",
@@ -69169,13 +69134,6 @@
       "lat": 32.5163002014,
       "lon": -84.9389038086,
       "id": "CSG"
-    },
-    {
-      "name": "Bruce Campbell Field",
-      "country": "United States",
-      "lat": NaN,
-      "lon": NaN,
-      "id": "DXE"
     },
     {
       "name": "Austin Executive Airport",
