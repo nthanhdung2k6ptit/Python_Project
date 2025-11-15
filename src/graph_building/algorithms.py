@@ -1,6 +1,5 @@
 import networkx as nx
 
-#hung khec dung file nay bang cach import
 def shortest_path(graph, start, end):
     """Return the path with the fewest hops; if multiple, pick the one with smallest total distance."""
     try:
