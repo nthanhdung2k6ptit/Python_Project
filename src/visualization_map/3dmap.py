@@ -169,8 +169,8 @@ def create_graph_figure(graph, node_colors_dict={}, highlight_edges=[]):
         text=base_texts,
         mode='markers',
         marker=dict(
-            size=3,
-            color='rgba(150, 150, 150, 0.8)',
+            size=5,
+            color='red',
             opacity=0.8
         ),
         hoverinfo='text',
