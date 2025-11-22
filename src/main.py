@@ -6,10 +6,11 @@ import webbrowser
 import os
 import sys
 from functools import lru_cache
+import subprocess
+from pathlib import Path
 
-# Try to use streamlit cache decorator if available, otherwise fallback to lru_cache-wrapper
 try:
-    import streamlit as st  # optional; only used for caching when running via streamlit
+    import streamlit as st
     cache_decorator = st.cache_data
 except Exception:
     def cache_decorator(ttl=None, **kwargs):
@@ -37,14 +38,12 @@ def load_airports_from_csvs(global_path='data/cleaned/airport_db_cleaned.csv',
     if os.path.exists(vn_path):
         parts.append(pd.read_csv(vn_path, dtype=str))
     if not parts:
-        # no files found: return empty dict to keep behavior safe
         return {}
 
     df = pd.concat(parts, ignore_index=True, sort=False)
 
-    # Normalize column names (lowercase keys)
     cols = {c.lower(): c for c in df.columns}
-    # find iata, lat, lon, name candidates
+
     iata_col = None
     for cand in ('iata_code', 'iata', 'iata3', 'iata_code'.lower()):
         if cand in cols:
@@ -67,17 +66,15 @@ def load_airports_from_csvs(global_path='data/cleaned/airport_db_cleaned.csv',
             break
 
     if iata_col is None or lat_col is None or lon_col is None:
-        # missing required columns -> return empty dict
         return {}
 
-    # keep relevant columns and clean
     df = df[[iata_col, lat_col, lon_col] + ([name_col] if name_col else [])].copy()
     df = df.rename(columns={iata_col: 'iata', lat_col: 'lat', lon_col: 'lon', **({name_col: 'name'} if name_col else {})})
     df['iata'] = df['iata'].astype(str).str.strip().str.upper()
-    # coerce lat/lon to numeric
+  
     df['lat'] = pd.to_numeric(df['lat'], errors='coerce')
     df['lon'] = pd.to_numeric(df['lon'], errors='coerce')
-    # drop invalid coordinates or empty iata
+
     df = df[df['iata'].notna() & df['lat'].notna() & df['lon'].notna()]
     df = df.drop_duplicates(subset=['iata'], keep='first')
 
@@ -143,7 +140,7 @@ def create_flight_map(df):
                 icon=folium.Icon(color='red', icon='plane', prefix='fa')
             ).add_to(m)
     
-    # Thêm các máy bay đang bay với AntPath
+
     for idx, flight in active_flights.iterrows():
         lat = flight['geography_latitude']
         lon = flight['geography_longitude']
@@ -215,16 +212,46 @@ def create_flight_map(df):
 def main():
     print("=" * 60)
     print("LIVE FLIGHT TRACKER - VIETNAM AIRLINES")
+
+ 
+    project_root = Path(__file__).resolve().parents[1]
+    run_auto_path = project_root / "src" / "api_fetch" / "run_auto.py"
+    if run_auto_path.exists():
+        print(f"Chạy API fetcher: {run_auto_path}")
+        try:
+            subprocess.run([sys.executable, str(run_auto_path)], check=False, timeout=120)
+            print("Hoàn tất gọi run_auto.py (hoặc đã timeout sau 120s).")
+        except subprocess.TimeoutExpired:
+            print("run_auto.py vượt quá thời gian cho phép (120s). Tiếp tục pipeline.")
+        except Exception as e:
+            print(f"Lỗi khi chạy run_auto.py: {e}")
+    else:
+        print(f"Không tìm thấy run_auto.py tại: {run_auto_path}")
+
+
+    clean_data_path = project_root / "src" / "data_processing" / "clean_data.py"
+    if clean_data_path.exists():
+        print(f"Chạy data cleaner: {clean_data_path}")
+        try:
+            subprocess.run([sys.executable, str(clean_data_path)], check=True)
+            print("Hoàn tất chạy clean_data.py.")
+        except subprocess.CalledProcessError as e:
+            print(f"clean_data.py trả về mã lỗi: {e.returncode}")
+        except Exception as e:
+            print(f"Lỗi khi chạy clean_data.py: {e}")
+    else:
+        print(f"Không tìm thấy clean_data.py tại: {clean_data_path}")
+
     df = load_flight_data()
-    
+
     if df is None:
         return
     total_flights = len(df)
     en_route = len(df[df['status'] == 'en-route'])
     landed = len(df[df['status'] == 'landed'])
-    
+
     print(f"Tổng: {total_flights} | Đang bay: {en_route} | Đã hạ cánh: {landed}")
-    
+
     map_live = create_flight_map(df)
     output_file = 'flight_tracker_live.html'
     map_live.save(output_file)
@@ -233,6 +260,6 @@ def main():
         webbrowser.open('file://' + os.path.realpath(output_file))
     except:
         pass
-    
+
 if __name__ == "__main__":
     main()
