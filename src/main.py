@@ -4,8 +4,22 @@ from folium import plugins
 from folium.plugins import AntPath
 import webbrowser
 import os
+import sys
+from functools import lru_cache
 
+# Try to use streamlit cache decorator if available, otherwise fallback to lru_cache-wrapper
+try:
+    import streamlit as st  # optional; only used for caching when running via streamlit
+    cache_decorator = st.cache_data
+except Exception:
+    def cache_decorator(ttl=None, **kwargs):
+        def _decorator(func):
+            return lru_cache(maxsize=1)(func)
+        return _decorator
+
+@cache_decorator(ttl=30)
 def load_flight_data(csv_path='data/cleaned_vn/flight_tracker_live_vn_cleaned_vn.csv'):
+    """Load flights CSV (cached)"""
     try:
         df = pd.read_csv(csv_path)
         return df
@@ -13,45 +27,75 @@ def load_flight_data(csv_path='data/cleaned_vn/flight_tracker_live_vn_cleaned_vn
         print(f"Error: Không tìm thấy file {csv_path}")
         return None
 
+@cache_decorator(ttl=3600)
+def load_airports_from_csvs(global_path='data/cleaned/airport_db_cleaned.csv',
+                            vn_path='data/cleaned_vn/airport_db_cleaned_vn.csv'):
+    """Load airports from provided CSVs (cached). Return dict iata -> {lat, lon, name}"""
+    parts = []
+    if os.path.exists(global_path):
+        parts.append(pd.read_csv(global_path, dtype=str))
+    if os.path.exists(vn_path):
+        parts.append(pd.read_csv(vn_path, dtype=str))
+    if not parts:
+        # no files found: return empty dict to keep behavior safe
+        return {}
+
+    df = pd.concat(parts, ignore_index=True, sort=False)
+
+    # Normalize column names (lowercase keys)
+    cols = {c.lower(): c for c in df.columns}
+    # find iata, lat, lon, name candidates
+    iata_col = None
+    for cand in ('iata_code', 'iata', 'iata3', 'iata_code'.lower()):
+        if cand in cols:
+            iata_col = cols[cand]
+            break
+    lat_col = None
+    for cand in ('latitude', 'lat', 'geography_latitude'):
+        if cand in cols:
+            lat_col = cols[cand]
+            break
+    lon_col = None
+    for cand in ('longitude', 'lon', 'geography_longitude'):
+        if cand in cols:
+            lon_col = cols[cand]
+            break
+    name_col = None
+    for cand in ('airport_name', 'name', 'airpt_name'):
+        if cand in cols:
+            name_col = cols[cand]
+            break
+
+    if iata_col is None or lat_col is None or lon_col is None:
+        # missing required columns -> return empty dict
+        return {}
+
+    # keep relevant columns and clean
+    df = df[[iata_col, lat_col, lon_col] + ([name_col] if name_col else [])].copy()
+    df = df.rename(columns={iata_col: 'iata', lat_col: 'lat', lon_col: 'lon', **({name_col: 'name'} if name_col else {})})
+    df['iata'] = df['iata'].astype(str).str.strip().str.upper()
+    # coerce lat/lon to numeric
+    df['lat'] = pd.to_numeric(df['lat'], errors='coerce')
+    df['lon'] = pd.to_numeric(df['lon'], errors='coerce')
+    # drop invalid coordinates or empty iata
+    df = df[df['iata'].notna() & df['lat'].notna() & df['lon'].notna()]
+    df = df.drop_duplicates(subset=['iata'], keep='first')
+
+    airport_dict = {}
+    for r in df.itertuples(index=False):
+        iata = getattr(r, 'iata')
+        airport_dict[iata] = {
+            'lat': float(getattr(r, 'lat')),
+            'lon': float(getattr(r, 'lon')),
+            'name': str(getattr(r, 'name', iata)) if 'name' in df.columns else iata
+        }
+    return airport_dict
 
 def get_airport_coordinates():
-    airports = {
-        'SGN': {'lat': 10.8188, 'lon': 106.6519, 'name': 'Tân Sơn Nhất'},
-        'HAN': {'lat': 21.2212, 'lon': 105.8066, 'name': 'Nội Bài'},
-        'DAD': {'lat': 16.0439, 'lon': 108.1994, 'name': 'Đà Nẵng'},
-        'CXR': {'lat': 12.0119, 'lon': 109.2194, 'name': 'Cam Ranh'},
-        'PQC': {'lat': 10.1698, 'lon': 103.9932, 'name': 'Phú Quốc'},
-        'HPH': {'lat': 20.8194, 'lon': 106.7250, 'name': 'Cát Bi'},
-        'HUI': {'lat': 16.4015, 'lon': 107.7033, 'name': 'Huế'},
-        'UIH': {'lat': 13.9550, 'lon': 109.0422, 'name': 'Quy Nhơn'},
-        'VCA': {'lat': 12.2165, 'lon': 109.1926, 'name': 'Vân Đồn'},
-        'DLI': {'lat': 11.7503, 'lon': 108.3672, 'name': 'Đà Lạt'},
-        'TBB': {'lat': 12.6306, 'lon': 107.3547, 'name': 'Tuy Hòa'},
-        'BMV': {'lat': 12.6679, 'lon': 108.1203, 'name': 'Buôn Ma Thuột'},
-        'THD': {'lat': 19.9012, 'lon': 105.4679, 'name': 'Thanh Hóa'},
-        'BKK': {'lat': 13.6900, 'lon': 100.7501, 'name': 'Bangkok'},
-        'SIN': {'lat': 1.3644, 'lon': 103.9915, 'name': 'Singapore'},
-        'KUL': {'lat': 2.7456, 'lon': 101.7099, 'name': 'Kuala Lumpur'},
-        'ICN': {'lat': 37.4602, 'lon': 126.4407, 'name': 'Incheon'},
-        'NRT': {'lat': 35.7647, 'lon': 140.3864, 'name': 'Tokyo Narita'},
-        'SYD': {'lat': -33.9399, 'lon': 151.1753, 'name': 'Sydney'},
-        'MEL': {'lat': -37.6690, 'lon': 144.8410, 'name': 'Melbourne'},
-        'LHR': {'lat': 51.4700, 'lon': -0.4543, 'name': 'London Heathrow'},
-        'DPS': {'lat': -8.7467, 'lon': 115.1671, 'name': 'Bali Denpasar'},
-        'CGK': {'lat': -6.1256, 'lon': 106.6559, 'name': 'Jakarta'},
-        'HKG': {'lat': 22.3080, 'lon': 113.9185, 'name': 'Hong Kong'},
-        'TPE': {'lat': 25.0797, 'lon': 121.2342, 'name': 'Taipei'},
-        'CAN': {'lat': 23.3924, 'lon': 113.2988, 'name': 'Guangzhou'},
-        'PUS': {'lat': 35.1795, 'lon': 128.9388, 'name': 'Busan'},
-        'KHH': {'lat': 22.5771, 'lon': 120.3498, 'name': 'Kaohsiung'},
-        'NGO': {'lat': 34.8584, 'lon': 136.8052, 'name': 'Nagoya'},
-        'PER': {'lat': -31.9403, 'lon': 115.9672, 'name': 'Perth'},
-        'LPQ': {'lat': 19.8973, 'lon': 102.1638, 'name': 'Luang Prabang'},
-        'CNX': {'lat': 18.7667, 'lon': 98.9667, 'name': 'Chiang Mai'},
-        'HKT': {'lat': 8.1132, 'lon': 98.3169, 'name': 'Phuket'},
-        'HDY': {'lat': 6.9333, 'lon': 100.3933, 'name': 'Hat Yai'},
-        'URT': {'lat': 13.6900, 'lon': 100.7500, 'name': 'Surat Thani'},
-    }
+    """Return dict of airports loaded from CSVs (no fallback to hard-coded list)."""
+    global_path = os.path.join('data', 'cleaned', 'airport_db_cleaned.csv')
+    vn_path = os.path.join('data', 'cleaned_vn', 'airport_db_cleaned_vn.csv')
+    airports = load_airports_from_csvs(global_path, vn_path)
     return airports
 
 def create_flight_map(df):
