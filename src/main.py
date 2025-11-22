@@ -5,13 +5,14 @@ from folium.plugins import AntPath
 import webbrowser
 import os
 
-def load_flight_data(csv_path='data/cleaned_vn/flight_tracker_cleaned_vn.csv'):
+def load_flight_data(csv_path='data/cleaned_vn/flight_tracker_live_vn_cleaned_vn.csv'):
     try:
         df = pd.read_csv(csv_path)
         return df
     except FileNotFoundError:
         print(f"Error: Không tìm thấy file {csv_path}")
         return None
+
 
 def get_airport_coordinates():
     airports = {
